@@ -1,5 +1,5 @@
 [package]
-name = "user/toys2bee"
+name = "user/toygame"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
