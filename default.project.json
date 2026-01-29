@@ -6,9 +6,6 @@
     "ReplicatedStorage": {
       "Packages": {
         "$path": "Packages"
-      },
-      "Configuration": {
-        "$path": "src/ReplicatedStorage/Configuration"
       }
     },
 
