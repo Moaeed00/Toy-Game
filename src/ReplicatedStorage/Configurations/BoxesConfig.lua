@@ -42,6 +42,13 @@ return {
         HitPower = 350,
     },
     {
+        Name = "Galaxy Block",
+        Rarity = "Galaxy",
+        RarityWeight = 20,
+        Color = "#4B0082", -- Indigo
+        HitPower = 500,
+    },
+    {
         Name = "Legendary_Block",
         Rarity = "Legendary",
         RarityWeight = 2,
