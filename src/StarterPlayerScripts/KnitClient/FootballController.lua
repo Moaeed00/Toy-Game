@@ -11,7 +11,7 @@ end
 function FootballController:KnitStart()
     FootballController.FootballService = Knit.GetService("FootballService")
 
-    task.wait(3)
+    task.wait(1)
     self:OnFootballToolTriggered()
 end
 
@@ -29,7 +29,6 @@ function FootballController:OnFootballToolTriggered()
                 return
             end
 
-            ball.Parent = workspace
             ball.CanCollide = true
             self:SetHitPower(ball)
             self.FootballService:KickBall(ball)

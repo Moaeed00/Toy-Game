@@ -33,7 +33,10 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart)
         return
     end
 
+    local originalParent = ball.Parent
+    ball.Parent = workspace
     ball.Anchored = true
+    ball.CanCollide = true
     local lockedY = ball.Position.Y
     local rootFrontPosition: Vector3 = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z)
 
@@ -51,7 +54,10 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart)
     local returnTween = TweenService:Create(ball, tweenInfo, { Position = returnPosition })
     returnTween:Play()
     returnTween.Completed:Wait()
-end
 
+    ball.CanCollide = false
+    ball.Anchored = false
+    ball.Parent = originalParent
+end
 
 return FootballService
