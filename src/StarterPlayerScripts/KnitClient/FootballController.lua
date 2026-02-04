@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local FootballsConfig = require(ReplicatedStorage.Configurations.FootballsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local FootballController = Knit.CreateController { Name = "FootballController" }
@@ -16,11 +17,9 @@ end
 
 function FootballController:OnFootballToolTriggered()
     self.FootballService:GiveFootball():andThen(function(football: Tool)
-        local ball: MeshPart = football:WaitForChild("Football")
+        local ball: MeshPart = football:WaitForChild("Handle")
 
         football.Equipped:Connect(function()
-            ball.Transparency = 1
-            ball.CanCollide = false
         end)
 
         football.Activated:Connect(function()
@@ -30,19 +29,24 @@ function FootballController:OnFootballToolTriggered()
                 return
             end
 
-            ball.CFrame = root.CFrame * CFrame.new(0, -2, -3)
             ball.Parent = workspace
-            ball.Transparency = 0
             ball.CanCollide = true
-
-            football:Destroy()
-
+            self:SetHitPower(ball)
             self.FootballService:KickBall(ball)
         end)
 
         football.Unequipped:Connect(function()
         end)
     end)
+end
+
+function FootballController:SetHitPower(ball: MeshPart)
+    for index, footballToolData in ipairs(FootballsConfig) do
+        if footballToolData.Name == ball.Name then
+            ball:SetAttribute("ToolType", "Football")
+            ball:SetAttribute("HitPower", footballToolData.Power)
+        end
+    end
 end
 
 return FootballController
