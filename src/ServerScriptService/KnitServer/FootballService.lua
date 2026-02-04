@@ -1,6 +1,8 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+local FootballsConfig = require(ReplicatedStorage.Configurations.FootballsConfig)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local Football: Tool = Assets.Tools:WaitForChild("Basic_Football")
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -20,7 +22,20 @@ end
 function FootballService.Client:GiveFootball(player: Player)
     local footballTool: Tool = Football:Clone()
     footballTool.Parent = player.Backpack
+
+    local ball: MeshPart = footballTool:WaitForChild("Handle")
+    self:SetHitPower(ball)
+
     return footballTool
+end
+
+function FootballService.Client:SetHitPower(ball: MeshPart)
+    for index, footballToolData in ipairs(FootballsConfig) do
+        if footballToolData.Name == ball.Parent.Name then
+            CollectionService:AddTag(ball, "Football")
+            ball:SetAttribute("HitPower", footballToolData.Power)
+        end
+    end
 end
 
 function FootballService.Client:KickBall(player: Player, ball: MeshPart)

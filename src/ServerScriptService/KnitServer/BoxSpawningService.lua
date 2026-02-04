@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BoxesConfig = require(ReplicatedStorage.Configurations.BoxesConfig)
@@ -12,7 +13,7 @@ function BoxSpawningService:KnitInit()
 end
 
 function BoxSpawningService:KnitStart()
-    self:SpawnBoxes(200)
+    self:SpawnBoxes(150)
 end
 
 function BoxSpawningService:GetRandomBoxConfig()
@@ -44,9 +45,7 @@ function BoxSpawningService:SpawnBox(position: Vector3)
     local box: Model = boxModel:Clone()
     box.Parent = BoxesFolder
     box:PivotTo(CFrame.new(position))
-    box:SetAttribute("Rarity", boxConfig.Rarity)
-    box:SetAttribute("HitPower", boxConfig.HitPower)
-    box:SetAttribute("Color", boxConfig.Color)
+    self:SetBoxData(box, boxConfig)
 
     return box
 end
@@ -68,6 +67,47 @@ function BoxSpawningService:GetRandomPointInSpawnArea(): Vector3
     )
 
     return (BoxSpawnArea.CFrame * CFrame.new(offset)).Position
+end
+
+function BoxSpawningService:SetBoxData(box: Model, boxConfig)
+    local boxInfoFrame: Frame = box:WaitForChild(boxConfig.Name):WaitForChild("BillboardGui"):WaitForChild("Frame")
+
+    local boxName: TextLabel = boxInfoFrame:WaitForChild("BoxName")
+    boxName.Text = string.gsub(boxConfig.Name, "_", " ")
+
+    local progressText: TextLabel = boxInfoFrame:WaitForChild("HitProgressBar"):WaitForChild("ProgressText")
+    progressText.Text = boxConfig.HitPower .. " / " .. boxConfig.HitPower
+
+    box:SetAttribute("Rarity", boxConfig.Rarity)
+    box:SetAttribute("HitPower", boxConfig.HitPower)
+    box:SetAttribute("Color", boxConfig.Color)
+    self:ToggleBoxInfoFrame(boxInfoFrame, false)
+
+    self:ConnectBoxHitTouch(boxInfoFrame, box:WaitForChild(boxConfig.Name))
+end
+
+function BoxSpawningService:ConnectBoxHitTouch(boxInfoFrame: Frame, box: Part)
+    box:SetAttribute("Hit", false)
+
+    box.Touched:Connect(function(otherPart)
+        if box:GetAttribute("Hit") then
+            return
+        end
+
+        if CollectionService:HasTag(otherPart, "Football") then
+            box:SetAttribute("Hit", true)
+            print("Football hit box:", box.Name)
+            self:ToggleBoxInfoFrame(boxInfoFrame, true)
+
+            task.wait(10)
+            box:SetAttribute("Hit", false)
+            self:ToggleBoxInfoFrame(boxInfoFrame, false)
+        end
+    end)
+end
+
+function BoxSpawningService:ToggleBoxInfoFrame(boxInfoFrame: Frame, toggle: boolean)
+    boxInfoFrame.Visible = toggle
 end
 
 return BoxSpawningService
