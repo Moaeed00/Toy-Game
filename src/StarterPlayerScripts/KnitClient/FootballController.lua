@@ -16,9 +16,24 @@ end
 
 function FootballController:OnFootballToolTriggered()
     self.FootballService:GiveFootball():andThen(function(football: Tool)
-        local ball: MeshPart = football:WaitForChild("Handle")
+        local handle: Part = football:WaitForChild("Handle")
+        local ball: MeshPart = handle:WaitForChild("Basic_Football")
 
         football.Equipped:Connect(function()
+            local character = football.Parent
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if not root then
+                return
+            end
+
+            local frontDistance = 2.5
+            local lookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
+            local frontPosition = Vector3.new(root.Position.X, 2, root.Position.Z) + (lookDirection * frontDistance)
+
+            ball.Position = frontPosition
+            ball.Transparency = 0
+            ball.Anchored = true
+            ball.CanCollide = true
         end)
 
         football.Activated:Connect(function()
