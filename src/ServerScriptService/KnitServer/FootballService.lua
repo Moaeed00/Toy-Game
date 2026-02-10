@@ -17,6 +17,7 @@ end
 
 function FootballService:KnitStart()
     FootballService.KICK_RANGE = 7.5
+    FootballService.FRONT_DISTANCE = 2.5
 end
 
 function FootballService.Client:GiveFootball(player: Player)
@@ -25,6 +26,10 @@ function FootballService.Client:GiveFootball(player: Player)
 
     local handle: Part = footballTool:WaitForChild("Handle")
     local ball: MeshPart = handle:WaitForChild("Basic_Football")
+    ball.Transparency = 1
+    ball.Anchored = true
+    ball.CanCollide = false
+
     self:SetHitPower(ball)
 
     return footballTool
@@ -44,20 +49,37 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart)
         return
     end
 
-    ball.Anchored = true
+    local root = player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        return
+    end
 
-    local startPosition: Vector3 = ball.Parent.CFrame.Position
-    local lookDirection: Vector3 = Vector3.new(ball.Parent.CFrame.LookVector.X, 0, ball.Parent.CFrame.LookVector.Z).Unit
+    ball.Anchored = true
+    ball.CanCollide = true
+
+    local startPosition: Vector3 = ball.Position
+    local lookDirection: Vector3 = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
+
+    -- local startPosition: Vector3 = Vector3.new(root.CFrame.Position.X, 2, root.CFrame.Position.Z)
+    -- local lookDirection: Vector3 = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
+
     local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-    local kickTarget: Vector3 = Vector3.new(startPosition.X, startPosition.Y, startPosition.Z) + (lookDirection * self.Server.KICK_RANGE)
+    local kickTarget: Vector3 = startPosition + (lookDirection * self.Server.KICK_RANGE)
     local kickTween = TweenService:Create(ball, tweenInfo, { Position = kickTarget })
     kickTween:Play()
     kickTween.Completed:Wait()
 
-    local returnTween = TweenService:Create(ball, tweenInfo, { Position = startPosition })
-    returnTween:Play()
-    returnTween.Completed:Wait()
+    if root and root.Parent then
+        local returnLookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
+        local returnPosition = Vector3.new(root.Position.X, 2, root.Position.Z) + (returnLookDirection * self.Server.FRONT_DISTANCE)
+
+        local returnTween = TweenService:Create(ball, tweenInfo, { Position = returnPosition })
+        returnTween:Play()
+        returnTween.Completed:Wait()
+    end
+
+    ball.CanCollide = false
 end
 
 return FootballService
