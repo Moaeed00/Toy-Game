@@ -72,8 +72,9 @@ function FootballController:OnFootballToolTriggered()
             isKicking = true
 
             task.spawn(function()
-                self.FootballService:KickBall(ball)
-                task.wait(1.1)
+                local currentBallPosition = ball.CFrame.Position
+                self.FootballService:KickBall(ball, currentBallPosition)
+                task.wait(0.9)
                 isKicking = false
             end)
         end)

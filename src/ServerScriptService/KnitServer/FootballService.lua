@@ -44,7 +44,7 @@ function FootballService.Client:SetHitPower(ball: MeshPart)
     end
 end
 
-function FootballService.Client:KickBall(player: Player, ball: MeshPart)
+function FootballService.Client:KickBall(player: Player, ball: MeshPart, ballPosition: Vector3)
     if not player.Character or not ball then
         return
     end
@@ -56,14 +56,12 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart)
 
     ball.Anchored = true
     ball.CanCollide = true
+    ball:PivotTo(CFrame.new(ballPosition))
 
-    local startPosition: Vector3 = ball.Position
+    local startPosition: Vector3 = ballPosition
     local lookDirection: Vector3 = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
 
-    -- local startPosition: Vector3 = Vector3.new(root.CFrame.Position.X, 2, root.CFrame.Position.Z)
-    -- local lookDirection: Vector3 = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-
-    local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
     local kickTarget: Vector3 = startPosition + (lookDirection * self.Server.KICK_RANGE)
     local kickTween = TweenService:Create(ball, tweenInfo, { Position = kickTarget })
