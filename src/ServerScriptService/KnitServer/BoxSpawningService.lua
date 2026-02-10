@@ -13,6 +13,8 @@ function BoxSpawningService:KnitInit()
 end
 
 function BoxSpawningService:KnitStart()
+    BoxSpawningService.BoxDamageService = Knit.GetService("BoxDamageService")
+
     self:SpawnBoxes(150)
 end
 
@@ -33,7 +35,7 @@ function BoxSpawningService:GetRandomBoxConfig()
     end
 end
 
-function BoxSpawningService:SpawnBox(position: Vector3)
+function BoxSpawningService:SpawnBox(index: number, position: Vector3)
     local boxConfig = self:GetRandomBoxConfig()
     local boxModel: Model = BoxesModels:FindFirstChild(boxConfig.Name)
 
@@ -44,16 +46,17 @@ function BoxSpawningService:SpawnBox(position: Vector3)
 
     local box: Model = boxModel:Clone()
     box.Parent = BoxesFolder
+    box.Name = box.Name .. "_" .. tostring(index)
     box:PivotTo(CFrame.new(position))
-    self:SetBoxData(box, boxConfig)
+    self:SetBoxData(index, box, boxConfig)
 
     return box
 end
 
 function BoxSpawningService:SpawnBoxes(amount: number)
-    for i = 1, amount do
+    for index = 1, amount do
         local randomPosition = self:GetRandomPointInSpawnArea()
-        self:SpawnBox(randomPosition)
+        self:SpawnBox(index, randomPosition)
     end
 end
 
@@ -69,7 +72,7 @@ function BoxSpawningService:GetRandomPointInSpawnArea(): Vector3
     return (BoxSpawnArea.CFrame * CFrame.new(offset)).Position
 end
 
-function BoxSpawningService:SetBoxData(box: Model, boxConfig)
+function BoxSpawningService:SetBoxData(index: number, box: Model, boxConfig)
     local boxInfoFrame: Frame = box:WaitForChild(boxConfig.Name):WaitForChild("BillboardGui"):WaitForChild("Frame")
 
     local boxName: TextLabel = boxInfoFrame:WaitForChild("BoxName")
@@ -78,6 +81,7 @@ function BoxSpawningService:SetBoxData(box: Model, boxConfig)
     local progressText: TextLabel = boxInfoFrame:WaitForChild("HitProgressBar"):WaitForChild("ProgressText")
     progressText.Text = boxConfig.HitPower .. " / " .. boxConfig.HitPower
 
+    box:SetAttribute("Index", index)
     box:SetAttribute("Rarity", boxConfig.Rarity)
     box:SetAttribute("HitPower", boxConfig.HitPower)
     box:SetAttribute("Color", boxConfig.Color)
@@ -87,20 +91,24 @@ function BoxSpawningService:SetBoxData(box: Model, boxConfig)
 end
 
 function BoxSpawningService:ConnectBoxHitTouch(boxInfoFrame: Frame, box: Part)
-    box:SetAttribute("Hit", false)
+    box.Parent:SetAttribute("Hit", false)
 
-    box.Touched:Connect(function(otherPart)
-        if box:GetAttribute("Hit") then
+    box.Touched:Connect(function(otherPart: MeshPart)
+        if box.Parent:GetAttribute("Hit") then
             return
         end
 
         if CollectionService:HasTag(otherPart, "Football") then
-            box:SetAttribute("Hit", true)
-            print("Football hit box:", box.Name)
+            box.Parent:SetAttribute("Hit", true)
             self:ToggleBoxInfoFrame(boxInfoFrame, true)
+            local footballHitPower = otherPart:GetAttribute("HitPower")
+            local boxIndex = box.Parent:GetAttribute("Index")
 
-            task.wait(10)
-            box:SetAttribute("Hit", false)
+            self.BoxDamageService:DealDamage(box, footballHitPower, boxIndex)
+
+            task.wait(2)
+            box.Parent:SetAttribute("Hit", false)
+            task.wait(8)
             self:ToggleBoxInfoFrame(boxInfoFrame, false)
         end
     end)

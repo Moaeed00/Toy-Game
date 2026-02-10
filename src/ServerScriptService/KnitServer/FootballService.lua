@@ -55,7 +55,6 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart, ballPos
     end
 
     ball.Anchored = true
-    ball.CanCollide = true
     ball:PivotTo(CFrame.new(ballPosition))
 
     local startPosition: Vector3 = ballPosition
