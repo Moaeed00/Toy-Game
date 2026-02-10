@@ -6,6 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
+local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local player: Player = Players.LocalPlayer
 local camera: Camera = workspace.CurrentCamera
@@ -30,6 +31,8 @@ local MiniGameController = Knit.CreateController({
 local POWER = 90
 local LIFT = 30
 local CountDownTime = 3
+
+local ScaleValue = 1.5
 
 local CanKick = false
 local GameRunning = false
@@ -173,6 +176,7 @@ function MiniGameController:InitializeMiniGame()
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
 	ScoringHelperClient:Initialize()
+	CharacterSize:ScaleUp(player, ScaleValue)
 
 	PlayerControls:Disable()
 	StartCountDown()
@@ -206,6 +210,7 @@ function MiniGameController:EndMiniGame()
 	IndicatorHelperClient:CleanUp()
 	ScoringHelperClient:CleanUp()
 	WallPushers:CleanUp()
+	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
 	PlayerControls:Enable()
 end
