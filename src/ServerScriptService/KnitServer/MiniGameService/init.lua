@@ -1,8 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
+local ServerModules = ServerScriptService:WaitForChild("ServerModules")
+
 local ScoringHelperServer = require(script:WaitForChild("ScoringHelperServer"))
+local CollisionGroupHandler: {} = require(ServerModules:WaitForChild("CollisionGroupHandler"))
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootBalls = Assets:WaitForChild("FootBalls")
@@ -10,6 +14,8 @@ local Toys = workspace:WaitForChild("Toys")
 
 local RoundTime = 20
 local KickResetTime = 3
+
+local FootBallCollisionGroup = "FootBall"
 
 local ProximityPrompts = {}
 local Slots = {}
@@ -65,6 +71,9 @@ function MiniGameService:SpawnBall(player, SlotName, BallName)
 
 	local ClonedFootball = Football:Clone()
 	ClonedFootball.Name = player.Name .. "_FootBall"
+
+	CollisionGroupHandler:AddCollisionGroup(FootBallCollisionGroup, ClonedFootball)
+
 	ClonedFootball.Parent = workspace
 	ClonedFootBalls[player] = ClonedFootball
 
