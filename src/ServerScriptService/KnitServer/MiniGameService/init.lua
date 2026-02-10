@@ -23,6 +23,8 @@ local ClonedFootBalls = {}
 local BallSpawnReferences = {}
 local ActiveGames = {}
 
+local DataHandlerService
+
 local MiniGameService = Knit.CreateService({
 	Name = "MiniGameService",
 	Client = {
@@ -128,6 +130,9 @@ function MiniGameService:EndMiniGame(player)
 		return
 	end
 
+	local Score = player:GetAttribute("Score") or 0
+	DataHandlerService:UpdatePoints(player, Score)
+
 	self.Client.EndMiniGame:Fire(player)
 
 	ActiveGames[player.UserId].Running = false
@@ -214,7 +219,9 @@ function MiniGameService:HandleStates(player, State, SlotName)
 	end
 end
 
-function MiniGameService:KnitInit() end
+function MiniGameService:KnitInit()
+	DataHandlerService = Knit.GetService("DataHandlerService")
+end
 
 function MiniGameService:KnitStart()
 	print("MiniGameService Started")
