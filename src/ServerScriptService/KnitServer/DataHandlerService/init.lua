@@ -156,6 +156,45 @@ function DataHandlerService:SetPlayerData(player: Player, dataTable: { [string]:
 	end
 end
 
+-- Points Helpers
+function DataHandlerService:DeductPoints(player: Player, amount: number)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		if amount <= 0 then
+			return false
+		end
+
+		if data.Points >= amount then
+			data.Points -= amount
+			self:SetPlayerData(player, { Points = data.Points })
+			return true
+		end
+		return false
+	end
+
+	return false
+end
+
+function DataHandlerService:GetPoints(player: Player)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		return data.Points
+	end
+end
+
+function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
+	local playerData = self:GetPlayerData(player)
+
+	if playerData then
+		local prevPoints = playerData.Points
+		local updatedPoints = prevPoints + pointsEarned
+		self:SetPlayerData(player, { Points = updatedPoints })
+	end
+end
+
+--Initialization
 function DataHandlerService:KnitInit() end
 
 function DataHandlerService:KnitStart()
