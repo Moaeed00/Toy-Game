@@ -21,10 +21,6 @@ local PlayerService: Players = game:GetService("Players")
 local ServerScriptService: ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
-local CoinsDataStoreModule = require(GlobalDataStores:WaitForChild("CoinsDataStore"))
-local PointsDataStoreModule = require(GlobalDataStores:WaitForChild("PointsDataStore"))
-
 -- [References] --
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
@@ -108,7 +104,7 @@ local function OnPlayerAdded(player: Player)
 end
 
 ----    [Currency]        ----
-function DataHandlerService:DeductCoins(player, amount)
+function DataHandler:DeductCoins(player, amount)
     local data = self:GetPlayerData(player)
 
     if amount <= 0 then return false end
@@ -122,12 +118,12 @@ function DataHandlerService:DeductCoins(player, amount)
     return false
 end
 
-function DataHandlerService:GetCoins(player)
+function DataHandler:GetCoins(player)
     local data = self:GetPlayerData(player)
     return data.Coins
 end
 
-function DataHandlerService:UpdateCoins(player: Player, amountEarned: number)
+function DataHandler:UpdateCoins(player: Player, amountEarned: number)
     local playerData = self:GetPlayerData(player)
     if playerData then
         local prevCoins = playerData[EnumDataValue.Coins]
