@@ -1,0 +1,3 @@
+return {
+	Points = 0,
+}
