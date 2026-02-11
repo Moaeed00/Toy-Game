@@ -40,7 +40,7 @@ function FootballController:OnFootballToolTriggered()
 
             local frontDistance = 2.5
             local lookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-            local frontPosition = Vector3.new(root.Position.X, 2, root.Position.Z) + (lookDirection * frontDistance)
+            local frontPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * frontDistance)
             ball.CFrame = CFrame.new(frontPosition)
             ball.Transparency = 0
 
@@ -58,7 +58,7 @@ function FootballController:OnFootballToolTriggered()
 
                 if not isKicking then
                     local currentLookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-                    local currentFrontPosition = Vector3.new(root.Position.X, 2, root.Position.Z) + (currentLookDirection * frontDistance)
+                    local currentFrontPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (currentLookDirection * frontDistance)
 
                     ball.CFrame = CFrame.new(currentFrontPosition)
                 end

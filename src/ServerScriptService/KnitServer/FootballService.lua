@@ -69,7 +69,7 @@ function FootballService.Client:KickBall(player: Player, ball: MeshPart, ballPos
 
     if root and root.Parent then
         local returnLookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-        local returnPosition = Vector3.new(root.Position.X, 2, root.Position.Z) + (returnLookDirection * self.Server.FRONT_DISTANCE)
+        local returnPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (returnLookDirection * self.Server.FRONT_DISTANCE)
 
         local returnTween = TweenService:Create(ball, tweenInfo, { Position = returnPosition })
         returnTween:Play()
