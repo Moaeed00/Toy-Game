@@ -36,7 +36,7 @@ function BoxDamageService:DealDamage(box: Part, footballHitPower: number, boxInd
     print("Box Hit Power: ", hitPower)
     print("Ball Hit Power: ", footballHitPower)
 
-    self:UpdateProgressUI(box, updatedHitPower)
+    self:UpdateProgressUI(box, hitPower, updatedHitPower)
     self:PlayDamageVFX(box)
 
     if updatedHitPower <= 0 then
@@ -44,12 +44,12 @@ function BoxDamageService:DealDamage(box: Part, footballHitPower: number, boxInd
     end
 end
 
-function BoxDamageService:UpdateProgressUI(box: Part, currentHitPower: number)
-    print("UpdateProgressUI")
+function BoxDamageService:UpdateProgressUI(box: Part, totalHitPower: number, currentHitPower: number)
     local hitProgress: Frame = box:WaitForChild("BillboardGui"):WaitForChild("Frame"):WaitForChild("HitProgressBar")
     local hitProgressBar: Frame = hitProgress:WaitForChild("ProgressBar")
     local hitProgressText: TextLabel = hitProgress:WaitForChild("ProgressText")
-    self.GUIService:HandleProgressBar(hitProgressBar, hitProgressText, currentHitPower)
+
+    self.GUIService:HandleProgressBar(hitProgressBar, hitProgressText, totalHitPower, currentHitPower)
 end
 
 function BoxDamageService:PlayDamageVFX(box: Model)
