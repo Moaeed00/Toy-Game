@@ -46,7 +46,6 @@ function BlocksSpawningService:SpawnBlocks(amount: number)
     end
 
     for index = 1, specialBlocksCount do
-    -- for index = normalBlocksCount + 1, amount do
         local randomPosition = self:GetValidSpawnPosition("Special")
         if randomPosition then
             self:SpawnBlock(index, randomPosition, "Special")
