@@ -160,6 +160,7 @@ function BoxSpawningService:StartInactivityChecker(box: Model, boxInfoFrame: Fra
 
         if boxInfoFrame.Visible and timeSinceLastHit >= INACTIVITY_TIMEOUT and lastHitTime > 0 then
             self:ToggleBoxInfoFrame(boxInfoFrame, false)
+            self.BoxDamageService:ResetBoxHitPower(box)
         end
     end
 end
