@@ -43,6 +43,7 @@ local EnumDataValue = {
 
 local DataHandlerService = Knit.CreateService({
 	Name = "DataHandlerService",
+	Client = {},
 })
 
 DataHandlerService.OnPlayerProfileLoaded = Signal.new()
@@ -156,6 +157,16 @@ function DataHandlerService:SetPlayerData(player: Player, dataTable: { [string]:
 	end
 end
 
+-- LeaderStat Helpers
+local function SetLeaderboardStats(player: Player, Name: string, value: number)
+	local LeaderStats = player:FindFirstChild("leaderstats")
+	local AttrName = LeaderStats:FindFirstChild(Name)
+
+	if AttrName then
+		AttrName.Value = value
+	end
+end
+
 -- Points Helpers
 function DataHandlerService:DeductPoints(player: Player, amount: number)
 	local data = self:GetPlayerData(player)
@@ -168,6 +179,7 @@ function DataHandlerService:DeductPoints(player: Player, amount: number)
 		if data.Points >= amount then
 			data.Points -= amount
 			self:SetPlayerData(player, { Points = data.Points })
+			SetLeaderboardStats(player, "Points", data.Points)
 			return true
 		end
 		return false
@@ -191,6 +203,7 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
+		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
 
