@@ -27,7 +27,7 @@ function GUIService:HandleProgressBar(progressBar: Frame, progressText: TextLabe
 	end
 
 	if progressText and progressText:IsA("TextLabel") then
-		progressText.Text = updatedHitPower
+		progressText.Text = updatedHitPower .. "/" .. totalHitPower
 	end
 end
 
