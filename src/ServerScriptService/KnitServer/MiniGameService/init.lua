@@ -116,10 +116,10 @@ function MiniGameService:StartTimer(player)
 	end
 
 	task.spawn(function()
-		while GameData.TimeLeft >= 0 and GameData.Running do
+		while GameData.TimeLeft >= 1 and GameData.Running do
+			GameData.TimeLeft -= 1
 			print("TimeLeftServer", GameData.TimeLeft)
 			task.wait(1)
-			GameData.TimeLeft -= 1
 		end
 		self:EndMiniGame(player)
 	end)
@@ -177,11 +177,11 @@ function MiniGameService:StartMiniGame(player)
 
 	ActiveGames[player.UserId].Running = true
 
-	ScoringHelperServer:OnStartScoring(player)
-	self:StartTimer(player)
-
 	local RemainingTime = (workspace:GetServerTimeNow() + ActiveGames[player.UserId].TimeLeft)
 	self.Client.MiniGame:Fire(player, "StartMiniGame", RemainingTime)
+
+	ScoringHelperServer:OnStartScoring(player)
+	self:StartTimer(player)
 end
 
 function MiniGameService:OnBallKicked(player)

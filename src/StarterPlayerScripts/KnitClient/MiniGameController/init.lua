@@ -138,12 +138,12 @@ function StartTimer(Time: number)
 	CountDownGui.Enabled = false
 
 	task.spawn(function()
-		while RmainingTime >= 0 do
+		while RmainingTime >= 1 do
+			RmainingTime -= 1
 			print("TimeLeftClient", RmainingTime)
 
 			TimerValue.Text = RmainingTime
 			task.wait(1)
-			RmainingTime -= 1
 		end
 		TimerGui.Enabled = false
 	end)
