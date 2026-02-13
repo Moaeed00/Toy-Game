@@ -147,6 +147,8 @@ function BlocksSpawningService:GetRandomPointInSpawnArea(blockType: string): Vec
 end
 
 function BlocksSpawningService:SetBlockData(index: number, block: Model, blockConfig)
+    block:WaitForChild(blockConfig.Name).CollisionGroup = "Blocks"
+
     local blockInfoFrame: Frame = block:WaitForChild(blockConfig.Name):WaitForChild("BillboardGui"):WaitForChild("Frame")
 
     local blockName: TextLabel = blockInfoFrame:WaitForChild("BlockName")

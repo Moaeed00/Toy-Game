@@ -181,8 +181,13 @@ function BlocksDamageService:FindHitBlockByIndex(blockIndex: number, blockType: 
 end
 
 function BlocksDamageService:ResetBlockHitPower(block: Model)
-    local hitPower = block:GetAttribute("HitPower")
-    block:SetAttribute("TotalHitPower", hitPower)
+    local totalHitPower = block:GetAttribute("TotalHitPower")
+    block:SetAttribute("HitPower", totalHitPower)
+
+    local hitProgress: Frame = block:WaitForChild(block.Name):WaitForChild("BillboardGui"):WaitForChild("Frame"):WaitForChild("HitProgressBar")
+    local hitProgressBar: Frame = hitProgress:WaitForChild("ProgressBar")
+    local hitProgressText: TextLabel = hitProgress:WaitForChild("ProgressText")
+    self.GUIService:HandleProgressBar(hitProgressBar, hitProgressText, totalHitPower, totalHitPower)
 end
 
 return BlocksDamageService
