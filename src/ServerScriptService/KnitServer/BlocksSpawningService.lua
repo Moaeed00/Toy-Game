@@ -173,10 +173,7 @@ function BlocksSpawningService:ConnectBlockHitTouch(blockInfoFrame: Frame, block
             self:ToggleBlockInfoFrame(blockInfoFrame, true)
             local footballHitPower = otherPart:GetAttribute("HitPower")
             local blockIndex = block.Parent:GetAttribute("Index")
-            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex)
-
-            task.wait(1)
-            block.Parent:SetAttribute("Hit", false)
+            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex, block.Parent.Parent.Name)
         end
     end)
 

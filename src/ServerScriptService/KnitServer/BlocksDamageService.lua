@@ -19,13 +19,13 @@ function BlocksDamageService:KnitStart()
     BlocksDamageService.CurrentHitBlockIndex = nil
 end
 
-function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number)
+function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number, blockType: string)
     if self.CurrentHitBlockIndex ~= blockIndex then
         self.CurrentHitBlockIndex = blockIndex
         print("Now hitting block with index: " .. tostring(blockIndex))
     end
 
-    local hitBlock = self:FindHitBlockByIndex(blockIndex)
+    local hitBlock = self:FindHitBlockByIndex(blockIndex, blockType)
     if not hitBlock then
         return
     end
@@ -38,11 +38,9 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     local currentHitPower = hitBlock:GetAttribute("HitPower")
     local updatedHitPower: number = math.max(0, currentHitPower - footballHitPower)
     hitBlock:SetAttribute("HitPower", updatedHitPower)
-
     self:UpdateProgressUI(hitBlock, totalHitPower, updatedHitPower)
-    task.spawn(function()
-        self:PlayDamageVFX(hitBlock)
-    end)
+
+    hitBlock:SetAttribute("Hit", false)
 
     if updatedHitPower <= 0 then
         self:DestroyBlock(hitBlock)
@@ -54,18 +52,18 @@ function BlocksDamageService:UpdateProgressUI(block: Model, totalHitPower: numbe
     local hitProgressBar: Frame = hitProgress:WaitForChild("ProgressBar")
     local hitProgressText: TextLabel = hitProgress:WaitForChild("ProgressText")
 
+    self:SpawnMiniBlocksEffect(block)
+    task.spawn(function()
+        self:PlayDamageVFX(block)
+    end)
     self.GUIService:HandleProgressBar(hitProgressBar, hitProgressText, totalHitPower, currentHitPower)
 end
 
 function BlocksDamageService:PlayDamageVFX(block: Model)
-    local scaleDown = 0.75
+    local scaleDown = 0.85
     local scaleUp = 1.0
     local scaleValue = Instance.new("NumberValue")
     scaleValue.Value = 1
-
-    task.spawn(function()
-        self:SpawnMiniBlocksEffect(block)
-    end)
 
     local connection = scaleValue.Changed:Connect(function(value)
         block:ScaleTo(value)
@@ -166,11 +164,11 @@ function BlocksDamageService:DestroyBlock(block: Model)
     self.CurrentHitBlockIndex = nil
     block:Destroy()
 
-    self.BlockSpawningService:SpawnBlocks(1)
+    self.BlocksSpawningService:SpawnBlocks(1)
 end
 
-function BlocksDamageService:FindHitBlockByIndex(blockIndex: number)
-    for _, block: Model in ipairs(BlocksFolder:GetChildren()) do
+function BlocksDamageService:FindHitBlockByIndex(blockIndex: number, blockType: string)
+    for _, block: Model in ipairs(BlocksFolder:WaitForChild(blockType):GetChildren()) do
         if block:GetAttribute("Index") == blockIndex then
             return block
         end
