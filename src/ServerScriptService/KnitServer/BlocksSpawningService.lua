@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
 
 local BlocksConfig = require(ReplicatedStorage.Configurations.BlocksConfig)
 local FieldBase: Part = workspace:WaitForChild("Field"):WaitForChild("Base")
@@ -24,6 +25,11 @@ function BlocksSpawningService:KnitStart()
     BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 15 -- 15%
     BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
     BlocksSpawningService.MIN_SPAWN_DISTANCE = 10 -- Minimum distance between blocks
+
+    if not PhysicsService:IsCollisionGroupRegistered("Blocks") then
+        PhysicsService:RegisterCollisionGroup("Blocks")
+    end
+    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Blocks", false)
 
     self:SpawnBlocks(150)
 end

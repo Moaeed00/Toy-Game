@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
 
 local FootballsConfig = require(ReplicatedStorage.Configurations.FootballsConfig)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
@@ -23,6 +24,11 @@ function FootballService:KnitStart()
     FootballService.FRONT_DISTANCE = 2.5
     FootballService.Footballs = {}
     FootballService.IsKicking = {}
+
+    if not PhysicsService:IsCollisionGroupRegistered("Football") then
+        PhysicsService:RegisterCollisionGroup("Football")
+    end
+    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Football", false)
 
     self.Client.EquipBallEvent:Connect(function(player: Player)
         self:EquipBall(player)

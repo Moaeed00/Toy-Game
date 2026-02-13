@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local PhysicsService = game:GetService("PhysicsService")
 local TweenService = game:GetService("TweenService")
 
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
@@ -15,6 +16,11 @@ end
 function BlocksDamageService:KnitStart()
     BlocksDamageService.GUIService = Knit.GetService("GUIService")
     BlocksDamageService.BlocksSpawningService = Knit.GetService("BlocksSpawningService")
+
+    if not PhysicsService:IsCollisionGroupRegistered("MiniBlocks") then
+        PhysicsService:RegisterCollisionGroup("MiniBlocks")
+    end
+    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "MiniBlocks", false)
 
     BlocksDamageService.CurrentHitBlockIndex = nil
 end
@@ -60,7 +66,7 @@ function BlocksDamageService:UpdateProgressUI(block: Model, totalHitPower: numbe
 end
 
 function BlocksDamageService:PlayDamageVFX(block: Model)
-    local scaleDown = 0.85
+    local scaleDown = 0.8
     local scaleUp = 1.0
     local scaleValue = Instance.new("NumberValue")
     scaleValue.Value = 1
@@ -86,7 +92,7 @@ end
 function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
     local spawnPoint: Part = block:WaitForChild(block.Name):WaitForChild("MiniBlocksSpawnPoint")
     local SpawnCount = { 2, 3 }
-    local minSpawnSizeMultiplier = 0.2
+    local minSpawnSizeMultiplier = 0.25
     local maxSpawnSizeMultiplier = 0.3
 
     local blockPart = block:WaitForChild(block.Name)
@@ -99,46 +105,43 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
             miniBlock.Shape = Enum.PartType.Block
             miniBlock.Color = blockColor
             miniBlock.Material = blockPart.Material
-            miniBlock.Transparency = 0.5
+            miniBlock.Transparency = 0.4
             miniBlock.CastShadow = false
-            miniBlock.CanCollide = false
+            miniBlock.CanCollide = true
             miniBlock.Anchored = false
+            miniBlock.CollisionGroup = "MiniBlocks"
 
             -- Random size using multipliers
             local sizeMultiplier = math.random() * (maxSpawnSizeMultiplier - minSpawnSizeMultiplier) + minSpawnSizeMultiplier
             miniBlock.Size = blockPart.Size * sizeMultiplier
-
             miniBlock.Position = spawnPoint.Position
             miniBlock.Parent = workspace
 
             -- Create BodyVelocity for the pop-out effect
             local bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.MaxForce = Vector3.new(3000, 5000, 3000)
+            bodyVelocity.MaxForce = Vector3.new(4000, 5000, 4000)
 
             -- Random direction (opposite directions on the ground - X and Z plane)
             local angle = (i / numBlocks) * math.pi * 2
             local horizontalSpeed = math.random(10, 20)
-            local upwardSpeed = math.random(40, 50)
-
+            local upwardSpeed = math.random(15, 30)
             bodyVelocity.Velocity = Vector3.new(math.cos(angle) * horizontalSpeed, upwardSpeed, math.sin(angle) * horizontalSpeed)
             bodyVelocity.Parent = miniBlock
 
             -- Remove BodyVelocity after a short time to let physics take over
-            task.delay(0.1, function()
+            task.delay(0.15, function()
                 bodyVelocity:Destroy()
             end)
 
             -- Wait for block to hit the ground (check if velocity is near zero)
             local startTime = workspace:GetServerTimeNow()
             repeat
-                task.wait(0.3)
+                task.wait(0.1)
             until miniBlock.AssemblyLinearVelocity.Magnitude < 1 or workspace:GetServerTimeNow() - startTime > 3
-
             -- Anchor it when it lands
-            miniBlock.CanCollide = true
+            miniBlock.Anchored = true
 
-            local waitTime = math.random(500, 600) / 100
-            task.wait(waitTime)
+            task.wait(0.25)
 
             local scaleValue = Instance.new("NumberValue")
             scaleValue.Value = 1
@@ -147,7 +150,7 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
                 miniBlock.Size = originalSize * value
             end)
 
-            local scaleDownTweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            local scaleDownTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
             local scaleDownTween = TweenService:Create(scaleValue, scaleDownTweenInfo, { Value = 0 })
             scaleDownTween:Play()
             scaleDownTween.Completed:Wait()
