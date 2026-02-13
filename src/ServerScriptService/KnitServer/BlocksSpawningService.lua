@@ -22,7 +22,7 @@ end
 function BlocksSpawningService:KnitStart()
     BlocksSpawningService.BlocksDamageService = Knit.GetService("BlocksDamageService")
     BlocksSpawningService.SpawnedPositions = {}
-    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 15 -- 15%
+    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 20 -- 20%
     BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
     BlocksSpawningService.MIN_SPAWN_DISTANCE = 10 -- Minimum distance between blocks
 

@@ -2,66 +2,60 @@
 return {
     Normal = {
         {
-            Name = "Air_Block",
-            RarityWeight = 4,
-            Color = "#55AAFF",
-            HitPower = 350,
-        },
-        {
             Name = "Basic_Block",
+            Rarity = "Common",
             RarityWeight = 50,
-            Color = "#F5CD30",
             HitPower = 6,
         },
         {
-            Name = "Epic_Block",
-            RarityWeight = 6,
-            Color = "#E27BFF",
-            HitPower = 250,
-        },
-        {
-            Name = "Legendary_Block",
-            RarityWeight = 2,
-            Color = "#FF4759",
-            HitPower = 1000,
-        },
-        {
             Name = "Rare_Block",
-            RarityWeight = 0.1,
-            Color = "#62BBFF",
+            Rarity = "Rare",
+            RarityWeight = 1,
             HitPower = 30,
+        },
+        {
+            Name = "Gold_Block",
+            Rarity = "Mythic",
+            RarityWeight = 10,
+            HitPower = 100,
+        },
+        {
+            Name = "Air_Block",
+            Rarity = "Uncommon",
+            RarityWeight = 5,
+            HitPower = 350,
         },
     },
     Special = {
         {
-            Name = "Diamond_Block",
-            RarityWeight = 10,
-            Color = "#A0EAFF",
-            HitPower = 150,
+            Name = "Epic_Block",
+            Rarity = "Epic",
+            RarityWeight = 16,
+            HitPower = 250,
         },
         {
             Name = "Galaxy_Block",
-            RarityWeight = 3,
-            Color = "#54A4B0",
+            Rarity = "Galaxy",
+            RarityWeight = 8,
             HitPower = 500,
         },
         {
-            Name = "Gold_Block",
-            RarityWeight = 15,
-            Color = "#FFD900",
-            HitPower = 800,
-        },
-        {
-            Name = "Lava_Block",
-            RarityWeight = 25,
-            Color = "#FFC800",
-            HitPower = 100,
+            Name = "Legendary_Block",
+            Rarity = "Legendary",
+            RarityWeight = 4,
+            HitPower = 600,
         },
         {
             Name = "Rainbow_Block",
-            RarityWeight = 1,
-            Color = "#29F970",
+            Rarity = "Rainbow",
+            RarityWeight = 2,
             HitPower = 750,
         },
+        {
+            Name = "Water_Block",
+            Rarity = "Water",
+            RarityWeight = 0.5,
+            HitPower = 1000,
+        }
     }
 }
