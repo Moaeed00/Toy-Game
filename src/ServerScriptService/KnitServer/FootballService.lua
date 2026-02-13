@@ -63,9 +63,8 @@ function FootballService:EquipBall(player: Player)
         ball.BallWeld:Destroy()
     end
 
-    local frontDistance = 2.5
     local lookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-    local frontPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * frontDistance)
+    local frontPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
     ball.CFrame = CFrame.new(frontPosition)
 
     local weld = Instance.new("WeldConstraint")
