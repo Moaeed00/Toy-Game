@@ -31,7 +31,8 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     end
 
     if not hitBlock:GetAttribute("TotalHitPower") then
-        hitBlock:SetAttribute("TotalHitPower", hitBlock:GetAttribute("HitPower"))
+        local hitPower = hitBlock:GetAttribute("HitPower")
+        hitBlock:SetAttribute("TotalHitPower", hitPower)
     end
     local totalHitPower = hitBlock:GetAttribute("TotalHitPower")
     local currentHitPower = hitBlock:GetAttribute("HitPower")
@@ -130,10 +131,10 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
             end)
 
             -- Wait for block to hit the ground (check if velocity is near zero)
-            local startTime = tick()
+            local startTime = workspace:GetServerTimeNow()
             repeat
                 task.wait(0.3)
-            until miniBlock.AssemblyLinearVelocity.Magnitude < 1 or tick() - startTime > 3
+            until miniBlock.AssemblyLinearVelocity.Magnitude < 1 or workspace:GetServerTimeNow() - startTime > 3
 
             -- Anchor it when it lands
             miniBlock.CanCollide = true
@@ -179,7 +180,8 @@ function BlocksDamageService:FindHitBlockByIndex(blockIndex: number)
 end
 
 function BlocksDamageService:ResetBlockHitPower(block: Model)
-    block:SetAttribute("TotalHitPower", block:GetAttribute("HitPower"))
+    local hitPower = block:GetAttribute("HitPower")
+    block:SetAttribute("TotalHitPower", hitPower)
 end
 
 return BlocksDamageService

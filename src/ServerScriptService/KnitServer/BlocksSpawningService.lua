@@ -16,14 +16,14 @@ local BlocksSpawningService = Knit.CreateService {
 }
 
 function BlocksSpawningService:KnitInit()
-    BlocksSpawningService.SpawnedPositions = {}
-    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 15 -- 15%
-    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
-    BlocksSpawningService.MIN_SPAWN_DISTANCE = 10 -- Minimum distance between blocks
 end
 
 function BlocksSpawningService:KnitStart()
     BlocksSpawningService.BlocksDamageService = Knit.GetService("BlocksDamageService")
+    BlocksSpawningService.SpawnedPositions = {}
+    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 15 -- 15%
+    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
+    BlocksSpawningService.MIN_SPAWN_DISTANCE = 10 -- Minimum distance between blocks
 
     self:SpawnBlocks(150)
 end
@@ -169,12 +169,11 @@ function BlocksSpawningService:ConnectBlockHitTouch(blockInfoFrame: Frame, block
 
         if CollectionService:HasTag(otherPart, "Football") then
             block.Parent:SetAttribute("Hit", true)
-            block.Parent:SetAttribute("LastHitTime", tick())
+            block.Parent:SetAttribute("LastHitTime", workspace:GetServerTimeNow())
             self:ToggleBlockInfoFrame(blockInfoFrame, true)
             local footballHitPower = otherPart:GetAttribute("HitPower")
             local blockIndex = block.Parent:GetAttribute("Index")
-
-            self.blockDamageService:DealDamage(footballHitPower, blockIndex)
+            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex)
 
             task.wait(1)
             block.Parent:SetAttribute("Hit", false)
@@ -192,11 +191,11 @@ function BlocksSpawningService:StartInactivityChecker(block: Model, blockInfoFra
     while block and block.Parent do
         task.wait(0.5)
         local lastHitTime = block:GetAttribute("LastHitTime") or 0
-        local timeSinceLastHit = tick() - lastHitTime
+        local timeSinceLastHit = workspace:GetServerTimeNow() - lastHitTime
 
         if blockInfoFrame.Visible and timeSinceLastHit >= INACTIVITY_TIMEOUT and lastHitTime > 0 then
             self:ToggleBlockInfoFrame(blockInfoFrame, false)
-            self.BlockDamageService:ResetBlockHitPower(block)
+            self.BlocksDamageService:ResetBlockHitPower(block)
         end
     end
 end
