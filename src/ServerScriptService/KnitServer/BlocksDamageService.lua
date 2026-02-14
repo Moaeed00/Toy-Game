@@ -66,8 +66,8 @@ function BlocksDamageService:UpdateProgressUI(block: Model, totalHitPower: numbe
 end
 
 function BlocksDamageService:PlayDamageVFX(block: Model)
-    local scaleDown = 0.8
-    local scaleUp = 1.0
+    local scaleUp = block:GetScale()
+    local scaleDown = scaleUp * 0.8
     local scaleValue = Instance.new("NumberValue")
     scaleValue.Value = 1
 
