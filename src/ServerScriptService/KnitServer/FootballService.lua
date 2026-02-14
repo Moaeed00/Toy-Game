@@ -21,7 +21,7 @@ end
 
 function FootballService:KnitStart()
     FootballService.KICK_RANGE = 7.5
-    FootballService.FRONT_DISTANCE = 2.5
+    FootballService.FRONT_DISTANCE = 2
     FootballService.Footballs = {}
     FootballService.IsKicking = {}
 
