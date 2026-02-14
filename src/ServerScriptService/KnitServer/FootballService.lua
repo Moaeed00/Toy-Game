@@ -61,9 +61,10 @@ function FootballService:EquipBall(player: Player)
     if not footballTool then
         return
     end
-    local ball = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
+    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
     ball.Anchored = false
     ball.CanCollide = false
+    ball.CanTouch = false
 
     if ball:FindFirstChild("BallWeld") then
         ball.BallWeld:Destroy()
@@ -96,7 +97,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     end
 
     local footballTool = self.Footballs[player]
-    local ball = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
+    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
 
     if ball:FindFirstChild("BallWeld") then
         ball.BallWeld:Destroy()
