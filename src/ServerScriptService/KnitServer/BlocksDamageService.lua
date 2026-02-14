@@ -95,8 +95,8 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
     local minSpawnSizeMultiplier = 0.25
     local maxSpawnSizeMultiplier = 0.3
 
-    local blockPart = block:WaitForChild(block.Name)
-    local blockColor = blockPart.Color
+    local blockPart: MeshPart = block:WaitForChild(block.Name)
+    local blockColor = Color3.fromHex(block:GetAttribute("Color"))
     local numBlocks = math.random(SpawnCount[1], SpawnCount[2])
 
     for i = 1, numBlocks do
