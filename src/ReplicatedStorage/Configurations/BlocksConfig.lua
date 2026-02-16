@@ -19,7 +19,7 @@ return {
         {
             Name = "Gold_Block",
             Color = "#FAA500",
-            Rarity = "Mythic",
+            Rarity = "Common",
             RarityWeight = 10,
             HitPower = 100,
             Lifespan = 60,
@@ -27,7 +27,7 @@ return {
         {
             Name = "Air_Block",
             Color = "#B4DFF2",
-            Rarity = "Uncommon",
+            Rarity = "Epic",
             RarityWeight = 1,
             HitPower = 350,
             Lifespan = 120,
@@ -45,7 +45,7 @@ return {
         {
             Name = "Galaxy_Block",
             Color = "#7B74FF",
-            Rarity = "Galaxy",
+            Rarity = "Legendary",
             RarityWeight = 2.5,
             HitPower = 500,
             Lifespan = 120,
@@ -61,7 +61,7 @@ return {
         {
             Name = "Rainbow_Block",
             Color = "#58F1B3",
-            Rarity = "Rainbow",
+            Rarity = "Mythic",
             RarityWeight = 1,
             HitPower = 777,
             Lifespan = 120,
@@ -69,7 +69,7 @@ return {
         {
             Name = "Water_Block",
             Color = "#7AD8F3",
-            Rarity = "Water",
+            Rarity = "Epic",
             RarityWeight = 7.5,
             HitPower = 600,
             Lifespan = 120,
