@@ -21,6 +21,8 @@ end
 
 function BlocksSpawningService:KnitStart()
     BlocksSpawningService.BlocksDamageService = Knit.GetService("BlocksDamageService")
+    BlocksSpawningService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
+
     BlocksSpawningService.SpawnedPositions = {}
     BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 20 -- 20%
     BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
@@ -162,6 +164,7 @@ function BlocksSpawningService:SetBlockData(index: number, block: Model, blockCo
     block:SetAttribute("HitPower", blockConfig.HitPower)
     block:SetAttribute("Color", blockConfig.Color)
     self:ToggleBlockInfoFrame(blockInfoFrame, false)
+    self.BrainrotSpawnService:BlackoutBrainrotsSpawn(block)
 
     self:ConnectBlockHitTouch(blockInfoFrame, block:WaitForChild(blockConfig.Name))
 end
