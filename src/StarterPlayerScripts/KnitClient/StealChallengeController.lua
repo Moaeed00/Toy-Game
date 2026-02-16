@@ -20,14 +20,25 @@ local DeclineMessage: TextLabel = Main:WaitForChild("DeclineMessage")
 local TimerValue: TextLabel = Main:WaitForChild("Timer")
 
 local EntityInfo: {}
-local ChallengePending = false
 local ChallengeData: {}
+
+local ChallengePending = false
+local OpponentPlayerName
 
 local StealChallengeService
 
 local StealChallengeController = Knit.CreateController({
 	Name = "StealChallengeController",
 })
+
+-- function getPlayerName(UserId: number)
+-- 	local Player = Players:GetPlayerByUserId(UserId)
+-- 	if Player then
+-- 		return Player.Name
+-- 	else
+-- 		return "UnKnown Player"
+-- 	end
+-- end
 
 function FinishChallenge()
 	ChallengePending = false
@@ -43,6 +54,46 @@ function FinishChallenge()
 	TimerValue.Visible = false
 
 	EntityInfo = nil
+	OpponentPlayerName = nil
+end
+
+function AnnounceWinnerToOwner(Result: string)
+	print("EntityInfo", EntityInfo)
+	if Result == "Draw" then
+		--Prompt Notification
+		print("Match Drawn")
+	elseif Result == "Winner" then
+		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
+		--Prompt Notification
+		print(`You Saved Your {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
+	elseif Result == "Loser" then
+		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
+		--Prompt Notification
+		print(`{OpponentPlayerName} Stealed Your {ChallengeData.EntityName} Brainrot`)
+	end
+end
+
+function AnnounceWinnerToStealer(Result: string)
+	if Result == "Draw" then
+		--Prompt Notification
+		print("Match Drawn")
+	elseif Result == "Winner" then
+		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
+		--Prompt Notification
+		print(`You Stealed {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
+	elseif Result == "Loser" then
+		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
+		--Prompt Notification
+		print(`{OpponentPlayerName} Saved his {ChallengeData.EntityName} Brainrot from stealing`)
+	end
+end
+
+function AnnounceWinner(Result: string)
+	if player:GetAttribute("Owner") then
+		AnnounceWinnerToOwner(Result)
+	elseif player:GetAttribute("Stealer") then
+		AnnounceWinnerToStealer(Result)
+	end
 end
 
 function StartChallenge()
@@ -53,19 +104,17 @@ end
 function HandleRobuxRejection()
 	if player:GetAttribute("Owner") then
 		--Prompt Notification Brainrot Saved Sucessfully
-		print(`{EntityInfo.EntityName} Brainrot Saved Sucessfully`)
-		FinishChallenge()
+		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
 	elseif player:GetAttribute("Stealer") then
 		--Prompt Notification
 		print(`Challenge Declined`)
-		FinishChallenge()
 	end
 end
 
 function HandlePointsRejection()
 	--Prompt Notification
-	print(`Challenge Declined you got {EntityInfo.StealPoints} points`)
-	FinishChallenge()
+	-- print(`Challenge Declined you got {EntityInfo.StealPoints} points`)
+	print(`Challenge Declined`)
 end
 
 function HandlePointDeclineButton()
@@ -81,7 +130,6 @@ function HandlePointDeclineButton()
 		StealChallengeService.StealChallenge:Fire("PointsRejection")
 		--Prompt Notification Brainrot Saved Sucessfully
 		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
-		FinishChallenge()
 	end
 end
 
@@ -102,6 +150,7 @@ function StartTimer(Time: number)
 			TimerValue.Text = `Challenge Will be Started in {RmainingTime} Sec`
 			task.wait(1)
 		end
+		--Hide Robux Purchase Prompt
 		TimerValue.Visible = false
 	end)
 end
@@ -111,6 +160,9 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 		warn("ChallengeData missing")
 		return
 	end
+
+	OpponentPlayerName = StealerPlayerName
+	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Stealer", true)
 	ChallengePending = true
@@ -128,6 +180,9 @@ function ChallengeRecieved(StealerPlayerName: string, Time: number)
 		warn("ChallengeData missing")
 		return
 	end
+
+	OpponentPlayerName = StealerPlayerName
+	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Owner", true)
 	ChallengePending = true
@@ -164,6 +219,10 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 		HandlePointsRejection()
 	elseif State == "ChallengeStarted" then
 		StartChallenge()
+	elseif State == "ChallengeFinished" then
+		FinishChallenge()
+	elseif State == "WinnerAnnouncement" then
+		AnnounceWinner(Message)
 	end
 end
 

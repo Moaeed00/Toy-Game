@@ -7,6 +7,7 @@ local Toys = workspace:WaitForChild("Toys")
 local ScoringHelperServer = {}
 ScoringHelperServer._troves = {}
 ScoringHelperServer._ActiveGames = {}
+ScoringHelperServer._Challenger = {}
 
 local BASE_SCORE = 10
 local COMBO_BONUS = 5
@@ -21,7 +22,13 @@ local function AddScore(player)
 	local BonusCombo = math.min(GameData.Combo - 1, Max_Combos + 1)
 	local ScoreGained = BASE_SCORE + (BonusCombo * COMBO_BONUS)
 	GameData.Score += ScoreGained
+
 	player:SetAttribute("Score", GameData.Score)
+
+	local ChallengerPlayer = ScoringHelperServer._Challenger[player]
+	if ChallengerPlayer then
+		ChallengerPlayer:SetAttribute("OpponentScore", GameData.Score)
+	end
 
 	IndicatorHelperServer:SelectRandomIndicator(player)
 end
@@ -44,7 +51,14 @@ function ScoringHelperServer:OnStartScoring(player)
 	IndicatorHelperServer:SelectRandomIndicator(player)
 end
 
-function ScoringHelperServer:Initialize(player)
+function ScoringHelperServer:GetScore(player)
+	local GameData = self._ActiveGames[player]
+	local Score = GameData.Score or 0
+
+	return Score
+end
+
+function ScoringHelperServer:Initialize(player: Player, OpponentPlayer: Player)
 	local SlotName = player:GetAttribute("MiniGameSlot")
 	local ScoringParts = Toys:WaitForChild(SlotName):WaitForChild("ScoringParts")
 
@@ -56,6 +70,8 @@ function ScoringHelperServer:Initialize(player)
 		Combo = 0,
 		LastScoreSide = nil,
 	}
+
+	self._Challenger[player] = OpponentPlayer
 
 	for _, part: BasePart in ipairs(ScoringParts:GetChildren()) do
 		trove:Connect(part.Touched, function(hit)
@@ -99,6 +115,12 @@ function ScoringHelperServer:CleanUp(player)
 	end
 	player:SetAttribute("Combo", nil)
 	player:SetAttribute("Score", nil)
+
+	if self._Challenger[player] then
+		local ChallengerPlayer = self._Challenger[player]
+		ChallengerPlayer:SetAttribute("OpponentScore", nil)
+		self._Challenger[player] = nil
+	end
 end
 
 return ScoringHelperServer

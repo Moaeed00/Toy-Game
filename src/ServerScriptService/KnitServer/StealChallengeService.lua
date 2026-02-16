@@ -1,3 +1,4 @@
+local LocalizationService = game:GetService("LocalizationService")
 local Players: Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,6 +12,7 @@ local ActiveChallenges: {} = {}
 local ChallengeTime = 10
 
 local DataHandlerService
+local MiniGameService
 
 local StealChallengeService = Knit.CreateService({
 	Name = "StealChallengeService",
@@ -18,6 +20,19 @@ local StealChallengeService = Knit.CreateService({
 		StealChallenge = Knit.CreateSignal(),
 	},
 })
+
+function PlayerRemoved(player: Player)
+	local ChallengeId = player:GetAttribute("ChallengeId")
+	if not ChallengeId or not ActiveChallenges[ChallengeId] then
+		return
+	end
+
+	if ActiveChallenges[ChallengeId].State == "Started" then
+		return
+	end
+
+	StealChallengeService:FinishChallenge(ChallengeId, player)
+end
 
 function Get_Guid()
 	return HttpService:GenerateGUID(false)
@@ -39,7 +54,7 @@ function IsChallengeValid(ChallengeData: {})
 		return false, "You are Already In Challenge"
 	end
 
-	if OwnerPlayer:GetAttribute("ChallengeId") then
+	if OwnerPlayer:GetAttribute("ChallengeId") or OwnerPlayer:GetAttribute("InMiniGame") then
 		return false, OwnerPlayer.Name .. " is already in the game"
 	end
 
@@ -57,19 +72,71 @@ function IsChallengeValid(ChallengeData: {})
 	return true
 end
 
-function StealChallengeService:FinishChallenge(ChallengeId: string)
+function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer)
+	if not (ActiveChallenges[ChallengeId].State == "Started") then
+		return
+	end
+
+	local ChallengeData = ActiveChallenges[ChallengeId]
+
+	local OwnerPlayer, StealingPlayer
+	if QuittingPlayer then
+		if QuittingPlayer.UserId == ActiveChallenges[ChallengeId].OwnerUserId then
+			OwnerPlayer = QuittingPlayer
+			StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+		elseif QuittingPlayer.UserId == ActiveChallenges[ChallengeId].StealerUserId then
+			StealingPlayer = QuittingPlayer
+			OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
+		end
+	else
+		OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
+		StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+	end
+
+	if ScoreCard.Result == "Draw" then
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Draw")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Draw")
+	elseif ScoreCard.WinnerUserID == ChallengeData.StealerUserId then
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Loser")
+	else
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Loser")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner")
+	end
+
+	self:FinishChallenge(ChallengeId, QuittingPlayer)
+end
+
+function StealChallengeService:FinishChallenge(ChallengeId: string, QuittingPlayer: Player)
 	if not ActiveChallenges[ChallengeId] then
 		return
 	end
 
 	ActiveChallenges[ChallengeId].State = "Finished"
 
-	local OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
-	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+	local OwnerPlayer, StealingPlayer
+	if QuittingPlayer then
+		if QuittingPlayer.UserId == ActiveChallenges[ChallengeId].OwnerUserId then
+			OwnerPlayer = QuittingPlayer
+			StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+		elseif QuittingPlayer.UserId == ActiveChallenges[ChallengeId].StealerUserId then
+			StealingPlayer = QuittingPlayer
+			OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
+		end
+	else
+		OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
+		StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+	end
+
 	OwnerPlayer:SetAttribute("ChallengeId", nil)
 	StealingPlayer:SetAttribute("ChallengeId", nil)
+	OwnerPlayer:SetAttribute("InMiniGame", nil)
+	StealingPlayer:SetAttribute("InMiniGame", nil)
 
 	ActiveChallenges[ChallengeId] = nil
+
+	self.Client.StealChallenge:Fire(OwnerPlayer, "ChallengeFinished")
+	self.Client.StealChallenge:Fire(StealingPlayer, "ChallengeFinished")
 end
 
 function StealChallengeService:HandleRobuxRejection(player: Player)
@@ -89,9 +156,9 @@ function StealChallengeService:HandleRobuxRejection(player: Player)
 	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
 	local OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
 
-	self:FinishChallenge(ChallengeId)
 	self.Client.StealChallenge:Fire(StealingPlayer, "RobuxRejection")
 	self.Client.StealChallenge:Fire(OwnerPlayer, "RobuxRejection")
+	self:FinishChallenge(ChallengeId)
 end
 
 function StealChallengeService:HandleRobuxPrompt(player: Player)
@@ -136,11 +203,11 @@ function StealChallengeService:HandlePointsRejection(player: Player)
 	end
 
 	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
-	DataHandlerService:UpdatePoints(StealingPlayer, EntityPrice)
-
-	self:FinishChallenge(ChallengeId)
+	-- DataHandlerService:UpdatePoints(StealingPlayer, EntityPrice)
 
 	self.Client.StealChallenge:Fire(StealingPlayer, "PointsRejection")
+
+	self:FinishChallenge(ChallengeId)
 end
 
 function StealChallengeService:StartTimer(ChallengeId: string)
@@ -166,6 +233,8 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 
 		OwnerPlayer:SetAttribute("ChallengeId", ChallengeId)
 		StealingPlayer:SetAttribute("ChallengeId", ChallengeId)
+		OwnerPlayer:SetAttribute("InMiniGame", true)
+		StealingPlayer:SetAttribute("InMiniGame", true)
 
 		local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
 
@@ -187,13 +256,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 			TimeRemaining,
 			ChallengeData
 		)
-		self.Client.StealChallenge:Fire(
-			StealingPlayer,
-			"ChallengeSent",
-			StealingPlayer.Name,
-			TimeRemaining,
-			ChallengeData
-		)
+		self.Client.StealChallenge:Fire(StealingPlayer, "ChallengeSent", OwnerPlayer.Name, TimeRemaining, ChallengeData)
 
 		self:StartTimer(ChallengeId)
 	else
@@ -214,6 +277,13 @@ function StealChallengeService:StartChallenge(ChallengeId: string)
 
 	self.Client.StealChallenge:Fire(OwnerPlayer, "ChallengeStarted")
 	self.Client.StealChallenge:Fire(StealingPlayer, "ChallengeStarted")
+
+	local ChallengeGameData: {} = {
+		Player1 = OwnerPlayer,
+		Player2 = StealingPlayer,
+		ChallengeGameId = ChallengeId,
+	}
+	MiniGameService:InitializeChallengeGame(ChallengeGameData)
 end
 
 function StealChallengeService:HandleStates(player: Player, State: string, ChallengeData: {})
@@ -228,6 +298,7 @@ end
 
 function StealChallengeService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
+	MiniGameService = Knit.GetService("MiniGameService")
 end
 
 function StealChallengeService:KnitStart()
@@ -235,6 +306,8 @@ function StealChallengeService:KnitStart()
 	self.Client.StealChallenge:Connect(function(player: Player, State: string, ChallengeData: {})
 		self:HandleStates(player, State, ChallengeData)
 	end)
+
+	Players.PlayerRemoving:Connect(PlayerRemoved)
 
 	local TestStealEvent: BindableEvent = workspace:WaitForChild("TestStealEvent")
 	TestStealEvent.Event:Connect(function(player, ChallengeData: {})
