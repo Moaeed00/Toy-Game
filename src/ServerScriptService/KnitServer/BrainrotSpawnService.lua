@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
 
+local Brainrots = require(ReplicatedStorage.Configurations.BrainrotsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BrainrotSpawnService = Knit.CreateService {
@@ -13,6 +14,30 @@ function BrainrotSpawnService:KnitInit()
 end
 
 function BrainrotSpawnService:KnitStart()
+    BrainrotSpawnService.Brainrots = {}
+
+    self:GenerateBrainrotData()
+end
+
+function BrainrotSpawnService:GenerateBrainrotData()
+    for index, brainrot in pairs(Brainrots) do
+        self.Brainrots[index] = {
+            Rarity = brainrot.Rarity,
+            -- Image = BrainrotImages[i];
+            RarityType = brainrot.RarityType,
+            CashPerSecond = brainrot.CashPerSecond,
+            SellPrice = brainrot.CashPerSecond * 15,
+            FractionChance = self:FormatCommas("1/" .. math.max(1, math.floor(100000000 / brainrot.Rarity * 2))),
+            Type = brainrot.Type,
+        }
+    end
+
+    -- print("Total Brainrots: ", self.Brainrots)
+end
+
+function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
+    local rarity: string = block:GetAttribute("Rarity")
+    print("Rarity: ", rarity)
 end
 
 function BrainrotSpawnService:BlackoutBrainrotsSpawn(block: Model)
@@ -46,9 +71,13 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
     self:SpawnRarityBasedBrainrot(block)
 end
 
-function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
-    local rarity: string = block:GetAttribute("Rarity")
-    print("Rarity: ", rarity)
+function BrainrotSpawnService:FormatCommas(arg: string)
+    local prefix, numbers = arg:match("^(.-)(%d+)$")
+    if not numbers then
+        return
+    end
+    numbers = numbers:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+    return prefix .. numbers
 end
 
 return BrainrotSpawnService
