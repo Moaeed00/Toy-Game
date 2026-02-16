@@ -36,6 +36,8 @@ local ScaleValue = 1.5
 
 local CanKick = false
 local GameRunning = false
+local CountDownRunning = false
+local GameMode
 
 local MiniGameService
 local SlotName: string
@@ -138,7 +140,7 @@ function StartTimer(Time: number)
 	CountDownGui.Enabled = false
 
 	task.spawn(function()
-		while RmainingTime >= 1 do
+		while RmainingTime >= 1 and GameRunning do
 			RmainingTime -= 1
 			print("TimeLeftClient", RmainingTime)
 
@@ -151,9 +153,10 @@ end
 
 function StartCountDown()
 	CountDownGui.Enabled = true
+	CountDownRunning = true
 
 	task.spawn(function()
-		while CountDownTime >= 0 do
+		while CountDownTime >= 0 and CountDownRunning do
 			CountDownValue.Text = CountDownTime
 			task.wait(1)
 			CountDownTime -= 1
@@ -183,15 +186,20 @@ function MiniGameController:InitializeMiniGame()
 end
 
 function MiniGameController:StartMiniGame(Time)
-	ScoringHelperClient:OnStartScoring()
+	GameRunning = true
+	ScoringHelperClient:OnStartScoring(GameMode)
 
 	HandleBallSpawn()
 	StartTimer(Time)
 	EnableGameControls()
-	GameRunning = true
+	CountDownRunning = false
 end
 
-function MiniGameController:HandleStates(State, Time)
+function MiniGameController:HandleStates(State, Time, Mode)
+	if Mode then
+		GameMode = Mode
+	end
+
 	if State == "InitializeMiniGame" then
 		self:InitializeMiniGame()
 	elseif State == "StartMiniGame" then
@@ -202,10 +210,19 @@ function MiniGameController:HandleStates(State, Time)
 end
 
 function MiniGameController:EndMiniGame()
+	CountDownRunning = false
 	GameRunning = false
 	CanKick = false
-	TimerGui.Enabled = false
-	CountDownGui.Enabled = false
+
+	GameMode = nil
+
+	if TimerGui then
+		TimerGui.Enabled = false
+	end
+	if CountDownGui then
+		CountDownGui.Enabled = false
+	end
+
 	CountDownTime = 3
 	IndicatorHelperClient:CleanUp()
 	ScoringHelperClient:CleanUp()
@@ -222,8 +239,8 @@ end
 function MiniGameController:KnitStart()
 	print("MiniGameController Started")
 
-	MiniGameService.MiniGame:Connect(function(State, Time)
-		self:HandleStates(State, Time)
+	MiniGameService.MiniGame:Connect(function(State, Time, Mode)
+		self:HandleStates(State, Time, Mode)
 	end)
 
 	MiniGameService.EndMiniGame:Connect(function()

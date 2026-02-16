@@ -9,6 +9,9 @@
       },
       "Configuration": {
         "$path": "src/ReplicatedStorage/Configuration"
+      },
+      "Utility": {
+        "$path": "src/ReplicatedStorage/Utility"
       }
     },
 
