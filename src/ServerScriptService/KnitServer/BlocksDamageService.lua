@@ -16,6 +16,7 @@ end
 function BlocksDamageService:KnitStart()
     BlocksDamageService.GUIService = Knit.GetService("GUIService")
     BlocksDamageService.BlocksSpawningService = Knit.GetService("BlocksSpawningService")
+    BlocksDamageService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
 
     if not PhysicsService:IsCollisionGroupRegistered("MiniBlocks") then
         PhysicsService:RegisterCollisionGroup("MiniBlocks")
@@ -31,7 +32,7 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
         print("Now hitting block with index: " .. tostring(blockIndex))
     end
 
-    local hitBlock = self:FindHitBlockByIndex(blockIndex, blockType)
+    local hitBlock: Model = self:FindHitBlockByIndex(blockIndex, blockType)
     if not hitBlock then
         return
     end
@@ -49,6 +50,8 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     hitBlock:SetAttribute("Hit", false)
 
     if updatedHitPower <= 0 then
+        hitBlock:WaitForChild(hitBlock.Name).Transparency = 1
+        self.BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(hitBlock)
         self:DestroyBlock(hitBlock)
     end
 end
