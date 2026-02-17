@@ -2,7 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PhysicsService = game:GetService("PhysicsService")
 
-local BlocksConfig = require(ReplicatedStorage.Configurations.BlocksConfig)
+local BlocksConfig = require(ReplicatedStorage.Configurations.Blocks.BlocksConfig)
 local FieldBase: Part = workspace:WaitForChild("Field"):WaitForChild("Base")
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
 local BlockModels = ReplicatedStorage.Assets.Blocks

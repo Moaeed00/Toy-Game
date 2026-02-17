@@ -2,7 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PhysicsService = game:GetService("PhysicsService")
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local Football: Tool = Assets.Tools:WaitForChild("Basic_Football")
 local Knit = require(ReplicatedStorage.Packages.Knit)

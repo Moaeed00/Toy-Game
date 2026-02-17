@@ -50,7 +50,11 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     hitBlock:SetAttribute("Hit", false)
 
     if updatedHitPower <= 0 then
-        hitBlock:WaitForChild(hitBlock.Name).Transparency = 1
+        local hitBlockPart: MeshPart = hitBlock:WaitForChild(hitBlock.Name)
+        hitBlockPart.Transparency = 1
+        hitBlockPart.CanCollide = false
+        hitBlockPart.CanTouch = false
+
         self.BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(hitBlock)
         self:DestroyBlock(hitBlock)
     end
