@@ -12,6 +12,7 @@ local BrainrotSpawnService = Knit.CreateService {
     Name = "BrainrotSpawnService",
     Client = {},
 }
+local BASE_VARIANT_FOLDER = "Normal"
 
 function BrainrotSpawnService:KnitInit()
 end
@@ -135,13 +136,12 @@ function BrainrotSpawnService:PickBrainrot(pool)
 end
 
 function BrainrotSpawnService:PickBrainrotVariant()
-    local BASE_VARIANT_FOLDER = "Normal"
     for i = #BrainrotVariantsConfig.VARIANTS, 1, -1 do
         local variant = BrainrotVariantsConfig.VARIANTS[i]
         if math.random() <= variant.Chance then
             return {
-                prefix = variant.Prefix,
-                color = variant.Color,
+                Prefix = variant.Prefix,
+                Color = variant.Color,
             }
         end
     end
@@ -183,9 +183,13 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
 
     local spawnCFrame = CFrame.new(spawnPoint.Position.X, spawnPoint.Position.Y + 2, spawnPoint.Position.Z)
 
-    local selectedBrainrotToSpawn: Model = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
+    local selectedBrainrotToSpawn: Model
+    if brainrotVariant == BASE_VARIANT_FOLDER then
+        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
+    else
+        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotName)
+    end
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
-
     spawnedBrainrot:PivotTo(CFrame.fromOrientation(90, 0, 0) + spawnCFrame.Position)
     spawnedBrainrot.Parent = BrainrotsFolder
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
