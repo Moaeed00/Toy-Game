@@ -29,7 +29,6 @@ end
 function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number, blockType: string)
     if self.CurrentHitBlockIndex ~= blockIndex then
         self.CurrentHitBlockIndex = blockIndex
-        print("Now hitting block with index: " .. tostring(blockIndex))
     end
 
     local hitBlock: Model = self:FindHitBlockByIndex(blockIndex, blockType)
@@ -170,7 +169,6 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
 end
 
 function BlocksDamageService:DestroyBlock(block: Model)
-    print("Block destroyed: " .. block.Name)
     self.CurrentHitBlockIndex = nil
     block:Destroy()
 
