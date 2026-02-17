@@ -181,16 +181,18 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
         return
     end
 
-    local spawnCFrame = CFrame.new(spawnPoint.Position.X, spawnPoint.Position.Y + 2, spawnPoint.Position.Z)
-
     local selectedBrainrotToSpawn: Model
     if brainrotVariant == BASE_VARIANT_FOLDER then
         selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
     else
-        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotName)
+        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotVariant.Prefix .. brainrotName)
     end
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
-    spawnedBrainrot:PivotTo(CFrame.fromOrientation(90, 0, 0) + spawnCFrame.Position)
+
+    local spawnOffset = spawnedBrainrot:GetAttribute("Offset") or 2.25
+    local finalCFrame = CFrame.new(blockPart.Position + Vector3.new(0, spawnOffset, 0)) * CFrame.Angles(math.rad(90), 0, math.rad(-90))
+    spawnedBrainrot:PivotTo(finalCFrame)
+
     spawnedBrainrot.Parent = BrainrotsFolder
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
     spawnedBrainrotPart.Transparency = 1
