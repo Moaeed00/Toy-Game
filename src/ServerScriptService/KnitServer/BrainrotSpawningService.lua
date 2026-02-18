@@ -20,6 +20,8 @@ function BrainrotSpawnService:KnitInit()
 end
 
 function BrainrotSpawnService:KnitStart()
+    BrainrotSpawnService.BlocksSpawningService = Knit.GetService("BlocksSpawningService")
+
     BrainrotSpawnService.BrainrotsData = {}
     BrainrotSpawnService.BrainrotRaritiesPool = {} -- BrainrotRaritiesPool["Common"] = { brainrots={}, totalWeight=0 }
     BrainrotSpawnService.CachedBlockPools = {}
@@ -50,6 +52,7 @@ function BrainrotSpawnService:GenerateBrainrotData()
             SellPrice = brainrot.CashPerSecond * 15,
             FractionChance = self:FormatCommas("1/" .. math.max(1, math.floor(100000000 / brainrot.Rarity * 2))),
             Type = brainrot.Type,
+            Timer = brainrot.Timer,
         }
     end
 end
@@ -210,6 +213,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrot:SetAttribute("SellPrice", brainrotData.SellPrice)
     spawnedBrainrot:SetAttribute("FractionChance", brainrotData.FractionChance)
     spawnedBrainrot:SetAttribute("Type", brainrotData.Type)
+    spawnedBrainrot:SetAttribute("Timer", brainrotData.Timer)
     if brainrotVariant == BASE_VARIANT_FOLDER then
         spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
     else
@@ -263,6 +267,7 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
 
     spawnedBrainrotPart.Transparency = 0
     spawnedBrainrotPart:WaitForChild("InfoGUI").Enabled = true
+    self:StartBrainrotTimer(spawnedBrainrot)
 end
 
 function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
@@ -277,11 +282,13 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     local brainrotCash = brainrot:GetAttribute("CashPerSecond")
     local brainrotRarity = brainrot:GetAttribute("RarityType")
     local brainrotVariant = brainrot:GetAttribute("Variant")
+    local brainrotTimer = brainrot:GetAttribute("Timer")
 
     local brainrotNameText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotName")
     local brainrotCashText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotCash")
     local brainrotRarityText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotRarity")
     local brainrotVariantText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotVariant")
+    local brainrotTimerText: TextLabel = brainrotInfoGUIFrame:WaitForChild("Countdown"):WaitForChild("Timer")
     local RarityTextGradient: UIGradient = TextGradientsFolder:WaitForChild(brainrotRarity)
     RarityTextGradient = RarityTextGradient:Clone()
     RarityTextGradient.Parent = brainrotRarityText
@@ -290,8 +297,44 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     brainrotCashText.Text = brainrotCash .. "/s"
     brainrotRarityText.Text = brainrotRarity
     brainrotVariantText.Text = brainrotVariant
+    brainrotTimerText.Text = brainrotTimer
 
     brainrotInfoGUI.Enabled = false
+end
+
+function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
+    local timerValue = tonumber(brainrot:GetAttribute("Timer"))
+    if not timerValue then
+        return
+    end
+
+    local brainrotPart: MeshPart = brainrot:FindFirstChildOfClass("MeshPart")
+    if not brainrotPart then
+        return
+    end
+
+    local infoGUI: BillboardGui = brainrotPart:FindFirstChild("InfoGUI")
+    if not infoGUI then
+        return
+    end
+    local timerLabel: TextLabel = infoGUI.Frame.Countdown.Timer
+
+    task.spawn(function()
+        local timeLeft = timerValue
+
+        while timeLeft > 0 do
+            timeLeft = math.max(0, timeLeft - 0.1)
+
+            -- keep 1 decimal precision, incase 24.6 -> 25.0
+            timeLeft = math.floor(timeLeft * 10 + 0.5) / 10
+            timerLabel.Text = string.format("%.1f", timeLeft) .. "s"
+
+            task.wait(0.1)
+        end
+
+        brainrot:Destroy()
+        self.BlocksSpawningService:SpawnBlocks(1)
+    end)
 end
 
 function BrainrotSpawnService:FormatCommas(arg: string)
