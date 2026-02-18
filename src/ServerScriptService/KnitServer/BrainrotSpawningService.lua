@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
 local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
 local BrainrotsFolder: Folder = workspace:WaitForChild("Brainrots")
+local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
+local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
 local BlockSpawnRarities = require(ReplicatedStorage.Configurations.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsVariantConfig)
 local BrainrotsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
@@ -175,9 +177,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     end
 
     local blockPart: MeshPart = block:FindFirstChild(block.Name)
-    local spawnPoint: Part = blockPart:FindFirstChild("MiniBlocksSpawnPoint")
-    if not spawnPoint then
-        warn("[BrainrotSpawnService] Block missing MiniBlocksSpawnPoint")
+    if not blockPart then
         return
     end
 
@@ -188,12 +188,11 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
         selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotVariant.Prefix .. brainrotName)
     end
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
+    spawnedBrainrot.Parent = BrainrotsFolder
 
-    local spawnOffset = spawnedBrainrot:GetAttribute("Offset") or 2.25
-    local finalCFrame = CFrame.new(blockPart.Position + Vector3.new(0, spawnOffset, 0)) * CFrame.Angles(math.rad(90), 0, math.rad(-90))
+    local finalCFrame = blockPart.CFrame * CFrame.new(0, 2.3, 0) * CFrame.Angles(math.rad(90), 0, math.rad(-90))
     spawnedBrainrot:PivotTo(finalCFrame)
 
-    spawnedBrainrot.Parent = BrainrotsFolder
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
     spawnedBrainrotPart.Transparency = 1
 
@@ -211,6 +210,13 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrot:SetAttribute("SellPrice", brainrotData.SellPrice)
     spawnedBrainrot:SetAttribute("FractionChance", brainrotData.FractionChance)
     spawnedBrainrot:SetAttribute("Type", brainrotData.Type)
+    if brainrotVariant == BASE_VARIANT_FOLDER then
+        spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
+    else
+        spawnedBrainrot:SetAttribute("Variant", brainrotVariant.Prefix:gsub("%s+$", ""))
+    end
+
+    self:SetupInfoGUI(spawnedBrainrot)
 
     print(string.format(
         "[BrainrotSpawnService] Spawned '%s' (%s) from %s block | %s CPS | Chance %s",
@@ -234,6 +240,7 @@ end
 
 function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
     local spawnedBrainrot: Model = self:SpawnRarityBasedBrainrot(block)
+    local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
 
     local BlackoutParts = block:WaitForChild(block.Name):WaitForChild("BlackoutBrainrots"):GetChildren()
     if #BlackoutParts == 0 then
@@ -254,7 +261,37 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
         currentPreview.Transparency = 1
     end
 
-    spawnedBrainrot:FindFirstChildOfClass("MeshPart").Transparency = 0
+    spawnedBrainrotPart.Transparency = 0
+    spawnedBrainrotPart:WaitForChild("InfoGUI").Enabled = true
+end
+
+function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
+    local brainrotInfoGUITemplate: BillboardGui = BrainrotGUITemplate:WaitForChild("InfoGUI")
+    local brainrotInfoGUI: BillboardGui = brainrotInfoGUITemplate:Clone()
+    brainrotInfoGUI.Parent = brainrot:FindFirstChildOfClass("MeshPart")
+    local offset = brainrot:GetAttribute("Offset")
+    brainrotInfoGUI.StudsOffset = Vector3.new(0, offset, 0)
+    local brainrotInfoGUIFrame: Frame = brainrotInfoGUI:WaitForChild("Frame")
+
+    local brainrotName = brainrot:GetAttribute("Name")
+    local brainrotCash = brainrot:GetAttribute("CashPerSecond")
+    local brainrotRarity = brainrot:GetAttribute("RarityType")
+    local brainrotVariant = brainrot:GetAttribute("Variant")
+
+    local brainrotNameText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotName")
+    local brainrotCashText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotCash")
+    local brainrotRarityText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotRarity")
+    local brainrotVariantText: TextLabel = brainrotInfoGUIFrame:WaitForChild("BrainrotVariant")
+    local RarityTextGradient: UIGradient = TextGradientsFolder:WaitForChild(brainrotRarity)
+    RarityTextGradient = RarityTextGradient:Clone()
+    RarityTextGradient.Parent = brainrotRarityText
+
+    brainrotNameText.Text = brainrotName
+    brainrotCashText.Text = brainrotCash .. "/s"
+    brainrotRarityText.Text = brainrotRarity
+    brainrotVariantText.Text = brainrotVariant
+
+    brainrotInfoGUI.Enabled = false
 end
 
 function BrainrotSpawnService:FormatCommas(arg: string)

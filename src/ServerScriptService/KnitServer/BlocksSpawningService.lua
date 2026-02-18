@@ -164,7 +164,6 @@ function BlocksSpawningService:SetBlockData(index: number, block: Model, blockCo
     block:SetAttribute("HitPower", blockConfig.HitPower)
     block:SetAttribute("Color", blockConfig.Color)
     self:ToggleBlockInfoFrame(blockInfoFrame, false)
-    self.BrainrotSpawnService:BlackoutBrainrotsSpawn(block)
 
     self:ConnectBlockHitTouch(blockInfoFrame, block:WaitForChild(blockConfig.Name))
 end
