@@ -25,11 +25,6 @@ function FootballService:KnitStart()
     FootballService.Footballs = {}
     FootballService.IsKicking = {}
 
-    if not PhysicsService:IsCollisionGroupRegistered("Football") then
-        PhysicsService:RegisterCollisionGroup("Football")
-    end
-    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Football", false)
-
     self.Client.EquipBallEvent:Connect(function(player: Player)
         self:EquipBall(player)
     end)

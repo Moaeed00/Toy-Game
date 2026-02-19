@@ -3,6 +3,7 @@ local PhysicsService = game:GetService("PhysicsService")
 local TweenService = game:GetService("TweenService")
 
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
+local BlockHitParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles:WaitForChild("BlockHit"):WaitForChild("Attachment")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BlocksDamageService = Knit.CreateService {
@@ -21,6 +22,10 @@ function BlocksDamageService:KnitStart()
     if not PhysicsService:IsCollisionGroupRegistered("MiniBlocks") then
         PhysicsService:RegisterCollisionGroup("MiniBlocks")
     end
+    if not PhysicsService:IsCollisionGroupRegistered("Football") then
+        PhysicsService:RegisterCollisionGroup("Football")
+    end
+    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Football", false)
     PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "MiniBlocks", false)
 
     BlocksDamageService.CurrentHitBlockIndex = nil
@@ -44,6 +49,7 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     local currentHitPower = hitBlock:GetAttribute("HitPower")
     local updatedHitPower: number = math.max(0, currentHitPower - footballHitPower)
     hitBlock:SetAttribute("HitPower", updatedHitPower)
+    self:PlayParticlesOnBlockHit(hitBlock)
     self:UpdateProgressUI(hitBlock, totalHitPower, updatedHitPower)
 
     hitBlock:SetAttribute("Hit", false)
@@ -60,6 +66,14 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
 
         self.BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(hitBlock)
         self:DestroyBlock(hitBlock)
+    end
+end
+
+function BlocksDamageService:PlayParticlesOnBlockHit(block: Model)
+    BlockHitParticlesAttachment.Parent = block:WaitForChild(block.Name):WaitForChild("MiniBlocksSpawnPoint")
+    local BlockHitParticles = BlockHitParticlesAttachment:GetChildren()
+    for _, Particle: ParticleEmitter in ipairs(BlockHitParticles) do
+        Particle:Emit(math.random(1, 5))
     end
 end
 

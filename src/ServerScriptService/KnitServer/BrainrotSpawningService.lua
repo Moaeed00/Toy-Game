@@ -5,6 +5,8 @@ local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
 local BrainrotsFolder: Folder = workspace:WaitForChild("Brainrots")
 local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
+local Camera = workspace.CurrentCamera
+local SparkleParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles.Sparkles:WaitForChild("Attachment")
 local BlockSpawnRarities = require(ReplicatedStorage.Configurations.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsVariantConfig)
 local BrainrotsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
@@ -200,7 +202,8 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrotPart.Transparency = 1
 
     -- start brainrot idle animation
-    local spawnedBrainrotIdleAnimation: Animation = spawnedBrainrot:WaitForChild("Anims"):WaitForChild("Idle")
+    local spawnedBrainrotIdleAnimation: Animation = ReplicatedStorage.Assets.Animations:WaitForChild("Brainrot_Idle")
+    -- local spawnedBrainrotIdleAnimation: Animation = spawnedBrainrot:WaitForChild("Anims"):WaitForChild("Idle")
     local spawnedBrainrotAnimator: Animator = spawnedBrainrot:FindFirstChildOfClass("AnimationController"):FindFirstChildOfClass("Animator")
     local animationTrack: AnimationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
     animationTrack.Looped = true
@@ -266,6 +269,7 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
     end
 
     spawnedBrainrotPart.Transparency = 0
+    self:PlayScreenSparkles()
     spawnedBrainrotPart:WaitForChild("InfoGUI").Enabled = true
     self:StartBrainrotTimer(spawnedBrainrot)
 end
@@ -274,8 +278,7 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     local brainrotInfoGUITemplate: BillboardGui = BrainrotGUITemplate:WaitForChild("InfoGUI")
     local brainrotInfoGUI: BillboardGui = brainrotInfoGUITemplate:Clone()
     brainrotInfoGUI.Parent = brainrot:FindFirstChildOfClass("MeshPart")
-    local offset = brainrot:GetAttribute("Offset")
-    brainrotInfoGUI.StudsOffset = Vector3.new(0, offset, 0)
+    brainrotInfoGUI.StudsOffset = Vector3.new(0, 1, 0)
     local brainrotInfoGUIFrame: Frame = brainrotInfoGUI:WaitForChild("Frame")
 
     local brainrotName = brainrot:GetAttribute("Name")
@@ -300,6 +303,17 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     brainrotTimerText.Text = brainrotTimer
 
     brainrotInfoGUI.Enabled = false
+end
+
+function BrainrotSpawnService:PlayScreenSparkles()
+    local Attachment = Instance.new("Attachment")
+    Attachment.Parent = Camera
+
+    for _, Particle: ParticleEmitter in ipairs(SparkleParticlesAttachment:GetChildren()) do
+        local Clone = Particle:Clone()
+        Clone.Parent = Attachment
+        Particle:Emit(math.random(2, 5))
+    end
 end
 
 function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
