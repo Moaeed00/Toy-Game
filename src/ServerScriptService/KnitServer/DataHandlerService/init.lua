@@ -156,6 +156,22 @@ function DataHandlerService:SetPlayerData(player: Player, dataTable: { [string]:
 	end
 end
 
+function DataHandlerService:GetCoins(player: Player)
+	local playerData = self:GetPlayerData(player)
+	if playerData then
+		return playerData.Coins
+	end	
+end
+
+function DataHandlerService:SetCoins(player: Player, newCoins: number)
+	local playerData = self:GetPlayerData(player)
+	if playerData then
+		local previousCoins = playerData.Coins
+		local updatedCoins = previousCoins + newCoins
+		self:SetPlayerData(player, { Coins = updatedCoins })
+	end
+end
+
 function DataHandlerService:KnitInit() end
 
 function DataHandlerService:KnitStart()
