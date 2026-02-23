@@ -25,7 +25,7 @@ function FootballController:OnFootballToolTriggered()
 
     self.FootballService:GiveFootball():andThen(function(football: Tool)
         local handle: Part = football:WaitForChild("Handle")
-        local ball: MeshPart = handle:WaitForChild("Basic_Football")
+        local ball: MeshPart = handle:WaitForChild(football.Name)
 
         football.Equipped:Connect(function()
             self.FootballService.EquipBallEvent:Fire()

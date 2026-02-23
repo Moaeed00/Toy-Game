@@ -1,11 +1,11 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PhysicsService = game:GetService("PhysicsService")
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
-local Assets = ReplicatedStorage:WaitForChild("Assets")
-local Football: Tool = Assets.Tools:WaitForChild("Basic_Football")
+local FootballUtils = require(ReplicatedStorage.Configurations.Footballs.FootballUtils)
+local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Assets = ReplicatedStorage:WaitForChild("Assets")
+local FootballsFolder = Assets.Tools:WaitForChild("Footballs")
 
 local FootballService = Knit.CreateService {
     Name = "FootballService",
@@ -56,7 +56,7 @@ function FootballService:EquipBall(player: Player)
     if not footballTool then
         return
     end
-    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
+    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic")
     ball.Anchored = false
     ball.CanCollide = false
     ball.CanTouch = false
@@ -92,8 +92,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     end
 
     local footballTool = self.Footballs[player]
-    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic_Football")
-
+    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic")
     if ball:FindFirstChild("BallWeld") then
         ball.BallWeld:Destroy()
     end
@@ -136,25 +135,40 @@ function FootballService:UnequipBall(player: Player)
 end
 
 function FootballService.Client:GiveFootball(player: Player)
-    local footballTool: Tool = Football:Clone()
+    local playerData = DataStoreHandler:GetPlayerData(player)
+    if not playerData then
+        return
+    end
+    
+    local equippedFootballId = playerData.Footballs.Equipped
+    local footballName, footballData = FootballUtils:GetFootballById(equippedFootballId)
+    if not footballName then
+        warn("Football id not found:", equippedFootballId)
+        return
+    end
+
+    local toolTemplate = FootballsFolder:FindFirstChild(footballName)
+    if not toolTemplate then
+        warn("Football tool missing:", footballName)
+        return
+    end
+
+     -- remove previous tool
+    if self.Server.Footballs[player] then
+        self.Server.Footballs[player]:Destroy()
+    end
+
+    local footballTool: Tool = toolTemplate:Clone()
     footballTool.Parent = player.Backpack
     self.Server.Footballs[player] = footballTool
 
-    local handle: Part = footballTool:WaitForChild("Handle")
-    local ball: MeshPart = handle:WaitForChild("Basic_Football")
+    local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true
-    self:SetHitPower(ball)
+    
+    CollectionService:AddTag(ball, "Football")
+    ball:SetAttribute("HitPower", footballData.Power)
 
     return footballTool
-end
-
-function FootballService.Client:SetHitPower(ball: MeshPart)
-    for index, footballToolData in ipairs(FootballsConfig) do
-        if footballToolData.Name == ball.Name then
-            CollectionService:AddTag(ball, "Football")
-            ball:SetAttribute("HitPower", footballToolData.Power)
-        end
-    end
 end
 
 return FootballService
