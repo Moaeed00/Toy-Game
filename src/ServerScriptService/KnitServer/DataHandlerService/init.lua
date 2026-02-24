@@ -29,9 +29,9 @@ local PROFILE_TEMPLATE = require(script:WaitForChild("ProfileTemplate"))
 
 -- local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
 
-local Configurations: {} = require(script:WaitForChild("Configurations"))
-local DataStoreName = Configurations.DataStoreName
-local DataStoreVersion = Configurations.DataStoreVersion
+local Configuration: {} = require(script:WaitForChild("Configuration"))
+local DataStoreName = Configuration.DataStoreName
+local DataStoreVersion = Configuration.DataStoreVersion
 
 local DataStoreKey: string = `{DataStoreName}_{DataStoreVersion}`
 local PlayerStore = ProfileStoreModule.New(DataStoreKey, PROFILE_TEMPLATE)
