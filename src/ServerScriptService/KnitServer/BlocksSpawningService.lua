@@ -48,8 +48,6 @@ function BlocksSpawningService:SpawnBlocks(amount: number)
         if randomPosition then
             self:SpawnBlock(index, randomPosition, "Normal")
             table.insert(self.SpawnedPositions, randomPosition)
-        else
-            warn("Could not find valid spawn position for block " .. index)
         end
     end
 
@@ -58,8 +56,6 @@ function BlocksSpawningService:SpawnBlocks(amount: number)
         if randomPosition then
             self:SpawnBlock(index, randomPosition, "Special")
             table.insert(self.SpawnedPositions, randomPosition)
-        else
-            warn("Could not find valid spawn position for block " .. index)
         end
     end
 end
@@ -69,7 +65,6 @@ function BlocksSpawningService:SpawnBlock(index: number, position: Vector3, bloc
     local blockModel: Model = BlockModels[blockType]:FindFirstChild(blockConfig.Name)
 
     if not blockModel then
-        print(blockConfig.Name .. " Model not found!")
         return
     end
 
