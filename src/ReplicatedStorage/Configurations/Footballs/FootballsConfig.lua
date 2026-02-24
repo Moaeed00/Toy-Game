@@ -2,6 +2,11 @@ return {
     Basic = {
 		Price = 25,
 		Robux = 3,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Basic",
+		},
 		Id = 1,
 		RarityType = "Common",
 		Image = "rbxassetid://106524191491855",
@@ -10,6 +15,11 @@ return {
 	Stone = {
 		Price = 500,
 		Robux = 9,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Stone",
+		},
 		Id = 2,
 		RarityType = "Common",
 		Image = "rbxassetid://73275921862815",
@@ -18,6 +28,11 @@ return {
 	Iron = {
 		Price = 1500,
 		Robux = 14,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Iron",
+		},
 		Id = 3,
 		RarityType = "Rare",
 		Image = "rbxassetid://86494968723120",
@@ -26,6 +41,11 @@ return {
 	Gold = {
 		Price = 5000,
 		Robux = 39,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Gold",
+		},
 		Id = 4,
 		RarityType = "Rare",
 		Image = "rbxassetid://126435717141439",
@@ -34,6 +54,11 @@ return {
 	Diamond = {
 		Price = 15000,
 		Robux = 69,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Diamond",
+		},
 		Id = 5,
 		RarityType = "Epic",
 		Image = "rbxassetid://98062963593204",
@@ -42,6 +67,11 @@ return {
 	Rainbow = {
 		Price = 35000,
 		Robux = 129,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Rainbow",
+		},
 		Id = 6,
 		RarityType = "Epic",
 		Image = "rbxassetid://75776039496455",
@@ -50,6 +80,11 @@ return {
 	Beanstalk = {
 		Price = 85000,
 		Robux = 199,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Beanstalk",
+		},
 		Id = 7,
 		RarityType = "Legendary",
 		Image = "rbxassetid://135212653444638",
@@ -58,6 +93,11 @@ return {
 	Candy = {
 		Price = 250000,
 		Robux = 299,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Candy",
+		},
 		Id = 8,
 		RarityType = "Legendary",
 		Image = "rbxassetid://102690185836837",
@@ -66,6 +106,11 @@ return {
 	Radioactive = {
 		Price = 600000,
 		Robux = 399,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Radioactive",
+		},
 		Id = 9,
 		RarityType = "Legendary",
 		Image = "rbxassetid://113908615470812",
@@ -74,6 +119,11 @@ return {
 	Molten = {
 		Price = 1200000,
 		Robux = 629,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Molten",
+		},
 		Id = 10,
 		RarityType = "Mythic",
 		Image = "rbxassetid://81619754236424",
@@ -82,6 +132,11 @@ return {
 	["Blood Moon"] = {
 		Price = 2500000,
 		Robux = 999,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Blood Moon",
+		},
 		Id = 11,
 		RarityType = "Mythic",
 		Image = "rbxassetid://95859310644429",
@@ -90,6 +145,11 @@ return {
 	Galaxy = {
 		Price = 5000000,
 		Robux = 1299,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Galaxy",
+		},
 		Id = 12,
 		RarityType = "Mythic",
 		Image = "rbxassetid://84138529787685",
@@ -98,6 +158,11 @@ return {
 	Fireworks = {
 		Price = 10000000,
 		Robux = 1699,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Fireworks",
+		},
 		Id = 13,
 		RarityType = "Mythic",
 		Image = "rbxassetid://122299308815133",
@@ -106,6 +171,11 @@ return {
 	["Yin Yang"] = {
 		Price = 25000000,
 		Robux = 1999,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Yin Yang",
+		},
 		Id = 14,
 		RarityType = "Secret",
 		Image = "rbxassetid://78749685728936",
@@ -114,6 +184,11 @@ return {
 	Ice = {
 		Price = 50000000,
 		Robux = 2299,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Ice",
+		},
 		Id = 15,
 		RarityType = "Secret",
 		Image = "rbxassetid://121743000943939",
@@ -122,6 +197,11 @@ return {
 	Ancient = {
 		Price = 100000000,
 		Robux = 2499,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Ancient",
+		},
 		Id = 16,
 		RarityType = "Secret",
 		Image = "rbxassetid://83600627182151",
@@ -130,6 +210,11 @@ return {
 	Lightning = {
 		Price = 185000000,
 		Robux = 2699,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Lightning",
+		},
 		Id = 17,
 		RarityType = "Secret",
 		Image = "rbxassetid://115040223574382",
@@ -138,6 +223,11 @@ return {
 	Angel = {
 		Price = 350000000,
 		Robux = 2999,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Angel",
+		},
 		Id = 18,
 		RarityType = "Secret",
 		Image = "rbxassetid://116874748948483",
@@ -146,6 +236,11 @@ return {
 	["Six Seven"] = {
 		Price = 670000000,
 		Robux = 3149,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Six Seven",
+		},
 		Id = 19,
 		RarityType = "God",
 		Image = "rbxassetid://90660768804974",
@@ -154,6 +249,11 @@ return {
 	Glitch = {
 		Price = 1000000000,
 		Robux = 3299,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Glitch",
+		},
 		Id = 20,
 		RarityType = "God",
 		Image = "rbxassetid://132645798810100",
@@ -162,6 +262,11 @@ return {
 	Holiday = {
 		Price = 1500000000,
 		Robux = 3499,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Holiday",
+		},
 		Id = 21,
 		RarityType = "God",
 		Image = "rbxassetid://130465735930228",
@@ -170,6 +275,11 @@ return {
 	Disco = {
 		Price = 2500000000,
 		Robux = 3699,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Disco",
+		},
 		Id = 22,
 		RarityType = "God",
 		Image = "rbxassetid://97820787399144",
@@ -178,6 +288,11 @@ return {
 	UFO = {
 		Price = 3700000000,
 		Robux = 3899,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "UFO",
+		},
 		Id = 23,
 		RarityType = "God",
 		Image = "rbxassetid://107159270869170",
@@ -186,6 +301,11 @@ return {
 	Sea = {
 		Price = 6000000000,
 		Robux = 4199,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Sea",
+		},
 		Id = 24,
 		RarityType = "God",
 		Image = "rbxassetid://89981926169047",
@@ -194,6 +314,11 @@ return {
 	Volcano = {
 		Price = 10000000000,
 		Robux = 4399,
+		UnlockID = 3431449609,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Volcano",
+		},
 		Id = 25,
 		RarityType = "God",
 		Image = "rbxassetid://121929821979633",

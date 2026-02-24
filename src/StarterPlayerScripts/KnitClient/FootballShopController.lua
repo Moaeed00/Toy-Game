@@ -17,14 +17,19 @@ end
 
 function FootballShopController:KnitStart()
     FootballShopController.FootballShopService = Knit.GetService("FootballShopService")
-    
+    FootballShopController.ShopGenerated = false
+
     self:ConnectFootballShopDetection()
     self:ConnectCloseButton()
-    
-    self.FootballShopService.UpdateClientData:Connect(function(data)
-        FootballShopController.PlayerData = data
-        self:GenerateShopData()
+
+    self.FootballShopService.UpdateClientDataEvent:Connect(function(data)
+        self.PlayerData = data
+        if not self.ShopGenerated then
+            self:GenerateShopData()
+            self.ShopGenerated = true
+        end
         self:RefreshAllButtons()
+        print("[FootballShopController] Player Data: ", self.PlayerData)
     end)
 end
 
@@ -61,7 +66,7 @@ function FootballShopController:GenerateShopData()
     end)
 
     local ImageLabelFrame: ImageLabel = Player.PlayerGui:WaitForChild("MainGui"):WaitForChild("FootballsFrame")
-    local ScrollFrame = ImageLabelFrame:WaitForChild("Scroll")
+    local ScrollFrame: ScrollingFrame = ImageLabelFrame:WaitForChild("Scroll")
 	local Template = ImageLabelFrame:WaitForChild("Temp")
 
 	for _, football in pairs(footballList) do
@@ -84,13 +89,13 @@ function FootballShopController:GenerateShopData()
         OutlineRarityGradient.Parent = itemFrame
         local BGRarityGradient = RarityGradient:Clone()
         BGRarityGradient.Parent = itemFrameBG
-        
+
 		self:UpdateButtonState(item, name)
-        
+
 		itemFrame.RobuxBuy.MouseButton1Click:Connect(function()
 			self.FootballShopService.BuyFootballViaRobuxEvent:Fire(name)
 		end)
-        
+
 		itemFrame.Equip.MouseButton1Click:Connect(function()
             local owned = self:IsOwned(name)
 	        local equipped = self:IsEquipped(name)
@@ -150,7 +155,7 @@ function FootballShopController:UpdateButtonState(item: Frame, name: string)
     -- owned → hide buy
     robuxBuyButton.Visible = false
     equipButton.Visible = true
-    
+
 	if equipped then
 		priceText.Text = "Equipped"
 		self:ToggleButtonStatus(item, true)

@@ -1,8 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FootballTools = ReplicatedStorage:WaitForChild("Assets").Tools
-local Knit = require(ReplicatedStorage.Packages.Knit)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
 
@@ -12,7 +12,7 @@ local FootballShopService = Knit.CreateService {
 		BuyFootballViaCoinsEvent = Knit.CreateSignal(),
 		BuyFootballViaRobuxEvent = Knit.CreateSignal(),
 		EquipFootballEvent = Knit.CreateSignal(),
-		UpdateClientData = Knit.CreateSignal(),
+		UpdateClientDataEvent = Knit.CreateSignal(),
 	}
 }
 
@@ -20,16 +20,16 @@ function FootballShopService:KnitInit()
 end
 
 function FootballShopService:KnitStart()
+	FootballShopService.PurchaseProductService = Knit.GetService("PurchaseProductService")
     FootballShopService.PlayerData = {}
-	
+
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)
         local footballData = profile.Footballs or {
-            Owned = {},
-            Equipped = nil
+            Owned = { 1 },
+            Equipped = 1
         }
-    
         self.PlayerData[player] = footballData
-        self.Client.UpdateClientData:Fire(player, footballData)
+        self.Client.UpdateClientDataEvent:Fire(player, footballData)
     end)
 	self.Client.BuyFootballViaCoinsEvent:Connect(function(player, footballName)
 		self:BuyWithCoins(player, footballName)
@@ -50,14 +50,9 @@ function FootballShopService:BuyWithCoins(player: Player, footballName: string)
     end
 
     local data = DataStoreHandler:GetPlayerData(player)
-    if not data then 
-        print("no data")
-        return 
+    if not data then
+        return
     end
-
-    -- if self:IsOwned(player, footballName) then
-    --     return
-    -- end
 
     local currentCoins = DataStoreHandler:GetCoins(player)
     if currentCoins < config.Price then
@@ -66,38 +61,32 @@ function FootballShopService:BuyWithCoins(player: Player, footballName: string)
     end
 
     DataStoreHandler:SetCoins(player, -config.Price)
+	table.insert(data.Footballs.Owned, config.Id)
     self:EquipFootball(player, footballName)
-    self.Client.UpdateClientData:Fire(player, data)
+    self.Client.UpdateClientDataEvent:Fire(player, data)
 end
 
 function FootballShopService:GiveFootballViaRobux(player, footballName)
-    local data = DataStoreHandler:GetPlayerData(player)
-    local footballId = FootballsConfig[footballName].Id
-    
-    if self:IsOwned(player, footballName) then 
-        return 
-    end
-    
-    table.insert(data.Owned, footballId)
-    self.Client.UpdateClientData:Fire(player, data)
+	local footballUnlockId = FootballsConfig[footballName].UnlockID
+	self.PurchaseProductService:PromptPurchaseHandler(player, footballUnlockId)
 end
 
 function FootballShopService:EquipFootball(player, footballName)
-	if not self:IsOwned(player, footballName) then 
-        return 
+	if not self:IsOwned(player, footballName) then
+        return
     end
-    
+
 	local data = DataStoreHandler:GetPlayerData(player)
-	data.Equipped = FootballsConfig[footballName].Id
+	data.Footballs.Equipped = FootballsConfig[footballName].Id
 
 	self:GiveFootballTool(player, footballName)
-	self.Client.UpdateClientData:Fire(player, data)
+	self.Client.UpdateClientDataEvent:Fire(player, data)
 end
 
 function FootballShopService:GiveFootballTool(player: Player, footballName: string)
 	local newTool: Tool = FootballTools:FindFirstChild(footballName)
-	if not newTool then 
-        return 
+	if not newTool then
+        return
     end
 
 	-- remove old football tools
