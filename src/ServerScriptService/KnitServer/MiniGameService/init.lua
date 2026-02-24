@@ -1,8 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
+local ServerModules = ServerScriptService:WaitForChild("ServerModules")
+
 local ScoringHelperServer = require(script:WaitForChild("ScoringHelperServer"))
+local CollisionGroupHandler: {} = require(ServerModules:WaitForChild("CollisionGroupHandler"))
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootBalls = Assets:WaitForChild("FootBalls")
@@ -11,11 +15,22 @@ local Toys = workspace:WaitForChild("Toys")
 local RoundTime = 20
 local KickResetTime = 3
 
+local FootBallCollisionGroup = "FootBall"
+
 local ProximityPrompts = {}
-local Slots = {}
+local Slots = {
+	Toy1 = false,
+	Toy2 = false,
+	Toy3 = false,
+	Toy4 = false,
+}
 local ClonedFootBalls = {}
 local BallSpawnReferences = {}
 local ActiveGames = {}
+local ActiveChallenges: {} = {}
+
+local DataHandlerService
+local StealChallengeService
 
 local MiniGameService = Knit.CreateService({
 	Name = "MiniGameService",
@@ -25,13 +40,29 @@ local MiniGameService = Knit.CreateService({
 	},
 })
 
+--Local Functions
 function PlayerRemoved(player)
-	if not ActiveGames[player.UserId] then
+	if ActiveGames[player.UserId] then
+		MiniGameService:EndMiniGame(player)
 		return
 	end
-	MiniGameService:EndMiniGame(player)
+
+	local ChallengeGameId = player:GetAttribute("ChallengeId")
+	local Challenge = ActiveChallenges[ChallengeGameId]
+	if Challenge then
+		MiniGameService:EndChallengeGame(ChallengeGameId, player)
+	end
 end
 
+function GetAvailableSlots()
+	for SlotName, Occupied in pairs(Slots) do
+		if not Occupied then
+			return SlotName
+		end
+	end
+end
+
+--MiniGame Helper Functions
 function MiniGameService:DestroyBall(player)
 	local ClonedFootball = ClonedFootBalls[player]
 	if ClonedFootball then
@@ -65,6 +96,9 @@ function MiniGameService:SpawnBall(player, SlotName, BallName)
 
 	local ClonedFootball = Football:Clone()
 	ClonedFootball.Name = player.Name .. "_FootBall"
+
+	CollisionGroupHandler:AddCollisionGroup(FootBallCollisionGroup, ClonedFootball)
+
 	ClonedFootball.Parent = workspace
 	ClonedFootBalls[player] = ClonedFootball
 
@@ -93,11 +127,42 @@ function MiniGameService:SetSlot(player, SlotName)
 		return warn(`{SlotName} Slot is Already Assigned`)
 	end
 
+	local Prompt = ProximityPrompts[SlotName]
+	Prompt.Enabled = false
+
 	Slots[SlotName] = true
 	player:SetAttribute("MiniGameSlot", SlotName)
 	return true
 end
 
+function MiniGameService:OnBallKicked(player)
+	local BallKicked = player:GetAttribute("BallKicked")
+	if BallKicked then
+		return warn("Ball Already Kicked")
+	end
+
+	player:SetAttribute("BallKicked", true)
+	player:SetAttribute("HasScored", false)
+
+	task.delay(KickResetTime, function()
+		local Id = player:GetAttribute("ChallengeId")
+
+		if not ActiveGames[player.UserId] and not ActiveChallenges[Id] then
+			return
+		end
+
+		local PlayerScored = player:GetAttribute("HasScored")
+		if not PlayerScored then
+			ScoringHelperServer:OnMiss(player)
+		end
+
+		self:ResetBall(player)
+		player:SetAttribute("BallKicked", false)
+		self.Client.MiniGame:Fire(player, "EnableKick")
+	end)
+end
+
+--Solo Mode Helpers
 function MiniGameService:StartTimer(player)
 	local GameData = ActiveGames[player.UserId]
 	if not GameData then
@@ -105,10 +170,10 @@ function MiniGameService:StartTimer(player)
 	end
 
 	task.spawn(function()
-		while GameData.TimeLeft >= 0 and GameData.Running do
+		while GameData.TimeLeft >= 1 and GameData.Running do
+			GameData.TimeLeft -= 1
 			print("TimeLeftServer", GameData.TimeLeft)
 			task.wait(1)
-			GameData.TimeLeft -= 1
 		end
 		self:EndMiniGame(player)
 	end)
@@ -118,6 +183,9 @@ function MiniGameService:EndMiniGame(player)
 	if not ActiveGames[player.UserId] then
 		return
 	end
+
+	local Score = ScoringHelperServer:GetScore(player)
+	DataHandlerService:UpdatePoints(player, Score)
 
 	self.Client.EndMiniGame:Fire(player)
 
@@ -130,6 +198,8 @@ function MiniGameService:EndMiniGame(player)
 
 	player:SetAttribute("BallKicked", nil)
 	player:SetAttribute("HasScored", nil)
+	player:SetAttribute("InMiniGame", nil)
+	player:SetAttribute("Mode", nil)
 
 	self:ReleaseSlot(player)
 end
@@ -144,6 +214,9 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 	if not BallSpawned then
 		return warn("FootBall Not Assigned")
 	end
+
+	player:SetAttribute("InMiniGame", true)
+	player:SetAttribute("Mode", "Solo")
 
 	ActiveGames[player.UserId] = {
 		TimeLeft = RoundTime,
@@ -163,49 +236,213 @@ function MiniGameService:StartMiniGame(player)
 
 	ActiveGames[player.UserId].Running = true
 
-	ScoringHelperServer:OnStartScoring(player)
-	self:StartTimer(player)
-
 	local RemainingTime = (workspace:GetServerTimeNow() + ActiveGames[player.UserId].TimeLeft)
 	self.Client.MiniGame:Fire(player, "StartMiniGame", RemainingTime)
+
+	ScoringHelperServer:OnStartScoring(player)
+	self:StartTimer(player)
 end
 
-function MiniGameService:OnBallKicked(player)
-	local BallKicked = player:GetAttribute("BallKicked")
-	if BallKicked then
-		return warn("Ball Already Kicked")
+--Challengte Mode Helpers
+function MiniGameService:ResolveWinner(player1: Player, player2: Player, QuittingPlayer: Player?)
+	local score1 = ScoringHelperServer:GetScore(player1)
+	local score2 = ScoringHelperServer:GetScore(player2)
+
+	local ScoreCard = {
+		Result = "Draw",
+		WinnerUserID = nil,
+		WinnerScore = nil,
+		LoserUserID = nil,
+		LoserScore = nil,
+	}
+
+	if QuittingPlayer then
+		local winner = (QuittingPlayer == player1) and player2 or player1
+		local loser = QuittingPlayer
+
+		ScoreCard.Result = "Win"
+		ScoreCard.WinnerUserID = winner.UserId
+		ScoreCard.WinnerScore = ScoringHelperServer:GetScore(winner)
+		ScoreCard.LoserUserID = loser.UserId
+		ScoreCard.LoserScore = ScoringHelperServer:GetScore(loser)
+
+		return ScoreCard
 	end
 
-	player:SetAttribute("BallKicked", true)
-	player:SetAttribute("HasScored", false)
+	if score1 == score2 then
+		ScoreCard.WinnerScore = score1
+		return ScoreCard
+	end
 
-	task.delay(KickResetTime, function()
-		if not ActiveGames[player.UserId] then
-			return
+	local winner, loser, winScore, loseScore
+
+	if score1 > score2 then
+		winner, loser = player1, player2
+		winScore, loseScore = score1, score2
+	else
+		winner, loser = player2, player1
+		winScore, loseScore = score2, score1
+	end
+
+	ScoreCard.Result = "Win"
+	ScoreCard.WinnerUserID = winner.UserId
+	ScoreCard.WinnerScore = winScore
+	ScoreCard.LoserUserID = loser.UserId
+	ScoreCard.LoserScore = loseScore
+
+	return ScoreCard
+end
+
+function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlayer: Player?)
+	local Challenge = ActiveChallenges[ChallengeGameId]
+	if not Challenge then
+		return
+	end
+
+	local player1 = Challenge.Players[1]
+	local player2 = Challenge.Players[2]
+	local ScoreCard = self:ResolveWinner(player1, player2, QuittingPlayer)
+
+	for _, Player in ipairs(Challenge.Players) do
+		local score = ScoringHelperServer:GetScore(Player)
+		DataHandlerService:UpdatePoints(Player, score)
+
+		if QuittingPlayer and QuittingPlayer.UserId == Player.UserId then
+			Player = QuittingPlayer
+			self.Client.EndMiniGame:Fire(QuittingPlayer)
+		else
+			self.Client.EndMiniGame:Fire(Player)
 		end
 
-		local PlayerScored = player:GetAttribute("HasScored")
-		if not PlayerScored then
-			ScoringHelperServer:OnMiss(player)
-		end
+		Challenge.Running = false
+		ActiveChallenges[Challenge.Id] = nil
 
-		self:ResetBall(player)
-		player:SetAttribute("BallKicked", false)
-		self.Client.MiniGame:Fire(player, "EnableKick")
+		ScoringHelperServer:CleanUp(Player)
+
+		self:DestroyBall(Player)
+
+		Player:SetAttribute("BallKicked", nil)
+		Player:SetAttribute("HasScored", nil)
+		Player:SetAttribute("InMiniGame", nil)
+		Player:SetAttribute("Mode", nil)
+
+		self:ReleaseSlot(Player)
+	end
+
+	StealChallengeService:HandleWinner(ChallengeGameId, ScoreCard, QuittingPlayer)
+end
+
+function MiniGameService:StartChallengeTimer(ChallengeGameId: number)
+	local Challenge = ActiveChallenges[ChallengeGameId]
+	if not Challenge then
+		return
+	end
+
+	task.spawn(function()
+		while Challenge.TimeLeft >= 1 and Challenge.Running do
+			Challenge.TimeLeft -= 1
+			print("TimeLeftServer", Challenge.TimeLeft)
+			task.wait(1)
+		end
+		self:EndChallengeGame(ChallengeGameId)
 	end)
 end
 
+function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
+	local ChallengeGameId = ChallengeGameData.ChallengeGameId
+	local Player1 = ChallengeGameData.Player1
+	local Player2 = ChallengeGameData.Player2
+	local MiniGamePlayers = { Player1, Player2 }
+
+	for _, Player in pairs(MiniGamePlayers) do
+		local Slot = GetAvailableSlots()
+		if not Slot then
+			return warn("Slots Not Available")
+		end
+
+		local SlotAssigned = self:SetSlot(Player, Slot)
+		if not SlotAssigned then
+			return warn("Slot Not Assigned")
+		end
+
+		local BallSpawned = self:SpawnBall(Player, Slot)
+		if not BallSpawned then
+			return warn("FootBall Not Assigned")
+		end
+
+		Player:SetAttribute("InMiniGame", true)
+		Player:SetAttribute("Mode", "Challenge")
+	end
+
+	ActiveChallenges[ChallengeGameId] = {
+		Id = ChallengeGameId,
+		TimeLeft = RoundTime,
+		Players = MiniGamePlayers,
+		Ready = {},
+		Running = false,
+	}
+
+	ScoringHelperServer:Initialize(Player1, Player2)
+	ScoringHelperServer:Initialize(Player2, Player1)
+	self.Client.MiniGame:Fire(Player1, "InitializeMiniGame", nil, "Challenge")
+	self.Client.MiniGame:Fire(Player2, "InitializeMiniGame", nil, "Challenge")
+end
+
+function MiniGameService:AllPlayersReady(ChallengeGameId: number)
+	local Challenge = ActiveChallenges[ChallengeGameId]
+	if not Challenge then
+		return
+	end
+
+	for _, player in ipairs(Challenge.Players) do
+		if not Challenge.Ready[player] then
+			return false
+		end
+	end
+	return true
+end
+
+function MiniGameService:StartChallengeGame(player)
+	local ChallengeGameId = player:GetAttribute("ChallengeId")
+	local Challenge = ActiveChallenges[ChallengeGameId]
+
+	Challenge.Ready[player] = true
+
+	if not self:AllPlayersReady(ChallengeGameId) then
+		return
+	end
+
+	Challenge.Running = true
+
+	local RemainingTime = (workspace:GetServerTimeNow() + Challenge.TimeLeft)
+
+	for _, Player in pairs(Challenge.Players) do
+		self.Client.MiniGame:Fire(Player, "StartMiniGame", RemainingTime, "Challenge")
+		ScoringHelperServer:OnStartScoring(Player)
+	end
+
+	self:StartChallengeTimer(ChallengeGameId)
+end
+
+--States Handler For Modes
 function MiniGameService:HandleStates(player, State, SlotName)
+	local Mode = player:GetAttribute("Mode")
 	if State == "InitializeMiniGame" then
 		self:InitializeMiniGame(player, SlotName)
-	elseif State == "StartMiniGame" then
+	elseif State == "StartMiniGame" and Mode == "Solo" then
 		self:StartMiniGame(player)
+	elseif State == "StartMiniGame" and Mode == "Challenge" then
+		self:StartChallengeGame(player)
 	elseif State == "BallKicked" then
 		self:OnBallKicked(player)
 	end
 end
 
-function MiniGameService:KnitInit() end
+--Initializers
+function MiniGameService:KnitInit()
+	DataHandlerService = Knit.GetService("DataHandlerService")
+	StealChallengeService = Knit.GetService("StealChallengeService")
+end
 
 function MiniGameService:KnitStart()
 	print("MiniGameService Started")
@@ -214,6 +451,9 @@ function MiniGameService:KnitStart()
 			ProximityPrompt.Enabled = true
 
 			ProximityPrompt.Triggered:Connect(function(player)
+				if player:GetAttribute("InMiniGame") then
+					return
+				end
 				ProximityPrompt.Enabled = false
 				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Name)
 			end)

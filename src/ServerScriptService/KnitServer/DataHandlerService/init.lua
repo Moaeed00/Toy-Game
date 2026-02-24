@@ -29,9 +29,9 @@ local PROFILE_TEMPLATE = require(script:WaitForChild("ProfileTemplate"))
 
 -- local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
 
-local Configuration: {} = require(script:WaitForChild("Configuration"))
-local DataStoreName = Configuration.DataStoreName
-local DataStoreVersion = Configuration.DataStoreVersion
+local Configurations: {} = require(script:WaitForChild("Configurations"))
+local DataStoreName = Configurations.DataStoreName
+local DataStoreVersion = Configurations.DataStoreVersion
 
 local DataStoreKey: string = `{DataStoreName}_{DataStoreVersion}`
 local PlayerStore = ProfileStoreModule.New(DataStoreKey, PROFILE_TEMPLATE)
@@ -43,6 +43,7 @@ local EnumDataValue = {
 
 local DataHandlerService = Knit.CreateService({
 	Name = "DataHandlerService",
+	Client = {},
 })
 
 DataHandlerService.OnPlayerProfileLoaded = Signal.new()
@@ -160,7 +161,7 @@ function DataHandlerService:GetCoins(player: Player)
 	local playerData = self:GetPlayerData(player)
 	if playerData then
 		return playerData.Coins
-	end	
+	end
 end
 
 function DataHandlerService:SetCoins(player: Player, newCoins: number)
@@ -172,6 +173,57 @@ function DataHandlerService:SetCoins(player: Player, newCoins: number)
 	end
 end
 
+-- LeaderStat Helpers
+local function SetLeaderboardStats(player: Player, Name: string, value: number)
+	local LeaderStats = player:FindFirstChild("leaderstats")
+	local AttrName = LeaderStats:FindFirstChild(Name)
+
+	if AttrName then
+		AttrName.Value = value
+	end
+end
+
+-- Points Helpers
+function DataHandlerService:DeductPoints(player: Player, amount: number)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		if amount <= 0 then
+			return false
+		end
+
+		if data.Points >= amount then
+			data.Points -= amount
+			self:SetPlayerData(player, { Points = data.Points })
+			SetLeaderboardStats(player, "Points", data.Points)
+			return true
+		end
+		return false
+	end
+
+	return false
+end
+
+function DataHandlerService:GetPoints(player: Player)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		return data.Points
+	end
+end
+
+function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
+	local playerData = self:GetPlayerData(player)
+
+	if playerData then
+		local prevPoints = playerData.Points
+		local updatedPoints = prevPoints + pointsEarned
+		self:SetPlayerData(player, { Points = updatedPoints })
+		SetLeaderboardStats(player, "Points", updatedPoints)
+	end
+end
+
+--Initialization
 function DataHandlerService:KnitInit() end
 
 function DataHandlerService:KnitStart()

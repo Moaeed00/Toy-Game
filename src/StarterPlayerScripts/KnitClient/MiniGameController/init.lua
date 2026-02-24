@@ -6,6 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
+local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local player: Player = Players.LocalPlayer
 local camera: Camera = workspace.CurrentCamera
@@ -31,8 +32,12 @@ local POWER = 90
 local LIFT = 30
 local CountDownTime = 3
 
+local ScaleValue = 1.5
+
 local CanKick = false
 local GameRunning = false
+local CountDownRunning = false
+local GameMode
 
 local MiniGameService
 local SlotName: string
@@ -135,12 +140,12 @@ function StartTimer(Time: number)
 	CountDownGui.Enabled = false
 
 	task.spawn(function()
-		while RmainingTime >= 0 do
+		while RmainingTime >= 1 and GameRunning do
+			RmainingTime -= 1
 			print("TimeLeftClient", RmainingTime)
 
 			TimerValue.Text = RmainingTime
 			task.wait(1)
-			RmainingTime -= 1
 		end
 		TimerGui.Enabled = false
 	end)
@@ -148,9 +153,10 @@ end
 
 function StartCountDown()
 	CountDownGui.Enabled = true
+	CountDownRunning = true
 
 	task.spawn(function()
-		while CountDownTime >= 0 do
+		while CountDownTime >= 0 and CountDownRunning do
 			CountDownValue.Text = CountDownTime
 			task.wait(1)
 			CountDownTime -= 1
@@ -173,21 +179,27 @@ function MiniGameController:InitializeMiniGame()
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
 	ScoringHelperClient:Initialize()
+	CharacterSize:ScaleUp(player, ScaleValue)
 
 	PlayerControls:Disable()
 	StartCountDown()
 end
 
 function MiniGameController:StartMiniGame(Time)
-	ScoringHelperClient:OnStartScoring()
+	GameRunning = true
+	ScoringHelperClient:OnStartScoring(GameMode)
 
 	HandleBallSpawn()
 	StartTimer(Time)
 	EnableGameControls()
-	GameRunning = true
+	CountDownRunning = false
 end
 
-function MiniGameController:HandleStates(State, Time)
+function MiniGameController:HandleStates(State, Time, Mode)
+	if Mode then
+		GameMode = Mode
+	end
+
 	if State == "InitializeMiniGame" then
 		self:InitializeMiniGame()
 	elseif State == "StartMiniGame" then
@@ -198,14 +210,24 @@ function MiniGameController:HandleStates(State, Time)
 end
 
 function MiniGameController:EndMiniGame()
+	CountDownRunning = false
 	GameRunning = false
 	CanKick = false
-	TimerGui.Enabled = false
-	CountDownGui.Enabled = false
+
+	GameMode = nil
+
+	if TimerGui then
+		TimerGui.Enabled = false
+	end
+	if CountDownGui then
+		CountDownGui.Enabled = false
+	end
+
 	CountDownTime = 3
 	IndicatorHelperClient:CleanUp()
 	ScoringHelperClient:CleanUp()
 	WallPushers:CleanUp()
+	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
 	PlayerControls:Enable()
 end
@@ -217,8 +239,8 @@ end
 function MiniGameController:KnitStart()
 	print("MiniGameController Started")
 
-	MiniGameService.MiniGame:Connect(function(State, Time)
-		self:HandleStates(State, Time)
+	MiniGameService.MiniGame:Connect(function(State, Time, Mode)
+		self:HandleStates(State, Time, Mode)
 	end)
 
 	MiniGameService.EndMiniGame:Connect(function()
