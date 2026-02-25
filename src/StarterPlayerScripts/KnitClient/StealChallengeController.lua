@@ -6,6 +6,7 @@ local Configurations = ReplicatedStorage:WaitForChild("Configurations")
 local EntitiesConfiguration = require(Configurations:WaitForChild("EntitiesConfiguration"))
 
 local player: Player = Players.LocalPlayer
+local Confetti: Part = workspace:WaitForChild("Confetti")
 
 local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
@@ -88,7 +89,24 @@ function AnnounceWinnerToStealer(Result: string)
 	end
 end
 
+function PlayConfetti()
+	local slotName = player:GetAttribute("MiniGameSlot")
+	local PlayerPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("PlayerPositionReference")
+	Confetti:PivotTo(CFrame.new(PlayerPositionReference.CFrame.Position.X, 18, PlayerPositionReference.CFrame.Position.Z))
+
+	local duration = 3
+	for _, confetti: ParticleEmitter in Confetti:GetChildren() do
+		confetti.Enabled = true
+	end
+	task.delay(duration, function()
+		for _, confetti: ParticleEmitter in Confetti:GetChildren() do
+			confetti.Enabled = false
+		end
+	end)
+end
+
 function AnnounceWinner(Result: string)
+	PlayConfetti()
 	if player:GetAttribute("Owner") then
 		AnnounceWinnerToOwner(Result)
 	elseif player:GetAttribute("Stealer") then
@@ -233,11 +251,9 @@ end
 function StealChallengeController:KnitStart()
 	print("StealChallengeController Started")
 
-	StealChallengeService.StealChallenge:Connect(
-		function(State: string, Message: string, Time: number, CurrentChallengeData: {})
-			self:HandleStates(State, Message, Time, CurrentChallengeData)
-		end
-	)
+	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {})
+		self:HandleStates(State, Message, Time, CurrentChallengeData)
+	end)
 
 	PointsButton.Activated:Connect(HandlePointDeclineButton)
 	RobuxButton.Activated:Connect(function()
