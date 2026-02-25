@@ -34,7 +34,7 @@ function FootballShopController:KnitStart()
 end
 
 function FootballShopController:ConnectFootballShopDetection()
-    local proximityPrompt: ProximityPrompt = workspace:WaitForChild("FootballShop"):WaitForChild("Prompt"):WaitForChild("ProximityPrompt")
+    local proximityPrompt: ProximityPrompt = workspace.Environment:WaitForChild("FootballShop"):WaitForChild("Prompt"):WaitForChild("ProximityPrompt")
     if proximityPrompt then
         proximityPrompt.Triggered:Connect(function()
             self:ToggleFootballShopUI(true)
