@@ -21,6 +21,9 @@ Trove = Trove.new()
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
+local CountDownTextUIStroke: UIStroke = CountDownValue:WaitForChild("UIStroke")
+local TimerGui: ScreenGui = PlayerGui:WaitForChild("TimerGui")
+local TimerValue: TextLabel = TimerGui:WaitForChild("Main"):WaitForChild("Timer")
 
 local Toys = workspace:WaitForChild("Toys")
 
@@ -155,11 +158,38 @@ function StartCountDown()
 	CountDownGui.Enabled = true
 	CountDownRunning = true
 
+	local originalSize = CountDownValue.Size
+	local biggerSize = UDim2.fromScale(originalSize.X.Scale * 1.25, originalSize.Y.Scale * 1.25)
+	local growTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	local shrinkTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
 	task.spawn(function()
-		while CountDownTime >= 0 and CountDownRunning do
-			CountDownValue.Text = CountDownTime
-			task.wait(1)
-			CountDownTime -= 1
+		for count = CountDownTime, 1, -1 do
+			if not CountDownRunning then
+				break
+			end
+
+			CountDownValue.Text = tonumber(count)
+			CountDownValue.Size = originalSize
+			CountDownValue.TextTransparency = 0
+			CountDownTextUIStroke.Transparency = 0
+
+			local growTween = TweenService:Create(CountDownValue, growTweenInfo, { Size = biggerSize })
+			growTween:Play()
+			growTween.Completed:Wait()
+
+			local shrinkTween = TweenService:Create(CountDownValue, shrinkTweenInfo, { Size = originalSize })
+			shrinkTween:Play()
+			shrinkTween.Completed:Wait()
+
+			local fadeCountdownValueTween = TweenService:Create(CountDownValue, TweenInfo.new(0.2), { TextTransparency = 1 })
+			fadeCountdownValueTween:Play()
+
+			local fadeCountDownTextUIStrokeTween = TweenService:Create(CountDownTextUIStroke, TweenInfo.new(0.2), { Transparency = 1 })
+			fadeCountDownTextUIStrokeTween:Play()
+
+			fadeCountdownValueTween.Completed:Wait()
+			task.wait(0.1)
 		end
 
 		CountDownGui.Enabled = false
