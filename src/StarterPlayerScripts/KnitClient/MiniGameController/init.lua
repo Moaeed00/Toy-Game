@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -47,8 +48,6 @@ local SlotName: string
 local FootBall: MeshPart
 local BallSpawnReference: BasePart
 local PlayerPositionReference: BasePart
-local TimerGui: SurfaceGui
-local TimerValue: TextLabel
 
 function HandleBallSpawn()
 	FootBall.CFrame = BallSpawnReference.CFrame
@@ -130,9 +129,6 @@ function EnableGameControls()
 end
 
 function StartTimer(Time: number)
-	TimerGui = Toys:WaitForChild(SlotName):WaitForChild("Timer"):WaitForChild("TimerGui")
-	TimerValue = TimerGui:WaitForChild("Main"):WaitForChild("Timer")
-
 	local RmainingTime = math.round((Time - Workspace:GetServerTimeNow()))
 
 	if not RmainingTime then
@@ -147,7 +143,11 @@ function StartTimer(Time: number)
 			RmainingTime -= 1
 			print("TimeLeftClient", RmainingTime)
 
-			TimerValue.Text = RmainingTime
+			if RmainingTime < 10 then
+				TimerValue.Text = "00:0" .. RmainingTime
+			else
+				TimerValue.Text = "00:" .. RmainingTime
+			end
 			task.wait(1)
 		end
 		TimerGui.Enabled = false
