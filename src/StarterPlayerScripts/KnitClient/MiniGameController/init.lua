@@ -217,7 +217,7 @@ function SetMiniGameCamera()
 	local character = player.Character
 	local head = character:WaitForChild("Head")
 
-	local offset = Vector3.new(0, 7, 12)
+	local offset = Vector3.new(0, 7, 13)
 	local cameraPosition = head.Position + offset
 	camera.CameraType = Enum.CameraType.Scriptable
 	camera.CFrame = CFrame.new(cameraPosition, cameraPosition + Vector3.new(0, 0, -1))
