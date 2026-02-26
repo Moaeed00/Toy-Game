@@ -43,6 +43,7 @@ local GameRunning = false
 local CountDownRunning = false
 local GameMode
 
+local CameraController
 local MiniGameService
 local SlotName: string
 local FootBall: MeshPart
@@ -198,6 +199,31 @@ function StartCountDown()
 	end)
 end
 
+function LockCameraRotation()
+	local cameraModule = PlayerModule:GetCameras()
+	CameraController = cameraModule.activeCameraController
+
+	if CameraController then
+		CameraController:Enable(false)
+	end
+end
+
+function SetMiniGameCamera()
+	local character = player.Character
+	local head = character:WaitForChild("Head")
+
+	local offset = Vector3.new(0, 7, 12)
+	local cameraPosition = head.Position + offset
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = CFrame.new(cameraPosition, cameraPosition + Vector3.new(0, 0, -1))
+end
+
+function UnlockCameraRotation()
+	if CameraController then
+		CameraController:Enable(true)
+	end
+end
+
 function MiniGameController:InitializeMiniGame()
 	SlotName = player:GetAttribute("MiniGameSlot")
 	FootBall = workspace:WaitForChild(player.Name .. "_FootBall")
@@ -205,6 +231,9 @@ function MiniGameController:InitializeMiniGame()
 	PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
 
 	player.Character:PivotTo(PlayerPositionReference.CFrame)
+	SetMiniGameCamera()
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+	LockCameraRotation()
 
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
@@ -259,6 +288,8 @@ function MiniGameController:EndMiniGame()
 	WallPushers:CleanUp()
 	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+	UnlockCameraRotation()
 	PlayerControls:Enable()
 end
 
