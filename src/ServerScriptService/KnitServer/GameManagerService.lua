@@ -3,8 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local ServerModules: Folder = ServerScriptService:WaitForChild("ServerModules")
-local CollisionGroupHandler: {} = require(ServerModules:WaitForChild("CollisionGroupHandler"))
+local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 
 local DataHandlerService
 
@@ -42,7 +42,7 @@ function GameManagerService:KnitInit()
 end
 
 function GameManagerService:KnitStart()
-	print("GameManagerService Started")
+	-- print("GameManagerService Started")
 	Players.PlayerAdded:Connect(OnPlayerAdded)
 	DataHandlerService.OnPlayerProfileLoaded:Connect(function(Player)
 		leaderboardSetup(Player)

@@ -207,6 +207,44 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 	end
 end
 
+-- Coins Helpers
+function DataHandlerService:DeductMoney(player: Player, amount: number)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		if amount <= 0 then
+			return false
+		end
+
+		if data.Money >= amount then
+			data.Money -= amount
+			self:SetPlayerData(player, { Money = data.Money })
+			return true
+		end
+		return false
+	end
+
+	return false
+end
+
+function DataHandlerService:GetMoney(player: Player)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		return data.Money
+	end
+end
+
+function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
+	local playerData = self:GetPlayerData(player)
+
+	if playerData then
+		local prevMoney = playerData.Money
+		local updatedMoney = prevMoney + MoneyEarned
+		self:SetPlayerData(player, { Money = updatedMoney })
+	end
+end
+
 --Initialization
 function DataHandlerService:KnitInit() end
 

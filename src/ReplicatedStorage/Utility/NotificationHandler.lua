@@ -10,12 +10,14 @@ local PlayerGui: PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- [Configs]					-----
 -- local UtilityFLD : Folder = ReplicatedStorage:WaitForChild("Utility")
+local Assets: Folder = ReplicatedStorage:WaitForChild("Assets")
+local UiAssets: Folder = Assets:WaitForChild("UI")
 local Configs: Folder = ReplicatedStorage:WaitForChild("Configuration")
 local NotificationConfig: {} = require(Configs:WaitForChild("Notification"))
 --local PlaySound : {} = require(UtilityFLD:WaitForChild("PlaySound"))
 
 -- [UI Templates]				-----
-local NotificationItem: Frame = script:WaitForChild("NotificationFrame")
+local NotificationItem: Frame = UiAssets:WaitForChild("NotificationFrame")
 
 -- [References]
 local ScreenGui = PlayerGui:WaitForChild("NotificationGui")
@@ -50,7 +52,7 @@ function NotificationHandler:CreateNotification(Text: string, Color: Color3?)
 		local closingTween = TweenService:Create(uiScale, self.ClosingTweenInfo, { Scale = 0 })
 		closingTween:Play()
 
-		closingTween.Completed:Connect(function(playbackState: Enum.PlaybackState)
+		closingTween.Completed:Connect(function()
 			item:Destroy()
 		end)
 	end)

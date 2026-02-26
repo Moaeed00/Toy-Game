@@ -4,6 +4,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local player: Player = Players.LocalPlayer
 
@@ -22,6 +23,8 @@ local TimerValue: TextLabel = Main:WaitForChild("Timer")
 local EntityInfo: {}
 local ChallengeData: {}
 
+local StealPoints
+local RobuxPrice
 local ChallengePending = false
 local OpponentPlayerName
 
@@ -55,6 +58,8 @@ function FinishChallenge()
 
 	EntityInfo = nil
 	OpponentPlayerName = nil
+	StealPoints = nil
+	RobuxPrice = nil
 end
 
 function AnnounceWinnerToOwner(Result: string)
@@ -113,7 +118,7 @@ end
 
 function HandlePointsRejection()
 	--Prompt Notification
-	-- print(`Challenge Declined you got {EntityInfo.StealPoints} points`)
+	-- print(`Challenge Declined you got {StealPoints} points`)
 	print(`Challenge Declined`)
 end
 
@@ -123,7 +128,7 @@ function HandlePointDeclineButton()
 		return
 	end
 
-	if PlayerPoints.Value < EntityInfo.StealPoints then
+	if PlayerPoints.Value < StealPoints then
 		--Prompt Notification
 		print("Points Not Enough")
 	else
@@ -194,8 +199,8 @@ function ChallengeRecieved(StealerPlayerName: string, Time: number)
 	PointsButton.Visible = true
 
 	MessageValue.Text = `{StealerPlayerName} has challenged you for {ChallengeData.EntityName} Brainrot`
-	RobuxButton.Text = `{EntityInfo.Robux} Robux`
-	PointsButton.Text = `{EntityInfo.StealPoints} Points`
+	RobuxButton.Text = `{RobuxPrice} Robux`
+	PointsButton.Text = `{StealPoints} Points`
 
 	StartTimer(Time)
 end
@@ -204,6 +209,8 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
+		RobuxPrice = StealConfiguration[ChallengeData.EntityRarity].Price
 	end
 
 	if State == "ChallengeRevoked" then
@@ -231,7 +238,7 @@ function StealChallengeController:KnitInit()
 end
 
 function StealChallengeController:KnitStart()
-	print("StealChallengeController Started")
+	-- print("StealChallengeController Started")
 
 	StealChallengeService.StealChallenge:Connect(
 		function(State: string, Message: string, Time: number, CurrentChallengeData: {})
