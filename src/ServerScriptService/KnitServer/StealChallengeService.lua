@@ -5,6 +5,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local ActiveChallenges: {} = {}
 
@@ -58,13 +59,13 @@ function IsChallengeValid(ChallengeData: {})
 	end
 
 	local StealingPlayerPoints = DataHandlerService:GetPoints(StealingPlayer)
-	local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+	local StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 
-	if not EntityInfo then
-		return false, "EntityInfo Not Found"
+	if not StealPoints then
+		return false, "StealPoints Not Found"
 	end
 
-	if StealingPlayerPoints < EntityInfo.StealPoints then
+	if StealingPlayerPoints < StealPoints then
 		return false, "Not Enough Points"
 	end
 
@@ -191,7 +192,7 @@ function StealChallengeService:HandlePointsRejection(player: Player)
 		return warn("Challenge Already Started")
 	end
 
-	local EntityPrice = ActiveChallenges[ChallengeId].EntityInfo.StealPoints
+	local EntityPrice = ActiveChallenges[ChallengeId].StealPoints
 
 	if not EntityPrice then
 		return warn("EntityPrice Not Found")
@@ -236,6 +237,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 		StealingPlayer:SetAttribute("InMiniGame", true)
 
 		local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		local StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 
 		ActiveChallenges[ChallengeId] = {
 			OwnerUserId = ChallengeData.OwnerUserId,
@@ -243,6 +245,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 			EntityName = ChallengeData.EntityName,
 			EntityRarity = ChallengeData.EntityRarity,
 			EntityInfo = EntityInfo,
+			StealPoints = StealPoints,
 			TimeLeft = ChallengeTime,
 			State = "Pending",
 		}
@@ -301,7 +304,7 @@ function StealChallengeService:KnitInit()
 end
 
 function StealChallengeService:KnitStart()
-	print("StealChallengeService Started")
+	-- print("StealChallengeService Started")
 	self.Client.StealChallenge:Connect(function(player: Player, State: string, ChallengeData: {})
 		self:HandleStates(player, State, ChallengeData)
 	end)

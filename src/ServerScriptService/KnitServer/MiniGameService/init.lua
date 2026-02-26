@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local ServerModules = ServerScriptService:WaitForChild("ServerModules")
+local Utils = ServerScriptService:WaitForChild("Utils")
 
 local ScoringHelperServer = require(script:WaitForChild("ScoringHelperServer"))
-local CollisionGroupHandler: {} = require(ServerModules:WaitForChild("CollisionGroupHandler"))
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootBalls = Assets:WaitForChild("FootBalls")
@@ -445,7 +445,7 @@ function MiniGameService:KnitInit()
 end
 
 function MiniGameService:KnitStart()
-	print("MiniGameService Started")
+	-- print("MiniGameService Started")
 	for _, ProximityPrompt: ProximityPrompt in Toys:GetDescendants() do
 		if ProximityPrompt.Name == "MiniGamePrompt" and ProximityPrompt:IsA("ProximityPrompt") then
 			ProximityPrompt.Enabled = true

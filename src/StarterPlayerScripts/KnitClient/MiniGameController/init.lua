@@ -237,7 +237,7 @@ function MiniGameController:KnitInit()
 end
 
 function MiniGameController:KnitStart()
-	print("MiniGameController Started")
+	-- print("MiniGameController Started")
 
 	MiniGameService.MiniGame:Connect(function(State, Time, Mode)
 		self:HandleStates(State, Time, Mode)
