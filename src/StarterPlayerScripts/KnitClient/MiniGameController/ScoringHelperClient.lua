@@ -47,7 +47,6 @@ function ScoringHelperClient:PlayFireCrackers()
 	local duration = 2
 	local slotName = player:GetAttribute("MiniGameSlot")
 	local FireCrackers = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("FireCrackers"):GetChildren()
-	print("FireCrackers", FireCrackers)
 
 	for _, fire: Part in FireCrackers do
 		local emitter = fire:FindFirstChildOfClass("ParticleEmitter")

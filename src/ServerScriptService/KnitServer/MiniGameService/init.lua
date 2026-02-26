@@ -118,8 +118,8 @@ function MiniGameService:ReleaseSlot(player)
 	Slots[SlotName] = false
 	player:SetAttribute("MiniGameSlot", nil)
 
-	local Prompt = ProximityPrompts[SlotName]
-	Prompt.Enabled = true
+	local Prompt: ProximityPrompt = ProximityPrompts[SlotName]
+	self:ToggleTeleporter(Prompt, true)
 end
 
 function MiniGameService:SetSlot(player, SlotName)
@@ -127,8 +127,8 @@ function MiniGameService:SetSlot(player, SlotName)
 		return warn(`{SlotName} Slot is Already Assigned`)
 	end
 
-	local Prompt = ProximityPrompts[SlotName]
-	Prompt.Enabled = false
+	local Prompt: ProximityPrompt = ProximityPrompts[SlotName]
+	self:ToggleTeleporter(Prompt, false)
 
 	Slots[SlotName] = true
 	player:SetAttribute("MiniGameSlot", SlotName)
@@ -438,6 +438,28 @@ function MiniGameService:HandleStates(player, State, SlotName)
 	end
 end
 
+function MiniGameService:ToggleTeleporter(proximityPrompt: ProximityPrompt, toggle: boolean)
+	proximityPrompt.Enabled = toggle
+	local Parts = proximityPrompt.Parent.Parent:GetChildren()
+	if not toggle then
+		for _, part in ipairs(Parts) do
+			if part.Name == "TopCylinder" or part.Name == "BottomCylinder" then
+				print("Kk", part.Name)
+				part.Transparency = 1
+			end
+		end
+		return
+	end
+	for _, part in ipairs(Parts) do
+		if part.Name == "TopCylinder" then
+			part.Transparency = 0.25
+		end
+		if part.Name == "BottomCylinder" then
+			part.Transparency = 0.5
+		end
+	end
+end
+
 --Initializers
 function MiniGameService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
@@ -448,17 +470,16 @@ function MiniGameService:KnitStart()
 	print("MiniGameService Started")
 	for _, ProximityPrompt: ProximityPrompt in Toys:GetDescendants() do
 		if ProximityPrompt.Name == "MiniGamePrompt" and ProximityPrompt:IsA("ProximityPrompt") then
-			ProximityPrompt.Enabled = true
-
+			self:ToggleTeleporter(ProximityPrompt, true)
 			ProximityPrompt.Triggered:Connect(function(player)
 				if player:GetAttribute("InMiniGame") then
 					return
 				end
-				ProximityPrompt.Enabled = false
-				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Name)
+				self:ToggleTeleporter(ProximityPrompt, false)
+				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Parent.Name)
 			end)
 
-			ProximityPrompts[ProximityPrompt.Parent.Parent.Name] = ProximityPrompt
+			ProximityPrompts[ProximityPrompt.Parent.Parent.Parent.Name] = ProximityPrompt
 		end
 	end
 
