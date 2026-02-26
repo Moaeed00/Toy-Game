@@ -43,7 +43,7 @@ function SetIndicator(IndicatorName)
 
 	local offset = GetDirectionOffset(IndicatorName)
 
-	local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+	local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
 	local goal = { CFrame = OriginalCFrame + offset }
 	ActiveTween = TweenService:Create(Indicator, tweenInfo, goal)
 	ActiveTween:Play()
