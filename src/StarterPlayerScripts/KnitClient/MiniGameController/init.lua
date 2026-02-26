@@ -83,10 +83,15 @@ function GetDirection(Pos: Vector2)
 end
 
 function Kick(Positions: Vector2)
-	local Direction = GetDirection(Positions)
+	local character: Model = player.Character
+	local humanoid: Humanoid = character:WaitForChild("Humanoid")
 
-	FootBall.Anchored = false
-	FootBall.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
+	local track = MiniGameController.FootballController:PlayKickBallAnimation(humanoid)
+	track:GetMarkerReachedSignal("KickMoment"):Once(function()
+		local Direction = GetDirection(Positions)
+		FootBall.Anchored = false
+		FootBall.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
+	end)
 end
 
 function EnableGameControls()
@@ -294,6 +299,7 @@ function MiniGameController:EndMiniGame()
 end
 
 function MiniGameController:KnitInit()
+	MiniGameController.FootballController = Knit.GetController("FootballController")
 	MiniGameService = Knit.GetService("MiniGameService")
 end
 
