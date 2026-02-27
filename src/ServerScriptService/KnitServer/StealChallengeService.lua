@@ -71,7 +71,7 @@ function IsChallengeValid(ChallengeData: {})
 	return true
 end
 
-function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer)
+function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer, SlotData)
 	if not (ActiveChallenges[ChallengeId].State == "Started") then
 		return
 	end
@@ -96,11 +96,11 @@ function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, 
 		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Draw")
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Draw")
 	elseif ScoreCard.WinnerUserID == ChallengeData.StealerUserId then
-		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Loser")
 	else
 		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Loser")
-		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 	end
 
 	self:FinishChallenge(ChallengeId, QuittingPlayer)

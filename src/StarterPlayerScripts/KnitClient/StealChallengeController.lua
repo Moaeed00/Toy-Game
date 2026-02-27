@@ -89,13 +89,17 @@ function AnnounceWinnerToStealer(Result: string)
 	end
 end
 
-function PlayConfetti()
-	local slotName = player:GetAttribute("MiniGameSlot")
-	local PlayerPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("PlayerPositionReference")
-	Confetti:PivotTo(CFrame.new(PlayerPositionReference.CFrame.Position.X, 18, PlayerPositionReference.CFrame.Position.Z))
+function PlayConfetti(slotName: string)
+	if not slotName then
+		return
+	end
 
-	local duration = 3
+	local ConfettiPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
+	Confetti:PivotTo(ConfettiPositionReference.CFrame)
+
+	local duration = 5
 	for _, confetti: ParticleEmitter in Confetti:GetChildren() do
+		print("Confetti Playing")
 		confetti.Enabled = true
 	end
 	task.delay(duration, function()
@@ -105,8 +109,8 @@ function PlayConfetti()
 	end)
 end
 
-function AnnounceWinner(Result: string)
-	PlayConfetti()
+function AnnounceWinner(Result: string, slotName: string)
+	PlayConfetti(slotName)
 	if player:GetAttribute("Owner") then
 		AnnounceWinnerToOwner(Result)
 	elseif player:GetAttribute("Stealer") then
@@ -218,7 +222,7 @@ function ChallengeRecieved(StealerPlayerName: string, Time: number)
 	StartTimer(Time)
 end
 
-function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {})
+function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
@@ -240,7 +244,7 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 	elseif State == "ChallengeFinished" then
 		FinishChallenge()
 	elseif State == "WinnerAnnouncement" then
-		AnnounceWinner(Message)
+		AnnounceWinner(Message, SlotName)
 	end
 end
 
@@ -251,8 +255,8 @@ end
 function StealChallengeController:KnitStart()
 	print("StealChallengeController Started")
 
-	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {})
-		self:HandleStates(State, Message, Time, CurrentChallengeData)
+	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
 	end)
 
 	PointsButton.Activated:Connect(HandlePointDeclineButton)

@@ -302,6 +302,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 	local player1 = Challenge.Players[1]
 	local player2 = Challenge.Players[2]
 	local ScoreCard = self:ResolveWinner(player1, player2, QuittingPlayer)
+	local SlotData = {}
 
 	for _, Player in ipairs(Challenge.Players) do
 		local score = ScoringHelperServer:GetScore(Player)
@@ -314,6 +315,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 			self.Client.EndMiniGame:Fire(Player)
 		end
 
+		SlotData[Player.UserId] = Player:GetAttribute("MiniGameSlot")
 		Challenge.Running = false
 		ActiveChallenges[Challenge.Id] = nil
 
@@ -329,7 +331,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		self:ReleaseSlot(Player)
 	end
 
-	StealChallengeService:HandleWinner(ChallengeGameId, ScoreCard, QuittingPlayer)
+	StealChallengeService:HandleWinner(ChallengeGameId, ScoreCard, QuittingPlayer, SlotData)
 end
 
 function MiniGameService:StartChallengeTimer(ChallengeGameId: number)
