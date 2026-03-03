@@ -22,6 +22,7 @@ local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
 
+local PlayerBase = workspace:WaitForChild("Bases")
 local Toys = workspace:WaitForChild("Toys")
 
 local MiniGameController = Knit.CreateController({
@@ -46,6 +47,11 @@ local BallSpawnReference: BasePart
 local PlayerPositionReference: BasePart
 local TimerGui: SurfaceGui
 local TimerValue: TextLabel
+
+function TeleportPlayersToBase()
+	local SpawnPart = PlayerBase:WaitForChild(tostring(player.UserId)):WaitForChild("Spawn")
+	player.Character:PivotTo(SpawnPart.CFrame)
+end
 
 function HandleBallSpawn()
 	FootBall.CFrame = BallSpawnReference.CFrame
@@ -230,6 +236,7 @@ function MiniGameController:EndMiniGame()
 	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
 	PlayerControls:Enable()
+	TeleportPlayersToBase()
 end
 
 function MiniGameController:KnitInit()

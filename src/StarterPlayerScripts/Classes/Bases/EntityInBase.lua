@@ -164,7 +164,7 @@ local EntityInBase: constructor = Class(
 				return
 			end
 
-			self._controller:OnStealRemote(biomeName, entityName, mutationName, entityId, ownerId, productId)
+			self._controller:OnStealRemote(biomeName, entityName, mutationName, entityId, ownerId, slotPart.Name)
 		end))
 	end
 )

@@ -38,9 +38,25 @@ function BaseService:KnitStart()
 	self._activeBases = {}
 	--self.BaseAdded = Signal.new()
 
-	Players.PlayerAdded:Connect(function(player: Player)
+	DataHandlerService.OnPlayerProfileLoaded:Connect(function(player)
+		--local base = self:GetPlayerBase(player)
+		--if not base then
 		self:CreateBase(player)
+		BaseService:ReplicateOthersBase(player)
+		--	base:LoadTools()
+		--	base:LoadEntities()
+		--else
+		--	base:LoadTools()
+		--	base:LoadEntities()
+		--end
 	end)
+
+	--Players.PlayerAdded:Connect(function(player: Player)
+	--	local base = self:GetPlayerBase(player)
+	--	if not base then
+	--		self:CreateBase(player)
+	--	end
+	--end)
 
 	Players.PlayerRemoving:Connect(function(player: Player)
 		self:DestroyBase(player)
@@ -105,13 +121,36 @@ function BaseService:TakeEntity(player: Player, entityId: string)
 	self:GiveTool(player, biomeName, entityName, mutationName)
 end
 
-function BaseService:RemoveEntity(player: Player, entityId: string)
+function BaseService:RemoveEntityFromBase(player: Player, slotName: string)
+	local data = self:GetPlayerData(player)
+	if not data or not data.Base then
+		return
+	end
+
+	slotName = tostring(slotName)
+
+	if not data.Base[slotName] then
+		return
+	end
+
+	data.Base[slotName] = nil
+
+	self:SetPlayerData(self._player, "Base", data.Base)
+end
+
+function BaseService:RemoveEntity(player: Player, entityId: string, slotName: number)
+	if slotName then
+		self:RemoveEntityFromBase(player, slotName)
+	end
+
 	local playerBase, playerProfile = self:GetPlayerBase(player)
+
 	if not playerBase or not playerProfile then
 		return
 	end
 
 	local entity = playerBase:GetEntityById(entityId)
+
 	if not entity then
 		return
 	end
@@ -200,11 +239,6 @@ function BaseService:CreateBase(player: Player)
 	local key = tostring(player.UserId)
 
 	self._activeBases[key] = playerBase
-
-	DataHandlerService.OnPlayerProfileLoaded:Connect(function()
-		playerBase:LoadTools()
-		playerBase:LoadEntities()
-	end)
 	--self.BaseAdded:Fire(player)
 end
 
@@ -234,6 +268,7 @@ end
 function BaseService:SetPlayerData(player: Player, name: string, result: {})
 	local saveTable = {}
 	saveTable[name] = result
+	print("saveTable", saveTable)
 	DataHandlerService:SetPlayerData(player, saveTable)
 end
 
@@ -244,7 +279,6 @@ function BaseService:DestroyBase(player: Player)
 	end
 
 	local key = tostring(player.UserId)
-
 	playerBase:Destroy()
 	self._activeBases[key] = nil
 end

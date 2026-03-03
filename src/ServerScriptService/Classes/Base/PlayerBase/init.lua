@@ -76,7 +76,7 @@ function PlayerBase.LoadTools(self: PlayerBase)
 	if not data then
 		return
 	end
-
+	print("BackPack", data.Backpack)
 	for _, tool in data.Backpack do
 		local biomeName = tool[1]
 		local entityName = tool[2]
@@ -95,7 +95,7 @@ function PlayerBase.LoadEntities(self: PlayerBase)
 
 	local baseModel = self:GetBaseModel()
 	local grid = baseModel.Grid
-
+	print("Base", data.Base)
 	for slotIndex: string, packed in data.Base do
 		local slot = grid:FindFirstChild(slotIndex)
 		if not slot then
@@ -160,8 +160,8 @@ function PlayerBase.WhenPlayerDie(self: PlayerBase)
 end
 
 function PlayerBase.Init(self: PlayerBase)
-	--self:LoadTools()
-	--self:LoadEntities()
+	self:LoadTools()
+	self:LoadEntities()
 
 	self:WhenPlayerDie()
 	self:TeleportPlayer()
@@ -314,7 +314,7 @@ function PlayerBase.SaveBackpack(self: PlayerBase)
 end
 
 function PlayerBase.GetId(self: PlayerBase)
-	return self._player.UserId
+	return tostring(self._player.UserId)
 end
 
 function PlayerBase.SaveBase(self: PlayerBase)
