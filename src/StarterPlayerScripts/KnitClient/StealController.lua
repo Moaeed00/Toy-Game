@@ -35,9 +35,9 @@ local StealController = Knit.CreateController({
 })
 
 function StealController:getOwnerPlayer(userId)
-	local player = Players:GetPlayerByUserId(userId)
-	if player then
-		return player
+	local Player = Players:GetPlayerByUserId(userId)
+	if Player then
+		return Player
 	else
 		print("Player with UserId " .. userId .. " is not currently in the game.")
 	end
