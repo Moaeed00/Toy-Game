@@ -12,8 +12,7 @@ local EntityInBase = require(playerScripts.Classes.Bases.EntityInBase)
 -- local Signal = require(ReplicatedStorage.Libraries.Signal)
 
 local BaseService
-local StealService
-local ProductPurchaseService
+local StealController
 
 local BaseController = Knit.CreateController({
 	Name = "BaseController",
@@ -25,17 +24,23 @@ end
 
 function BaseController:KnitInit()
 	BaseService = Knit.GetService("BaseService")
-	StealService = Knit.GetService("StealService")
-	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
+	StealController = Knit.GetController("StealController")
 end
 
 function BaseController:KnitStart()
 	self._basesFolder = workspace:WaitForChild("Bases")
 
 	self._base = self._basesFolder:WaitForChild(tostring(player.UserId)) :: Model
+
+	self._YourBase =
+		self._base:WaitForChild("Sign"):WaitForChild("YourBase"):WaitForChild("YourBaseGui") :: BillboardGui
+	if self._YourBase then
+		self._YourBase.Enabled = true
+	end
+
 	self._entitiesInBases = {}
 
-	BaseService.ReplicatedOthersBase:Fire()
+	-- BaseService.ReplicatedOthersBase:Fire()
 
 	observePlayerTool(player, function(tool, connection)
 		if tool.Name == "Bat" then
@@ -92,6 +97,8 @@ function BaseController:PlaceEntity(
 	mutationName: string,
 	slotName: string
 )
+	print("entityId", entityId)
+
 	if not self._entitiesInBases[baseId] then
 		self._entitiesInBases[baseId] = {}
 	end
@@ -99,6 +106,7 @@ function BaseController:PlaceEntity(
 	if self._entitiesInBases[baseId][entityId] then
 		return
 	end
+	self._entitiesInBases[baseId][entityId] = entityId
 
 	local baseModel = get_base_model(self._basesFolder, baseId)
 	if not baseModel then
@@ -108,12 +116,12 @@ function BaseController:PlaceEntity(
 		return
 	end
 
-	local grid = baseModel:FindFirstChild("Grid")
+	local grid = baseModel:WaitForChild("Grid")
 	if not grid then
 		return
 	end
 
-	local slotPart = grid:FindFirstChild(slotName)
+	local slotPart = grid:WaitForChild(slotName)
 	if not slotPart then
 		return
 	end
@@ -146,10 +154,9 @@ function BaseController:OnStealRemote(
 	mutationName: string,
 	entityId: string,
 	ownerId: number,
-	productId: number
+	slotName: number
 )
-	StealService.Steal:Fire(biomeName, entityName, mutationName, entityId, ownerId)
-	ProductPurchaseService.PromptPurchase:Fire(productId)
+	StealController:EnableUI(biomeName, entityName, mutationName, entityId, ownerId, slotName)
 end
 
 return BaseController

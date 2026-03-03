@@ -117,6 +117,16 @@ local function Initialize()
 					Mode = "Gift",
 				}
 			end
+
+			if item.SaveFromStellID then
+				if ProductLookup[item.SaveFromStellID] then
+					warn(("Duplicate UnlockID %d found in %s and another shop!"):format(item.SaveFromStellID, shopName))
+				end
+				ProductLookup[item.SaveFromStellID] = {
+					Item = item,
+					Mode = "SaveFromSteal",
+				}
+			end
 		end
 	end
 

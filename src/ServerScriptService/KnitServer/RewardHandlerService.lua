@@ -13,9 +13,14 @@ local RewardHandlerService = Knit.CreateService({
 
 local RewardHandlers = {}
 
-function RewardHandlers.Steal(Player: Player)
-	local StealService = Knit.GetService("StealService")
-	StealService:Steal(Player)
+function RewardHandlers.Steal(Player: Player, _RewardData: {}, Mode: string)
+	if Mode == "Unlock" then
+		local StealService = Knit.GetService("StealService")
+		StealService:Steal(Player)
+	elseif Mode == "SaveFromSteal" then
+		local StealChallengeService = Knit.GetService("StealChallengeService")
+		StealChallengeService:HandleRobuxRejection(Player)
+	end
 end
 
 function RewardHandlers.Bundle(Player: Player, RewardData: {}, Mode: string)

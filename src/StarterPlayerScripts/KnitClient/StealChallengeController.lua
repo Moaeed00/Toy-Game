@@ -25,23 +25,16 @@ local ChallengeData: {}
 
 local StealPoints
 local RobuxPrice
+local productId
 local ChallengePending = false
 local OpponentPlayerName
 
 local StealChallengeService
+local ProductPurchaseService
 
 local StealChallengeController = Knit.CreateController({
 	Name = "StealChallengeController",
 })
-
--- function getPlayerName(UserId: number)
--- 	local Player = Players:GetPlayerByUserId(UserId)
--- 	if Player then
--- 		return Player.Name
--- 	else
--- 		return "UnKnown Player"
--- 	end
--- end
 
 function FinishChallenge()
 	ChallengePending = false
@@ -60,6 +53,7 @@ function FinishChallenge()
 	OpponentPlayerName = nil
 	StealPoints = nil
 	RobuxPrice = nil
+	productId = nil
 end
 
 function AnnounceWinnerToOwner(Result: string)
@@ -167,7 +161,6 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 	end
 
 	OpponentPlayerName = StealerPlayerName
-	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Stealer", true)
 	ChallengePending = true
@@ -210,7 +203,8 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
-		RobuxPrice = StealConfiguration[ChallengeData.EntityRarity].Price
+		RobuxPrice = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellRobux
+		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end
 
 	if State == "ChallengeRevoked" then
@@ -235,6 +229,7 @@ end
 
 function StealChallengeController:KnitInit()
 	StealChallengeService = Knit.GetService("StealChallengeService")
+	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 end
 
 function StealChallengeController:KnitStart()
@@ -248,7 +243,10 @@ function StealChallengeController:KnitStart()
 
 	PointsButton.Activated:Connect(HandlePointDeclineButton)
 	RobuxButton.Activated:Connect(function()
-		StealChallengeService.StealChallenge:Fire("ShowRobuxPrompt")
+		if not productId then
+			return
+		end
+		ProductPurchaseService.PromptPurchase:Fire(productId)
 	end)
 end
 
