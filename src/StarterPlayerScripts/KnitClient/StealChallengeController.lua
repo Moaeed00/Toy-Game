@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -49,6 +50,7 @@ function FinishChallenge()
 	player:SetAttribute("Stealer", false)
 
 	ChallengeGui.Enabled = false
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 	MessageValue.Visible = false
 	TimerValue.Visible = false
 
@@ -118,6 +120,7 @@ end
 
 function StartChallenge()
 	ChallengePending = false
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 	ChallengeGui.Enabled = false
 end
 
