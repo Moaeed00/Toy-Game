@@ -14,6 +14,7 @@ local ScrollingFrame: ScrollingFrame = MerchantGui:WaitForChild("ScrollingFrame"
 local TempItem = ScrollingFrame:WaitForChild("Temp")
 local CloseButton: ImageButton = MerchantGui:WaitForChild("CloseButton")
 local NoBrainrotsLabel: TextLabel = MerchantGui:WaitForChild("NoBrainrots")
+local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
 local MerchantController = Knit.CreateController { Name = "MerchantController" }
 
@@ -34,7 +35,10 @@ function MerchantController:KnitStart()
         self:RefreshUI()
     end)
     SellAllButton.Activated:Connect(function()
-        self.MerchantService.SellAllButtonEvent:Fire()
+        self.MerchantService:SellAll():andThen(function(totalInventoryValue: number)
+            local message = `Inventory sold for ${self:FormatNumber(tostring(totalInventoryValue))}`
+            NotificationHandler:DisplayNotificationMessage(message, "Success")
+        end)
     end)
 end
 
@@ -104,7 +108,10 @@ function MerchantController:RefreshUI()
             end
         end
         clone.SellButton.Activated:Connect(function()
-            self.MerchantService.SellButtonEvent:Fire(item.Name)
+            self.MerchantService:Sell(item.Name):andThen(function(reward: number)
+                local message = `Sold {item.Name} for ${self:FormatNumber(tostring(reward))}`
+                NotificationHandler:DisplayNotificationMessage(message, "Success")
+            end)
         end)
         clone.Visible = true
 

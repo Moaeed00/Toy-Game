@@ -8,8 +8,6 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local MerchantService = Knit.CreateService {
     Name = "MerchantService",
     Client = {
-        SellButtonEvent = Knit.CreateSignal(),
-        SellAllButtonEvent = Knit.CreateSignal(),
         InventoryUpdateEvent = Knit.CreateSignal(),
     },
 }
@@ -36,12 +34,6 @@ function MerchantService:KnitStart()
         end)
 
         self:SyncPlayer(player)
-    end)
-    self.Client.SellButtonEvent:Connect(function(player: Player, brainrotName: string)
-        self:Sell(player, brainrotName)
-    end)
-    self.Client.SellAllButtonEvent:Connect(function(player: Player)
-        self:SellAll(player)
     end)
 end
 
@@ -72,7 +64,7 @@ function MerchantService:SyncPlayer(player: Player)
 	self.Client.InventoryUpdateEvent:Fire(player, snapshot)
 end
 
-function MerchantService:Sell(player: Player, itemName: string)
+function MerchantService.Client:Sell(player: Player, itemName: string)
 	local data = BrainrotsData[itemName]
 	if not data then
         return
@@ -93,10 +85,11 @@ function MerchantService:Sell(player: Player, itemName: string)
 
 	local reward = data.SellPrice
     DataStoreHandler:SetCoins(player, reward)
-    self:SyncPlayer(player)
+    self.Server:SyncPlayer(player)
+    return reward
 end
 
-function MerchantService:SellAll(player: Player)
+function MerchantService.Client:SellAll(player: Player)
 	local totalUpdatedCoins = 0
     local toolsToRemove = {}
     local backpack = player.Backpack
@@ -116,6 +109,7 @@ function MerchantService:SellAll(player: Player)
 
 	DataStoreHandler:SetCoins(player, totalUpdatedCoins)
     self.Server:SyncPlayer(player)
+    return totalUpdatedCoins
 end
 
 return MerchantService
