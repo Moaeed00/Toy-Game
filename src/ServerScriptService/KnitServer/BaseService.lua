@@ -60,6 +60,7 @@ function BaseService:KnitStart()
 
 	Players.PlayerRemoving:Connect(function(player: Player)
 		self:DestroyBase(player)
+		DataHandlerService:SetPlayerData(player, { LastJoin = os.time() })
 	end)
 
 	self.Client.PlaceEntity:Connect(function(player: Player, slotName: string)
@@ -113,11 +114,13 @@ function BaseService:TakeEntity(player: Player, entityId: string)
 
 	local mutationName = entity:GetMutation()
 	local pendingMoney = entity:GetPending()
+	local offlineMoney = entity:GetOffline()
 	local biomeName = entity:GetBiome()
 	local entityName = entity:GetName()
 
 	self:RemoveEntity(player, entityId)
 	self:UpdateMoney(player, pendingMoney)
+	self:UpdateMoney(player, offlineMoney)
 	self:GiveTool(player, biomeName, entityName, mutationName)
 end
 
