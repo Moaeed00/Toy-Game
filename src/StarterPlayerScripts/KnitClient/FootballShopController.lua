@@ -9,6 +9,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local MainGui: ScreenGui = PlayerGui:WaitForChild("MainGui")
 local FootballFrameUI: ImageLabel = MainGui:WaitForChild("FootballsFrame")
 local CloseButton: ImageButton = FootballFrameUI:WaitForChild("CloseButton")
+local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
 local FootballShopController = Knit.CreateController { Name = "FootballShopController" }
 
@@ -101,15 +102,26 @@ function FootballShopController:GenerateShopData()
 		itemFrame.Equip.MouseButton1Click:Connect(function()
             local owned = self:IsOwned(name)
 	        local equipped = self:IsEquipped(name)
-
             if not owned then
-                self.FootballShopService.BuyFootballViaCoinsEvent:Fire(name)
+                self.FootballShopService:BuyFootballViaCoins(name):andThen(function(result: {})
+                    if not result then
+                        return
+                    end
+
+                    if not result.Success then
+                        local message = `You need ${self:FormatCommas(tostring(result.CoinsRequired))} more cash.`
+                        NotificationHandler:DisplayNotificationMessage(message, "Error")
+                    else
+                        local message = `Successfully purchased ${result.FootballName} football!`
+                        NotificationHandler:DisplayNotificationMessage(message, "Success")
+                    end
+                end)
                 return
             end
-
             if equipped then
                 return
             end
+
             self.FootballShopService.EquipFootballEvent:Fire(name)
 		end)
 
