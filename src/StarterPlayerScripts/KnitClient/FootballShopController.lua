@@ -16,6 +16,7 @@ function FootballShopController:KnitInit()
 end
 
 function FootballShopController:KnitStart()
+    FootballShopController.CameraController = Knit.GetController("CameraController")
     FootballShopController.FootballShopService = Knit.GetService("FootballShopService")
     FootballShopController.ShopGenerated = false
 
@@ -49,6 +50,7 @@ function FootballShopController:ConnectCloseButton()
 end
 
 function FootballShopController:ToggleFootballShopUI(toggle: boolean)
+    self.CameraController:ToggleCameraBlurEffect(toggle)
     FootballFrameUI.Visible = toggle
 end
 

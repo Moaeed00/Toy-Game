@@ -21,6 +21,7 @@ function MerchantController:KnitInit()
 end
 
 function MerchantController:KnitStart()
+    MerchantController.CameraController = Knit.GetController("CameraController")
     MerchantController.MerchantService = Knit.GetService("MerchantService")
     MerchantController.CurrentInventory = {}
     MerchantController.ActiveFrames = {}
@@ -53,6 +54,7 @@ function MerchantController:ConnectCloseButton()
 end
 
 function MerchantController:ToggleSellShopUI(toggle: boolean)
+    self.CameraController:ToggleCameraBlurEffect(toggle)
     MerchantGui.Visible = toggle
 end
 
