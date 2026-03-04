@@ -56,7 +56,16 @@ function FootballService:EquipBall(player: Player)
     if not footballTool then
         return
     end
-    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic")
+    local playerData = DataStoreHandler:GetPlayerData(player)
+    if not playerData then
+        return
+    end
+
+    local equippedId = playerData.Footballs.Equipped
+    local footballName, footballData = FootballUtils:GetFootballById(equippedId)
+
+    local handle = footballTool:WaitForChild("Handle")
+    local ball: Part = handle:WaitForChild(footballName)
     ball.Anchored = false
     ball.CanCollide = false
     ball.CanTouch = false
@@ -92,8 +101,17 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     end
 
     local footballTool = self.Footballs[player]
-    local ball: Part = footballTool:WaitForChild("Handle"):WaitForChild("Basic")
-    if ball:FindFirstChild("BallWeld") then
+    local playerData = DataStoreHandler:GetPlayerData(player)
+    if not playerData then
+        return
+    end
+
+    local equippedId = playerData.Footballs.Equipped
+    local footballName, footballData = FootballUtils:GetFootballById(equippedId)
+
+    local handle = footballTool:WaitForChild("Handle")
+    local ball: Part = handle:WaitForChild(footballName)
+    if ball:FindFirstChild("Weld") then
         ball.BallWeld:Destroy()
     end
     ball.Anchored = false
@@ -139,7 +157,7 @@ function FootballService.Client:GiveFootball(player: Player)
     if not playerData then
         return
     end
-    
+
     local equippedFootballId = playerData.Footballs.Equipped
     local footballName, footballData = FootballUtils:GetFootballById(equippedFootballId)
     if not footballName then
@@ -164,7 +182,7 @@ function FootballService.Client:GiveFootball(player: Player)
 
     local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true
-    
+
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
 
