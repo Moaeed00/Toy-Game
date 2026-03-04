@@ -41,9 +41,9 @@ export type constructor = EntityInBase & {
 
 local function get_slot_label(slot: BasePart): TextLabel
 	local moneyDisplay = slot.MoneyDisplay
-	local canvas = moneyDisplay.Surface.Canvas
+	local Frame = moneyDisplay.InfoGui.Frame
 
-	return canvas.Value
+	return Frame.CharCollect, Frame.CharOffline
 end
 
 local EntityBase: constructor = Class(
@@ -68,10 +68,11 @@ local EntityBase: constructor = Class(
 		self._entityName = entityName
 		self._mutationName = mutationName
 		self._id = NumberUtils.generateId(8)
-		self._slotLabel = get_slot_label(self._slot)
+		self._slotLabel, self._slotLabelOffline = get_slot_label(self._slot)
 		self._slotLabel.Text = "$0"
 
 		self._pendingMoney = 0
+		self._offlineMoney = 0
 
 		self._connections = Trove.new()
 		self._service:OnAllPlaceEntityRemote(
@@ -89,6 +90,7 @@ local EntityBase: constructor = Class(
 
 function EntityBase.GenerateMoney(self: EntityInBase)
 	self._slotLabel.Parent.Parent.Enabled = true
+	self._slotLabelOffline.Visible = false
 
 	self._connections:Add(self._timerservice.SecondPast:Connect(function()
 		-- local playerData = self._service:GetPlayerData(self._player)
@@ -101,6 +103,14 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 
 		self._pendingMoney += moneyPerSec
 		self._slotLabel.Text = `${Format.abreviate(self._pendingMoney)}`
+
+		if self._offlineMoney > 0 then
+			self._slotLabelOffline.Text = `${Format.abreviate(self._offlineMoney)}`
+			self._slotLabelOffline.Visible = true
+		else
+			self._slotLabelOffline.Text = "$0"
+			self._slotLabelOffline.Visible = false
+		end
 	end))
 
 	self._connections:Add(self._slot.Plate.Touched:Connect(function(hit: BasePart)
@@ -116,12 +126,23 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 
 		self._pendingMoney = 0
 
+		if self._offlineMoney > 0 then
+			self._service:UpdateMoney(self._player, self._offlineMoney)
+			self._offlineMoney = 0
+			self._slotLabelOffline.Visible = false
+			self._slotLabelOffline.Text = "$0"
+		end
+
 		self._slotLabel.Text = "$0"
 	end))
 end
 
 function EntityBase.SetPending(self: EntityInBase, value: number)
 	self._pendingMoney += value
+end
+
+function EntityBase.SetOffline(self: EntityInBase, value: number)
+	self._offlineMoney += value
 end
 
 function EntityBase.GetData(self: EntityInBase)
@@ -140,6 +161,10 @@ end
 
 function EntityBase.GetPending(self: EntityInBase)
 	return self._pendingMoney
+end
+
+function EntityBase.GetOffline(self: EntityInBase)
+	return self._offlineMoney
 end
 
 function EntityBase.GetName(self: EntityInBase)

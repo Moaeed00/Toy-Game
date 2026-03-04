@@ -8,6 +8,7 @@ local EntityInBase = require(ServerScriptService.Classes.Base.EntityInBase)
 local entityUtils = require(ServerScriptService.Utils.entityUtils)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local whenBaseDestroyed = require(script.whenBaseDestroyed)
+local offlineEarningsUtils = require(ServerScriptService.Utils.offlineEarningsUtils)
 -- local Signal = require(ReplicatedStorage.Libraries.Signal)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
 local createBaseModel = require(script.createBaseModel)
@@ -71,6 +72,15 @@ local PlayerBase: constructor = Class(
 	end
 )
 
+function PlayerBase.ComputeOfflineRewards(self: PlayerBase, data: {}, entity: {}, offlineMoney: number)
+	local currentTime = os.time()
+	local previousJoin = data.LastJoin or currentTime
+
+	local total = offlineEarningsUtils.ComputeRewards(self._player, entity, currentTime, previousJoin, offlineMoney)
+
+	return total
+end
+
 function PlayerBase.LoadTools(self: PlayerBase)
 	local data = self:GetPlayerData()
 	if not data then
@@ -106,10 +116,14 @@ function PlayerBase.LoadEntities(self: PlayerBase)
 		local entityName = packed[2]
 		local pendingMoney = packed[3]
 		local mutation = packed[4]
+		local offlineMoney = packed[5] or 0
 
 		local entity = self:PlaceEntity(biomeName, entityName, mutation, slot)
 		if entity then
 			entity:SetPending(pendingMoney)
+
+			local offlineUpdated = self:ComputeOfflineRewards(data, entity, offlineMoney)
+			entity:SetOffline(offlineUpdated)
 		end
 	end
 end
@@ -330,8 +344,9 @@ function PlayerBase.SaveBase(self: PlayerBase)
 		local entityName = entity:GetName()
 		local mutationName = entity:GetMutation()
 		local pending = entity:GetPending()
+		local offline = entity:GetOffline()
 
-		result[tostring(slot.Name)] = { biomeName, entityName, math.floor(pending), mutationName }
+		result[tostring(slot.Name)] = { biomeName, entityName, math.floor(pending), mutationName, math.floor(offline) }
 	end
 
 	self._service:SetPlayerData(self._player, "Base", result)

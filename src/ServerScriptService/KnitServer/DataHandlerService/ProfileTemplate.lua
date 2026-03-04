@@ -2,9 +2,8 @@ return {
 	Points = 0,
 	Money = 100,
 
-	Rebirth = 1,
+	LastJoin = 0,
 
-	Unlocked_Entities = {},
 	Backpack = {},
 	Base = {},
 }
