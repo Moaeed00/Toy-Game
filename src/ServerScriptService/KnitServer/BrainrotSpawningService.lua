@@ -9,7 +9,7 @@ local Camera = workspace.CurrentCamera
 local SparkleParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles.Sparkles:WaitForChild("Attachment")
 local BlockSpawnRarities = require(ReplicatedStorage.Configurations.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsVariantConfig)
-local BrainrotsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
+local BrainrotsData = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BrainrotSpawnService = Knit.CreateService {
@@ -39,24 +39,9 @@ function BrainrotSpawnService:KnitStart()
         OG        = 0.003,
     }
 
-    self:GenerateBrainrotData()
+    self.BrainrotsData = BrainrotsData
     self:GenerateBrainrotRarityPools()
     self:CacheAllBlockPools()
-end
-
-function BrainrotSpawnService:GenerateBrainrotData()
-    for index, brainrot in pairs(BrainrotsConfig) do
-        self.BrainrotsData[index] = {
-            Rarity = brainrot.Rarity,
-            -- Image = BrainrotImages[i];
-            RarityType = brainrot.RarityType,
-            CashPerSecond = brainrot.CashPerSecond,
-            SellPrice = brainrot.CashPerSecond * 15,
-            FractionChance = self:FormatCommas("1/" .. math.max(1, math.floor(100000000 / brainrot.Rarity * 2))),
-            Type = brainrot.Type,
-            Timer = brainrot.Timer,
-        }
-    end
 end
 
 function BrainrotSpawnService:GenerateBrainrotRarityPools()
@@ -349,15 +334,6 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
         brainrot:Destroy()
         self.BlocksSpawningService:SpawnBlocks(1)
     end)
-end
-
-function BrainrotSpawnService:FormatCommas(arg: string)
-    local prefix, numbers = arg:match("^(.-)(%d+)$")
-    if not numbers then
-        return
-    end
-    numbers = numbers:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
-    return prefix .. numbers
 end
 
 return BrainrotSpawnService

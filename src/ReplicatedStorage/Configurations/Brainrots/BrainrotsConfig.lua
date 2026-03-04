@@ -1,4 +1,6 @@
-return {
+local BrainrotsData = {}
+
+local BRAINROTS_DATA = {
 	["Lirili Larila"] = {
 		Rarity = 60000000,
 		RarityType = "Common",
@@ -599,3 +601,28 @@ return {
         Timer = 30,
 	},
 }
+
+function FormatCommas(arg: string)
+    local prefix, numbers = arg:match("^(.-)(%d+)$")
+    if not numbers then
+        return
+    end
+
+    numbers = numbers:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+    return prefix .. numbers
+end
+
+for index, brainrot in pairs(BRAINROTS_DATA) do
+	BrainrotsData[index] = {
+		Rarity = brainrot.Rarity,
+		-- Image = BrainrotImages[i];
+		RarityType = brainrot.RarityType,
+		CashPerSecond = brainrot.CashPerSecond,
+		SellPrice = brainrot.CashPerSecond * 15,
+		FractionChance = FormatCommas("1/" .. math.max(1, math.floor(100000000 / brainrot.Rarity * 2))),
+		Type = brainrot.Type,
+		Timer = brainrot.Timer,
+	}
+end
+
+return BrainrotsData
