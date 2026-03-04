@@ -201,7 +201,7 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 	StartTimer(Time)
 end
 
-function ChallengeRecieved(StealerPlayerName: string, Time: number)
+function ChallengeReceived(StealerPlayerName: string, Time: number)
 	if not ChallengeData then
 		warn("ChallengeData missing")
 		return
@@ -223,6 +223,10 @@ function ChallengeRecieved(StealerPlayerName: string, Time: number)
 	StartTimer(Time)
 end
 
+function StealChallengeController:AcceptChallenge()
+	self.StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
+end
+
 function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
@@ -235,7 +239,7 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 	elseif State == "ChallengeSent" then
 		ChallengeSent(Message, Time)
 	elseif State == "ChallengeReceived" then
-		ChallengeRecieved(Message, Time)
+		ChallengeReceived(Message, Time)
 	elseif State == "RobuxRejection" then
 		HandleRobuxRejection()
 	elseif State == "PointsRejection" then
@@ -255,12 +259,15 @@ end
 
 function StealChallengeController:KnitStart()
 	print("StealChallengeController Started")
+	StealChallengeController.StealChallengeService = Knit.GetService("StealChallengeService")
 
 	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
 	end)
 
-	-- AcceptButton.Activated:Connect(StartChallenge)
+	AcceptButton.Activated:Connect(function()
+		self:AcceptChallenge()
+	end)
 	DeclineButton.Activated:Connect(HandlePointDeclineButton)
 end
 

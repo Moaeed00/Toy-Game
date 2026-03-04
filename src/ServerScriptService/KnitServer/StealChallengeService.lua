@@ -17,6 +17,7 @@ local StealChallengeService = Knit.CreateService({
 	Name = "StealChallengeService",
 	Client = {
 		StealChallenge = Knit.CreateSignal(),
+		AcceptChallengeButtonEvent = Knit.CreateSignal(),
 	},
 })
 
@@ -304,6 +305,13 @@ function StealChallengeService:KnitStart()
 	print("StealChallengeService Started")
 	self.Client.StealChallenge:Connect(function(player: Player, State: string, ChallengeData: {})
 		self:HandleStates(player, State, ChallengeData)
+	end)
+
+	self.Client.AcceptChallengeButtonEvent:Connect(function(player: Player, ChallengeData: {})
+		local OwnerPlayer = Players:GetPlayerByUserId(ChallengeData.OwnerUserId)
+		local ChallengeId = OwnerPlayer:GetAttribute("ChallengeId")
+
+		self:StartChallenge(ChallengeId)
 	end)
 
 	Players.PlayerRemoving:Connect(PlayerRemoved)
