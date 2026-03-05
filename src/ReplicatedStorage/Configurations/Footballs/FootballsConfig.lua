@@ -9,7 +9,7 @@ return {
 		},
 		Id = 1,
 		RarityType = "Common",
-		Image = "rbxassetid://106524191491855",
+		Image = "rbxassetid://128150003516305",
 		Power = 1,
 	},
 	["Ash Rock"] = {
