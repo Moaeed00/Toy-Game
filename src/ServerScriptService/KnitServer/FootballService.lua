@@ -1,7 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local FootballUtils = require(ReplicatedStorage.Configurations.Footballs.FootballUtils)
+local FootballUtils = require(ReplicatedStorage.Configuration.Footballs.FootballUtils)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
@@ -62,7 +62,7 @@ function FootballService:EquipBall(player: Player)
     end
 
     local equippedId = playerData.Footballs.Equipped
-    local footballName, footballData = FootballUtils:GetFootballById(equippedId)
+    local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
     local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
@@ -107,7 +107,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     end
 
     local equippedId = playerData.Footballs.Equipped
-    local footballName, footballData = FootballUtils:GetFootballById(equippedId)
+    local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
     local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)

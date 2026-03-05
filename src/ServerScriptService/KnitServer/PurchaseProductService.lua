@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
 local PlayerService = game:GetService("Players")
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PurchaseProductService = Knit.CreateService {

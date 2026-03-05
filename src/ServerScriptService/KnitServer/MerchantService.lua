@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local BrainrotsData = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 

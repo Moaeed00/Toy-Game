@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -16,7 +16,7 @@ function RewardService:KnitStart()
     RewardService.FootballShopService = Knit.GetService("FootballShopService")
 end
 
-RewardService.Football = function(player: Player, RewardData: {}, mode: string)
+RewardService.Football = function(player: Player, RewardData: {}, _mode: string)
     local data = DataStoreHandler:GetPlayerData(player)
     local footballName = RewardData.ItemName
     local footballData = FootballsConfig[footballName]

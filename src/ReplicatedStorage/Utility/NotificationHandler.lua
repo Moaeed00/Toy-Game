@@ -10,7 +10,7 @@ local PlayerGui: PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 -- local Utility : Folder = ReplicatedStorage:WaitForChild("Utility")
 local Assets: Folder = ReplicatedStorage:WaitForChild("Assets")
 local UiAssets: Folder = Assets:WaitForChild("UI")
-local Configs: Folder = ReplicatedStorage:WaitForChild("Configurations")
+local Configs: Folder = ReplicatedStorage:WaitForChild("Configuration")
 local NotificationConfig: {} = require(Configs:WaitForChild("Notification"))
 --local PlaySound : {} = require(UtilityFLD:WaitForChild("PlaySound"))
 

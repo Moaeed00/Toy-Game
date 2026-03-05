@@ -27,7 +27,6 @@ local EntityInfo: {}
 local ChallengeData: {}
 
 local StealPoints
-local RobuxPrice
 local productId
 local ChallengePending = false
 local OpponentPlayerName
@@ -53,7 +52,6 @@ function FinishChallenge()
 	EntityInfo = nil
 	OpponentPlayerName = nil
 	StealPoints = nil
-	RobuxPrice = nil
 	productId = nil
 end
 
@@ -236,7 +234,6 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
-		RobuxPrice = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellRobux
 		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end
 

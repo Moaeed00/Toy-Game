@@ -3,8 +3,9 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Configurations = ReplicatedStorage:WaitForChild("Configurations")
-local EntitiesConfiguration = require(Configurations:WaitForChild("EntitiesConfiguration"))
+local Configuration = ReplicatedStorage:WaitForChild("Configuration")
+local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
+local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
 
 local ActiveChallenges: {} = {}
 
@@ -302,7 +303,7 @@ function StealChallengeService:KnitStart()
 		self:HandleStates(player, State, ChallengeData)
 	end)
 
-	self.Client.AcceptChallengeButtonEvent:Connect(function(player: Player, ChallengeData: {})
+	self.Client.AcceptChallengeButtonEvent:Connect(function(_player: Player, ChallengeData: {})
 		local OwnerPlayer = Players:GetPlayerByUserId(ChallengeData.OwnerUserId)
 		local ChallengeId = OwnerPlayer:GetAttribute("ChallengeId")
 

@@ -4,7 +4,7 @@ local FootballTools = ReplicatedStorage:WaitForChild("Assets").Tools
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 
 local FootballShopService = Knit.CreateService {
 	Name = "FootballShopService",
