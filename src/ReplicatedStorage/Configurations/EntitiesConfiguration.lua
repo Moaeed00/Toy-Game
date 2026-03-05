@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local RarityConfiguration = require(ReplicatedStorage.Configuration.RarityConfiguration)
+local RarityConfiguration = require(ReplicatedStorage.Configurations.RarityConfiguration)
 
 export type Entity = {
 	DisplayName: string,

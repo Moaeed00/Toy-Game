@@ -3,9 +3,8 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Configuration = ReplicatedStorage:WaitForChild("Configuration")
-local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
-local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
+local Configurations = ReplicatedStorage:WaitForChild("Configurations")
+local EntitiesConfiguration = require(Configurations:WaitForChild("EntitiesConfiguration"))
 
 local ActiveChallenges: {} = {}
 
@@ -19,6 +18,7 @@ local StealChallengeService = Knit.CreateService({
 	Name = "StealChallengeService",
 	Client = {
 		StealChallenge = Knit.CreateSignal(),
+		AcceptChallengeButtonEvent = Knit.CreateSignal(),
 	},
 })
 
@@ -73,7 +73,7 @@ function IsChallengeValid(ChallengeData: {})
 	return true
 end
 
-function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer)
+function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer, SlotData)
 	if not (ActiveChallenges[ChallengeId].State == "Started") then
 		return
 	end
@@ -99,12 +99,12 @@ function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, 
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Draw")
 	elseif ScoreCard.WinnerUserID == ChallengeData.StealerUserId then
 		StealService:HandleWinner(StealingPlayer, "Winner", OwnerPlayer)
-		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Loser")
 	else
 		StealService:HandleWinner(StealingPlayer, "Loser", OwnerPlayer)
 		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Loser")
-		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 	end
 
 	self:FinishChallenge(ChallengeId, QuittingPlayer)
@@ -300,6 +300,13 @@ function StealChallengeService:KnitStart()
 	-- print("StealChallengeService Started")
 	self.Client.StealChallenge:Connect(function(player: Player, State: string, ChallengeData: {})
 		self:HandleStates(player, State, ChallengeData)
+	end)
+
+	self.Client.AcceptChallengeButtonEvent:Connect(function(player: Player, ChallengeData: {})
+		local OwnerPlayer = Players:GetPlayerByUserId(ChallengeData.OwnerUserId)
+		local ChallengeId = OwnerPlayer:GetAttribute("ChallengeId")
+
+		self:StartChallenge(ChallengeId)
 	end)
 
 	Players.PlayerRemoving:Connect(PlayerRemoved)
