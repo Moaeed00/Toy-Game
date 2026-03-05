@@ -1,6 +1,7 @@
 local Players: Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Format = require(ReplicatedStorage.Libraries.Format)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
@@ -25,10 +26,20 @@ local function leaderboardSetup(player: Player)
 	Points.Value = DataHandlerService:GetPoints(player)
 	Points.Parent = leaderstats
 
-	local Priority = Instance.new("NumberValue")
-	Priority.Name = "Priority"
-	Priority.Value = 2 --[Bigger Value Will Come First]
-	Priority.Parent = Points
+	local Cash = Instance.new("StringValue")
+	Cash.Name = "Cash"
+	Cash.Value = Format.abbreviate(math.floor(DataHandlerService:GetMoney(player)))
+	Cash.Parent = leaderstats
+
+	local Priority2 = Instance.new("NumberValue")
+	Priority2.Name = "Priority"
+	Priority2.Value = 2 --[Bigger Value Will Come First]
+	Priority2.Parent = Points
+
+	local Priority1 = Instance.new("NumberValue")
+	Priority1.Name = "Priority"
+	Priority1.Value = 1
+	Priority1.Parent = Cash
 end
 
 local function OnPlayerAdded(player: Player)

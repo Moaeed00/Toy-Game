@@ -26,6 +26,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local ProfileStoreModule = require(ServerScriptService.ServerPackages.profilestore)
 local PROFILE_TEMPLATE = require(script:WaitForChild("ProfileTemplate"))
+local Format = require(ReplicatedStorage.Libraries.Format)
 
 -- local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
 
@@ -43,7 +44,9 @@ local EnumDataValue = {
 
 local DataHandlerService = Knit.CreateService({
 	Name = "DataHandlerService",
-	Client = {},
+	Client = {
+		UpdateMoney = Knit.CreateSignal(),
+	},
 })
 
 DataHandlerService.OnPlayerProfileLoaded = Signal.new()
@@ -92,7 +95,7 @@ local function OnPlayerAdded(player: Player)
 			print(`Profile loaded for {player.DisplayName}!`)
 
 			-- Fire any events you need to after the profile has been freshly loaded
-
+			DataHandlerService.Client.UpdateMoney:Fire(player, Profiles[player].Data.Money)
 			-- For Leaderboard Initialization
 		else
 			-- The player has left before the profile session started
@@ -160,10 +163,13 @@ end
 -- LeaderStat Helpers
 local function SetLeaderboardStats(player: Player, Name: string, value: number)
 	local LeaderStats = player:FindFirstChild("leaderstats")
-	local AttrName = LeaderStats:FindFirstChild(Name)
+	local Attr = LeaderStats:FindFirstChild(Name)
 
-	if AttrName then
-		AttrName.Value = value
+	if Attr.Name == "Cash" then
+		DataHandlerService.Client.UpdateMoney:Fire(player, value)
+		Attr.Value = Format.abbreviate(value)
+	else
+		Attr.Value = value
 	end
 end
 
@@ -219,6 +225,7 @@ function DataHandlerService:DeductMoney(player: Player, amount: number)
 		if data.Money >= amount then
 			data.Money -= amount
 			self:SetPlayerData(player, { Money = data.Money })
+			SetLeaderboardStats(player, "Cash", data.Money)
 			return true
 		end
 		return false
@@ -242,6 +249,7 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
+		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end
 

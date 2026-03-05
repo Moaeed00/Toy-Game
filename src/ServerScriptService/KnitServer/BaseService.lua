@@ -182,7 +182,7 @@ function BaseService:SellEntity(player: Player, entityId: string)
 	self:UpdateMoney(player, sellPrice)
 
 	--Send Client Notification
-	print(`{data.DisplayName or "Unknown"} sold for ${Format.abreviate(sellPrice)}`)
+	print(`{data.DisplayName or "Unknown"} sold for ${Format.abbreviate(sellPrice)}`)
 end
 
 function BaseService:PlaceEntity(player: Player, slotName: string)

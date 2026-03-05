@@ -8,6 +8,7 @@ local NumberUtils = require(ReplicatedStorage.Shared.Modules.NumberUtils)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local Format = require(ReplicatedStorage.Libraries.Format)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
+local CounterTween = require(ReplicatedStorage.Utility.Countertween)
 
 export type EntityInBase = {
 
@@ -44,6 +45,10 @@ local function get_slot_label(slot: BasePart): TextLabel
 	local Frame = moneyDisplay.InfoGui.Frame
 
 	return Frame.CharCollect, Frame.CharOffline
+end
+
+local function moneyFormatter(v: number): string
+	return `${Format.abbreviate(math.floor(v))}`
 end
 
 local EntityBase: constructor = Class(
@@ -102,10 +107,15 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		local moneyPerSec = entityData.MoneyPerSec
 
 		self._pendingMoney += moneyPerSec
-		self._slotLabel.Text = `${Format.abreviate(self._pendingMoney)}`
+
+		local prev = CounterTween.GetCurrentValue(self._slotLabel)
+		CounterTween.Animate(self._slotLabel, prev, self._pendingMoney, {
+			Duration = 0.35,
+			Formatter = moneyFormatter,
+		})
 
 		if self._offlineMoney > 0 then
-			self._slotLabelOffline.Text = `${Format.abreviate(self._offlineMoney)}`
+			self._slotLabelOffline.Text = `Offline: ${Format.abbreviate(self._offlineMoney)}`
 			self._slotLabelOffline.Visible = true
 		else
 			self._slotLabelOffline.Text = "$0"
@@ -133,7 +143,10 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 			self._slotLabelOffline.Text = "$0"
 		end
 
-		self._slotLabel.Text = "$0"
+		CounterTween.Animate(self._slotLabel, self._pendingMoney, 0, {
+			Duration = 0.2,
+			Formatter = moneyFormatter,
+		})
 	end))
 end
 
@@ -183,6 +196,8 @@ function EntityBase.Destroy(self: EntityInBase)
 	self._slot:SetAttribute(AttributesConfiguration.SLOT_TAKEN, false)
 	self._slotLabel.Parent.Parent.Enabled = false
 	self._slotLabel.Text = "$0"
+
+	CounterTween.Cleanup(self._slotLabel)
 
 	self._connections:Destroy()
 	self._service:OnAllRemoveEntityRemote(tostring(self._player.UserId), self._id)
