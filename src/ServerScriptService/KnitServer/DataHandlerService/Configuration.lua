@@ -1,4 +1,4 @@
 return {
 	DataStoreName = "ToyGame_MoaeedDev",
-	DataStoreVersion = "1.26",
+	DataStoreVersion = "1.27",
 }
