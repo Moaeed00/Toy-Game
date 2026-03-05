@@ -48,7 +48,7 @@ local function get_slot_label(slot: BasePart): TextLabel
 end
 
 local function moneyFormatter(v: number): string
-	return `${Format.abreviate(math.floor(v))}`
+	return `${Format.abbreviate(math.floor(v))}`
 end
 
 local EntityBase: constructor = Class(
@@ -115,7 +115,7 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		})
 
 		if self._offlineMoney > 0 then
-			self._slotLabelOffline.Text = `Offline: ${Format.abreviate(self._offlineMoney)}`
+			self._slotLabelOffline.Text = `Offline: ${Format.abbreviate(self._offlineMoney)}`
 			self._slotLabelOffline.Visible = true
 		else
 			self._slotLabelOffline.Text = "$0"
