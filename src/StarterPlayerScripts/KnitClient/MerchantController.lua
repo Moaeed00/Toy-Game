@@ -7,13 +7,14 @@ local Gradients: Folder = ReplicatedStorage.Assets.Gradients
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PlayerGui = Player:WaitForChild("PlayerGui")
-local MerchantGui = PlayerGui:WaitForChild("MainGui"):WaitForChild("MerchantFrame")
-local InventoryValue: TextLabel = MerchantGui:WaitForChild("InventoryValue")
-local SellAllButton: ImageButton = MerchantGui:WaitForChild("SellAllButton")
-local ScrollingFrame: ScrollingFrame = MerchantGui:WaitForChild("ScrollingFrame")
+local MerchantGui: ScreenGui = PlayerGui:WaitForChild("MerchantGui")
+local MerchantFrame: Frame = MerchantGui:WaitForChild("MerchantFrame")
+local InventoryValue: TextLabel = MerchantFrame:WaitForChild("InventoryValue")
+local SellAllButton: ImageButton = MerchantFrame:WaitForChild("SellAllButton")
+local ScrollingFrame: ScrollingFrame = MerchantFrame:WaitForChild("ScrollingFrame")
 local TempItem = ScrollingFrame:WaitForChild("Temp")
-local CloseButton: ImageButton = MerchantGui:WaitForChild("CloseButton")
-local NoBrainrotsLabel: TextLabel = MerchantGui:WaitForChild("NoBrainrots")
+local CloseButton: ImageButton = MerchantFrame:WaitForChild("CloseButton")
+local NoBrainrotsLabel: TextLabel = MerchantFrame:WaitForChild("NoBrainrots")
 local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
 local MerchantController = Knit.CreateController { Name = "MerchantController" }
@@ -59,7 +60,7 @@ end
 
 function MerchantController:ToggleSellShopUI(toggle: boolean)
     self.CameraController:ToggleCameraBlurEffect(toggle)
-    MerchantGui.Visible = toggle
+    MerchantGui.Enabled = toggle
 end
 
 function MerchantController:RefreshUI()

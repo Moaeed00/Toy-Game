@@ -6,8 +6,8 @@ local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.Footb
 local GradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local PlayerGui = Player:WaitForChild("PlayerGui")
-local MainGui: ScreenGui = PlayerGui:WaitForChild("MainGui")
-local FootballFrameUI: ImageLabel = MainGui:WaitForChild("FootballsFrame")
+local FootballShopGui: ScreenGui = PlayerGui:WaitForChild("FootballShopGui")
+local FootballFrameUI: ImageLabel = FootballShopGui:WaitForChild("FootballsFrame")
 local CloseButton: ImageButton = FootballFrameUI:WaitForChild("CloseButton")
 local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
@@ -52,7 +52,7 @@ end
 
 function FootballShopController:ToggleFootballShopUI(toggle: boolean)
     self.CameraController:ToggleCameraBlurEffect(toggle)
-    FootballFrameUI.Visible = toggle
+    FootballShopGui.Enabled = toggle
 end
 
 function FootballShopController:GenerateShopData()
@@ -68,7 +68,7 @@ function FootballShopController:GenerateShopData()
         return a.Data.Power < b.Data.Power
     end)
 
-    local ImageLabelFrame: ImageLabel = Player.PlayerGui:WaitForChild("MainGui"):WaitForChild("FootballsFrame")
+    local ImageLabelFrame: ImageLabel = Player.PlayerGui:WaitForChild("FootballShopGui"):WaitForChild("FootballsFrame")
     local ScrollFrame: ScrollingFrame = ImageLabelFrame:WaitForChild("Scroll")
 	local Template = ImageLabelFrame:WaitForChild("Temp")
 
@@ -86,7 +86,7 @@ function FootballShopController:GenerateShopData()
 		itemFrame.ImageBG.ItemImage.Image = data.Image
         itemFrame.HitPower.HitPowerText.Text = data.Power
         itemFrame.Equip.PriceStatus.Text = "$" .. self:FormatCommas(tostring(data.Price))
-        itemFrame.RobuxBuy.Price.Text = data.Robux
+        itemFrame.RobuxBuy.Price.Text = self:FormatCommas(tostring(data.Robux))
         local RarityGradient: UIGradient = GradientsFolder:WaitForChild(data.RarityType)
         local OutlineRarityGradient = RarityGradient:Clone()
         OutlineRarityGradient.Parent = itemFrame
