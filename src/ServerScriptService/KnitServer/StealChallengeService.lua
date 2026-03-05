@@ -307,7 +307,7 @@ function StealChallengeService:KnitStart()
 		local OwnerPlayer = Players:GetPlayerByUserId(ChallengeData.OwnerUserId)
 		local ChallengeId = OwnerPlayer:GetAttribute("ChallengeId")
 
-		self:StartChallenge(ChallengeId)
+		ActiveChallenges[ChallengeId].TimeLeft = 0
 	end)
 
 	Players.PlayerRemoving:Connect(PlayerRemoved)

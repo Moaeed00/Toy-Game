@@ -226,7 +226,7 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 end
 
 function StealChallengeController:AcceptChallenge()
-	self.StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
+	StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
 end
 
 function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
