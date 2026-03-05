@@ -19,7 +19,7 @@ function FootballShopService:KnitInit()
 end
 
 function FootballShopService:KnitStart()
-	FootballShopService.PurchaseProductService = Knit.GetService("PurchaseProductService")
+	FootballShopService.PurchaseProductService = Knit.GetService("ProductPurchaseService")
     FootballShopService.PlayerData = {}
 
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)

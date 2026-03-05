@@ -1,6 +1,9 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
+local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 local FootballUtils = require(ReplicatedStorage.Configuration.Footballs.FootballUtils)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -83,6 +86,8 @@ function FootballService:EquipBall(player: Player)
     weld.Part0 = ball
     weld.Part1 = root
     weld.Parent = ball
+
+    CollisionGroupHandler:AddCollisionGroup("FootBall", footballTool)
 end
 
 function FootballService:KickBall(player: Player, ballPosition: Vector3)
