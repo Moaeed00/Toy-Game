@@ -7,6 +7,7 @@ local Utils = ServerScriptService:WaitForChild("Utils")
 
 local ScoringHelperServer = require(script:WaitForChild("ScoringHelperServer"))
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
+local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootBalls = Assets:WaitForChild("FootBalls")
@@ -14,6 +15,7 @@ local Toys = workspace:WaitForChild("Toys")
 
 local RoundTime = 20
 local KickResetTime = 3
+local ScaleValue = 1.5
 
 local FootBallCollisionGroup = "FootBall"
 
@@ -28,6 +30,7 @@ local ClonedFootBalls = {}
 local BallSpawnReferences = {}
 local ActiveGames = {}
 local ActiveChallenges: {} = {}
+local PlayerPositionReferences: {} = {}
 
 local DataHandlerService
 local StealChallengeService
@@ -179,7 +182,7 @@ function MiniGameService:StartTimer(player)
 	end)
 end
 
-function MiniGameService:EndMiniGame(player)
+function MiniGameService:EndMiniGame(player: Player)
 	if not ActiveGames[player.UserId] then
 		return
 	end
@@ -200,6 +203,7 @@ function MiniGameService:EndMiniGame(player)
 	player:SetAttribute("HasScored", nil)
 	player:SetAttribute("InMiniGame", nil)
 	player:SetAttribute("Mode", nil)
+	CharacterSize:ScaleDown(player)
 
 	self:ReleaseSlot(player)
 end
@@ -215,8 +219,14 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 		return warn("FootBall Not Assigned")
 	end
 
+	local PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
+	player.Character:PivotTo(PlayerPositionReference.CFrame)
+
+	PlayerPositionReferences[player.UserId] = PlayerPositionReference
+
 	player:SetAttribute("InMiniGame", true)
 	player:SetAttribute("Mode", "Solo")
+	CharacterSize:ScaleUp(player, ScaleValue)
 
 	ActiveGames[player.UserId] = {
 		TimeLeft = RoundTime,
@@ -327,6 +337,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		Player:SetAttribute("HasScored", nil)
 		Player:SetAttribute("InMiniGame", nil)
 		Player:SetAttribute("Mode", nil)
+		CharacterSize:ScaleDown(Player)
 
 		self:ReleaseSlot(Player)
 	end
@@ -372,8 +383,14 @@ function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
 			return warn("FootBall Not Assigned")
 		end
 
+		local PlayerPositionReference = Toys:WaitForChild(Slot):WaitForChild("PlayerPositionReference")
+		Player.Character:PivotTo(PlayerPositionReference.CFrame)
+
+		PlayerPositionReferences[Player.UserId] = PlayerPositionReference
+
 		Player:SetAttribute("InMiniGame", true)
 		Player:SetAttribute("Mode", "Challenge")
+		CharacterSize:ScaleUp(Player, ScaleValue)
 	end
 
 	ActiveChallenges[ChallengeGameId] = {
@@ -487,6 +504,22 @@ function MiniGameService:KnitStart()
 
 	self.Client.MiniGame:Connect(function(player, State)
 		self:HandleStates(player, State)
+	end)
+
+	Players.PlayerAdded:Connect(function(player)
+		player.CharacterAdded:Connect(function(Character)
+			if player:GetAttribute("InMiniGame") then
+				local HRP = Character:WaitForChild("HumanoidRootPart")
+				local PlayerPositionReference = PlayerPositionReferences[player.UserId]
+
+				if not HRP or not PlayerPositionReference then
+					return
+				end
+
+				CharacterSize:ScaleUp(player, ScaleValue)
+				player.Character:PivotTo(PlayerPositionReference.CFrame)
+			end
+		end)
 	end)
 
 	Players.PlayerRemoving:Connect(PlayerRemoved)

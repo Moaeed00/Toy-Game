@@ -7,7 +7,6 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
-local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local player: Player = Players.LocalPlayer
 local camera: Camera = workspace.CurrentCamera
@@ -37,8 +36,6 @@ local POWER = 90
 local LIFT = 30
 local CountDownTime = 3
 
-local ScaleValue = 1.5
-
 local CanKick = false
 local GameRunning = false
 local CountDownRunning = false
@@ -49,7 +46,6 @@ local MiniGameService
 local SlotName: string
 local FootBall: MeshPart
 local BallSpawnReference: BasePart
-local PlayerPositionReference: BasePart
 
 function TeleportPlayersToBase()
 	local SpawnPart = PlayerBase:WaitForChild(tostring(player.UserId)):WaitForChild("Spawn")
@@ -239,9 +235,7 @@ function MiniGameController:InitializeMiniGame()
 	SlotName = player:GetAttribute("MiniGameSlot")
 	FootBall = workspace:WaitForChild(player.Name .. "_FootBall")
 	BallSpawnReference = Toys:WaitForChild(SlotName):WaitForChild("BallSpawnReference")
-	PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
 
-	player.Character:PivotTo(PlayerPositionReference.CFrame)
 	SetMiniGameCamera()
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 	LockCameraRotation()
@@ -249,7 +243,6 @@ function MiniGameController:InitializeMiniGame()
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
 	ScoringHelperClient:Initialize()
-	CharacterSize:ScaleUp(player, ScaleValue)
 
 	PlayerControls:Disable()
 	StartCountDown()
@@ -297,7 +290,6 @@ function MiniGameController:EndMiniGame()
 	IndicatorHelperClient:CleanUp()
 	ScoringHelperClient:CleanUp()
 	WallPushers:CleanUp()
-	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 	UnlockCameraRotation()
@@ -321,16 +313,6 @@ function MiniGameController:KnitStart()
 		self:EndMiniGame()
 	end)
 
-	player.CharacterAdded:Connect(function(Character)
-		if GameRunning then
-			local HRP = Character:WaitForChild("HumanoidRootPart")
-			if not HRP then
-				return
-			end
-
-			player.Character:PivotTo(PlayerPositionReference.CFrame)
-		end
-	end)
 end
 
 return MiniGameController
