@@ -1,68 +1,45 @@
 --!strict
---// File: src/ReplicatedStorage/Configuration/CombatMovementConfig.lua
---// CombatMovementConfig.lua
---// Shared config for LEGACY CombatMovementService/Controller (Task 12).
---// UPDATED:
---// - No damage on punch
---// - Brainrot drop is ALWAYS in front of the hit player (not exact collision pos)
+--// File: ReplicatedStorage/Configuration/CombatMovementConfig.lua
 
 local CombatMovementConfig = {}
 
---// ------------------------------
---// Debug
---// ------------------------------
 CombatMovementConfig.DEBUG_PRINTS = true
-
---// ------------------------------
---// Input Mode (NEW)
---// "Tool" = Use Tool.Activated (mouse left click)
---// "Keybind" = Use CTRL for Slide and Q for Punch
---// ------------------------------
 CombatMovementConfig.INPUT_MODE = "Tool"
 
---// Tool names (only used if INPUT_MODE == "Tool")
+--// SLIDE TOOL NAMES
 CombatMovementConfig.SLIDE_TOOL_NAME = "Slide"
-CombatMovementConfig.PUNCH_TOOL_NAME = "Default Slap Hand"
+CombatMovementConfig.GOLDEN_SLIDE_TOOL_NAME = "Golden Slide"
 
---// ------------------------------
---// Animation IDs (Optional - if you still use animations)
---// ------------------------------
-CombatMovementConfig.SLIDE_ANIMATION_ID = "rbxassetid://0"
-CombatMovementConfig.PUNCH_ANIMATION_ID = "rbxassetid://0"
-
---// ----------------E: We keep cooldowns as-is
+--// Slide Cooldown
 CombatMovementConfig.SLIDE_COOLDOWN = 1.5
-CombatMovementConfig.PUNCH_COOLDOWN = 0.8
 
---// ------------------------------
---// Slide Settings
---// ------------------------------
-CombatMovementConfig.SLIDE_DURATION = 0.275
+--// Slide Movement Settings
+CombatMovementConfig.SLIDE_DURATION = 0.9
 CombatMovementConfig.SLIDE_SPEED = 60
 CombatMovementConfig.SLIDE_MAX_FORCE = 150000
 CombatMovementConfig.SLIDE_DISABLE_WALKSPEED = true
 CombatMovementConfig.SLIDE_TEMP_WALKSPEED = 0
 
---// Slide bump settings (NO DAMAGE)
+--// Slide Hitbox
 CombatMovementConfig.SLIDE_BUMP_ENABLED = true
 CombatMovementConfig.SLIDE_BUMP_CHECK_INTERVAL = 0.05
-CombatMovementConfig.SLIDE_BUMP_HITBOX_SIZE = Vector3.new(16, 7, 20)
+CombatMovementConfig.SLIDE_BUMP_HITBOX_SIZE = Vector3.new(7, 7, 20)
 CombatMovementConfig.SLIDE_BUMP_FORWARD_OFFSET = 4
-CombatMovementConfig.SLIDE_BUMP_PUSH_POWER = 60
-CombatMovementConfig.SLIDE_BUMP_PUSH_UP = 10
 
---// ------------------------------
---// Punch Settings (NO DAMAGE)
---// ------------------------------
-CombatMovementConfig.PUNCH_HITBOX_SIZE = Vector3.new(8, 6, 8)
-CombatMovementConfig.PUNCH_HITBOX_FORWARD_OFFSET = 5
+--// Ragdoll Timing
+CombatMovementConfig.RAGDOLL_VELOCITY_THRESHOLD = 1.5
+CombatMovementConfig.RAGDOLL_STABLE_DELAY = 1.0
 
---// Punch bump power (NO DAMAGE)
-CombatMovementConfig.PUNCH_BUMP_PUSH_POWER = 80
-CombatMovementConfig.PUNCH_BUMP_PUSH_UP = 14
+--// Head Ragdoll Tuning
+CombatMovementConfig.HEAD_UPPER_ANGLE = 2
+CombatMovementConfig.HEAD_TWIST_LIMIT = 2
 
---// Slide Hitbox Debug
-CombatMovementConfig.DEBUG_SHOW_SLIDE_HITBOX = true -- set false to HIDE
-CombatMovementConfig.DEBUG_SLIDE_HITBOX_TRANSPARENCY = 0.5 -- 50% transparent
+--// Body Ragdoll Tuning
+CombatMovementConfig.BODY_UPPER_ANGLE = 20
+CombatMovementConfig.BODY_TWIST_LIMIT = 20
+
+--// Debug
+CombatMovementConfig.DEBUG_SHOW_SLIDE_HITBOX = true
+CombatMovementConfig.DEBUG_SLIDE_HITBOX_TRANSPARENCY = 0.5
 
 return CombatMovementConfig

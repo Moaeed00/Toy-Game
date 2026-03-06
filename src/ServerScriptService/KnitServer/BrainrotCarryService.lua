@@ -1,9 +1,4 @@
---!strict
---// BrainrotCarryService.lua
---// Updates:
---// - Added DropBrainrotAtPosition() so other services (like slide collision) can force drop at a location.
-
-local Players = game:GetService("Players")
+local Players: Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
@@ -29,6 +24,9 @@ local originalCanCollideByBrainrot: { [BasePart]: boolean } = {}
 local originalMasslessByBrainrot: { [BasePart]: boolean } = {}
 
 local holdTrackByPlayer: { [Player]: AnimationTrack } = {}
+
+--// [NEW] Reference to BlocksSpawnAreaService
+BrainrotCarryService.BlocksSpawnAreaService = nil
 
 local function getBrainrotToolCount(player: Player): number
 	--// Function: getBrainrotToolCount
@@ -65,9 +63,9 @@ local function getBrainrotToolCount(player: Player): number
 end
 
 
-function BrainrotCarryService:_StartTwoHandHold(player: Player)
+function BrainrotCarryService:_StartTwoHandHold(player: Player, handlePart: BasePart?)
 	--// Function: _StartTwoHandHold
-	--// Plays a two-hand hold animation if provided; otherwise applies a simple fallback pose.
+	--// Plays Hold animation from ReplicatedStorage.Assets.Animations.Hold
 
 	print("[BrainrotCarryService] _StartTwoHandHold() for:", player.Name)
 
@@ -83,10 +81,14 @@ function BrainrotCarryService:_StartTwoHandHold(player: Player)
 		return
 	end
 
-	--// [IMPORTANT] If animation id exists, play it
-	local animId = BrainrotConfig.TWO_HAND_HOLD_ANIMATION_ID
-	if typeof(animId) == "string" and animId ~= "" and animId ~= "rbxassetid://0" then
-		print("[BrainrotCarryService] Playing two-hand hold animation:", animId)
+	-- 🔥 Load new HoldBrainrot animation
+	local holdAnim = ReplicatedStorage
+		:WaitForChild("Assets")
+		:WaitForChild("Animations")
+		:WaitForChild("HoldBrainrot")
+
+	if holdAnim and holdAnim:IsA("Animation") then
+		print("[BrainrotCarryService] Found Hold animation, loading...")
 
 		local animator = hum:FindFirstChildOfClass("Animator")
 		if not animator then
@@ -94,48 +96,59 @@ function BrainrotCarryService:_StartTwoHandHold(player: Player)
 			animator.Parent = hum
 		end
 
-		local anim = Instance.new("Animation")
-		anim.AnimationId = animId
-
-		local track = animator:LoadAnimation(anim)
+		local track = animator:LoadAnimation(holdAnim)
 		track.Looped = true
+		track.Priority = Enum.AnimationPriority.Action
 		track:Play()
 
 		holdTrackByPlayer[player] = track
-		anim:Destroy()
+
+		print("[BrainrotCarryService] Hold animation playing")
 		return
 	end
 
-	--// [FALLBACK] Simple left-arm pose using Transform (works without animation asset)
-	print("[BrainrotCarryService] No hold animation set -> using fallback left-arm pose")
+	-- FALLBACK: Simple arm pose if animation not found
+	warn("[BrainrotCarryService] Hold animation not found at ReplicatedStorage.Assets.Animations.Hold")
+	print("[BrainrotCarryService] Using fallback arm pose")
 
-	--// Try R15 joints (names are typical)
+	-- R15 - both arms forward and inward
 	local upperTorso = character:FindFirstChild("UpperTorso")
 	if upperTorso then
 		local leftShoulder = upperTorso:FindFirstChild("LeftShoulder")
 		if leftShoulder and leftShoulder:IsA("Motor6D") then
-			--// [IMPORTANT] Pull left arm forward
-			leftShoulder.Transform = CFrame.Angles(math.rad(-35), math.rad(25), math.rad(10))
+			leftShoulder.Transform = CFrame.Angles(math.rad(-45), math.rad(15), math.rad(-10))
+		end
+
+		local rightShoulder = upperTorso:FindFirstChild("RightShoulder")
+		if rightShoulder and rightShoulder:IsA("Motor6D") then
+			rightShoulder.Transform = CFrame.Angles(math.rad(-45), math.rad(-15), math.rad(10))
 		end
 	end
 
-	--// R6 fallback (Torso -> "Left Shoulder")
+	-- R6 - both arms forward
 	local torso = character:FindFirstChild("Torso")
 	if torso then
 		local leftShoulder = torso:FindFirstChild("Left Shoulder")
 		if leftShoulder and leftShoulder:IsA("Motor6D") then
-			leftShoulder.Transform = CFrame.Angles(math.rad(-35), 0, math.rad(15))
+			leftShoulder.Transform = CFrame.Angles(math.rad(-45), math.rad(15), 0)
+		end
+
+		local rightShoulder = torso:FindFirstChild("Right Shoulder")
+		if rightShoulder and rightShoulder:IsA("Motor6D") then
+			rightShoulder.Transform = CFrame.Angles(math.rad(-45), math.rad(-15), 0)
 		end
 	end
+
+	print("[BrainrotCarryService] Fallback pose applied")
 end
 
 function BrainrotCarryService:_StopTwoHandHold(player: Player)
 	--// Function: _StopTwoHandHold
-	--// Stops hold animation or resets fallback transforms.
+	--// Stops hold animation and resets both arm transforms
 
 	print("[BrainrotCarryService] _StopTwoHandHold() for:", player.Name)
 
-	--// Stop track if playing
+	-- Stop animation track if playing
 	local track = holdTrackByPlayer[player]
 	if track then
 		print("[BrainrotCarryService] Stopping hold animation track for:", player.Name)
@@ -146,23 +159,100 @@ function BrainrotCarryService:_StopTwoHandHold(player: Player)
 		holdTrackByPlayer[player] = nil
 	end
 
-	--// Reset fallback Transform joints
+	-- Reset arm transforms
 	local character = player.Character
 	if not character then return end
 
+	-- R15 - reset BOTH shoulders
 	local upperTorso = character:FindFirstChild("UpperTorso")
 	if upperTorso then
 		local leftShoulder = upperTorso:FindFirstChild("LeftShoulder")
 		if leftShoulder and leftShoulder:IsA("Motor6D") then
 			leftShoulder.Transform = CFrame.identity
 		end
+
+		local rightShoulder = upperTorso:FindFirstChild("RightShoulder")
+		if rightShoulder and rightShoulder:IsA("Motor6D") then
+			rightShoulder.Transform = CFrame.identity
+		end
 	end
 
+	-- R6 - reset BOTH shoulders
 	local torso = character:FindFirstChild("Torso")
 	if torso then
 		local leftShoulder = torso:FindFirstChild("Left Shoulder")
 		if leftShoulder and leftShoulder:IsA("Motor6D") then
 			leftShoulder.Transform = CFrame.identity
+		end
+
+		local rightShoulder = torso:FindFirstChild("Right Shoulder")
+		if rightShoulder and rightShoulder:IsA("Motor6D") then
+			rightShoulder.Transform = CFrame.identity
+		end
+	end
+
+	print("[BrainrotCarryService] Both arms reset to identity")
+end
+
+function BrainrotCarryService:_weldBrainrotToHands(player: Player, tool: Tool, handlePart: BasePart)
+
+	local character = player.Character
+	if not character then
+		return
+	end
+
+	self:_unweldBrainrotFromHands(tool)
+
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return
+	end
+
+	-- Remove any existing welds
+	for _, desc in ipairs(handlePart:GetDescendants()) do
+		if desc:IsA("WeldConstraint") then
+			desc:Destroy()
+		end
+	end
+
+	-- ✅ CENTERED FIXED POSITION IN FRONT OF PLAYER
+	-- ✅ CENTERED + ROTATED POSITION IN FRONT OF PLAYER
+	local centerCF =
+		hrp.CFrame
+		* BrainrotConfig.CARRY_CENTER_OFFSET
+		* BrainrotConfig.CARRY_ROTATION_OFFSET
+
+	handlePart.CFrame = centerCF
+
+	-- Create single weld to HRP (NOT hands anymore)
+	local weld = Instance.new("WeldConstraint")
+	weld.Name = "CenterCarryWeld"
+	weld.Part0 = handlePart
+	weld.Part1 = hrp
+	weld.Parent = handlePart
+
+	-- Ensure physics safe
+	handlePart.Anchored = false
+	handlePart.CanCollide = false
+	handlePart.Massless = true
+
+	print("[BrainrotCarryService] Brainrot centered and welded to HRP")
+end
+
+function BrainrotCarryService:_unweldBrainrotFromHands(tool: Tool)
+
+	for _, desc in ipairs(tool:GetDescendants()) do
+		if desc:IsA("WeldConstraint") then
+			desc:Destroy()
+		end
+	end
+
+	local handle = tool:FindFirstChild("Handle")
+	if handle then
+		for _, desc in ipairs(handle:GetChildren()) do
+			if desc:IsA("WeldConstraint") then
+				desc:Destroy()
+			end
 		end
 	end
 end
@@ -187,16 +277,38 @@ local function getOrCreateBrainrotFolder(): Folder
 	return folder
 end
 
-local function isValidBrainrotPart(inst: Instance): boolean
-	--// Function: isValidBrainrotPart
-	--// Validates BasePart.
+local function isValidBrainrot(inst: Instance): (boolean, BasePart?)
+	--// Function: isValidBrainrot
+	--// Validates both BasePart and Model brainrots, returns the part to attach prompt to
 
-	if not inst:IsA("BasePart") then
-		print("[BrainrotCarryService] Invalid brainrot (not BasePart):", inst:GetFullName())
-		return false
+	-- Case 1: Direct BasePart
+	if inst:IsA("BasePart") then
+		print("[BrainrotCarryService] Valid brainrot (BasePart):", inst:GetFullName())
+		return true, inst
 	end
 
-	return true
+	-- Case 2: Model with parts
+	if inst:IsA("Model") then
+		-- Try PrimaryPart first
+		if inst.PrimaryPart and inst.PrimaryPart:IsA("BasePart") then
+			print("[BrainrotCarryService] Valid brainrot (Model with PrimaryPart):", inst:GetFullName())
+			return true, inst.PrimaryPart
+		end
+
+		-- Find first BasePart
+		for _, child in ipairs(inst:GetDescendants()) do
+			if child:IsA("BasePart") then
+				print("[BrainrotCarryService] Valid brainrot (Model with part):", inst:GetFullName())
+				return true, child
+			end
+		end
+
+		warn("[BrainrotCarryService] Model has no BasePart:", inst:GetFullName())
+		return false, nil
+	end
+
+	print("[BrainrotCarryService] Invalid brainrot (not BasePart or Model):", inst:GetFullName())
+	return false, nil
 end
 
 local function ensureBrainrotId(part: BasePart): string
@@ -215,173 +327,144 @@ local function ensureBrainrotId(part: BasePart): string
 end
 
 function BrainrotCarryService:_convertBrainrotPartToTool(player: Player, brainrotPart: BasePart): Tool?
-	--// Function: _convertBrainrotPartToTool
-	--// Moves the world brainrot part into a Tool (inventory item).
 
-	print("[BrainrotCarryService] _convertBrainrotPartToTool() player:", player.Name, "part:", brainrotPart:GetFullName())
-
-	--// [IF] backpack missing
 	local backpack = player:FindFirstChildOfClass("Backpack")
 	if not backpack then
-		warn("[BrainrotCarryService] Backpack missing for:", player.Name)
 		return nil
 	end
 
-	--// [IMPORTANT] Ensure id
 	local id = ensureBrainrotId(brainrotPart)
 
-	--// [IMPORTANT] Create tool
 	local tool = Instance.new("Tool")
 	tool.Name = "Brainrot_" .. string.sub(id, 1, 6)
 	tool.RequiresHandle = true
-
-	--// [IMPORTANT] Tag tool so PvP services can detect “brainrot equipped”
 	tool:SetAttribute("IsBrainrotTool", true)
 	tool:SetAttribute("BrainrotId", id)
-	--// [IMPORTANT] Mark carried state so old prompt logic doesn't block later
-	brainrotPart:SetAttribute("IsCarried", true)
-	brainrotPart:SetAttribute("CarriedByUserId", player.UserId)
+	tool.CanBeDropped = false
 
-	--// [IMPORTANT] Remove ProximityPrompt entirely while brainrot is in inventory/equipped
-	local prompt = brainrotPart:FindFirstChild(BrainrotConfig.PROMPT_NAME)
-	if prompt and prompt:IsA("ProximityPrompt") then
-		print("[BrainrotCarryService] Destroying prompt (inventory tool) for:", brainrotPart:GetFullName())
-		prompt:Destroy()
+	local parentModel = brainrotPart.Parent
+	local isModelBrainrot = parentModel 
+		and parentModel:IsA("Model") 
+		and CollectionService:HasTag(parentModel, BrainrotConfig.BRAINROT_TAG_NAME)
+
+	local handlePart: BasePart
+
+	if isModelBrainrot then
+		handlePart = parentModel:FindFirstChild("RootPart")
+		if not handlePart then
+			return nil
+		end
+
+		-- DO NOT TOUCH PHYSICS LOGIC (keep your current working logic)
+		for _, part in ipairs(parentModel:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Anchored = false
+				part.CanCollide = false
+				part.Massless = true
+			end
+		end
+
+		handlePart.Name = "Handle"
+		CollectionService:RemoveTag(parentModel, BrainrotConfig.BRAINROT_TAG_NAME)
+		parentModel.Parent = tool
+		tool:SetAttribute("IsModelBrainrot", true)
+
+	else
+		handlePart = brainrotPart
+		handlePart.Name = "Handle"
+		handlePart.Anchored = false
+		handlePart.CanCollide = false
+		handlePart.Massless = true
+		handlePart.Parent = tool
 	end
 
-	--// [IMPORTANT] Disconnect any stored Triggered connection for this part
-	if promptTriggeredConnections[brainrotPart] then
-		print("[BrainrotCarryService] Disconnecting prompt Triggered connection (inventory tool) for:", brainrotPart:GetFullName())
-		promptTriggeredConnections[brainrotPart]:Disconnect()
-		promptTriggeredConnections[brainrotPart] = nil
-	end
-
-	--// [IMPORTANT] Make it a valid tool Handle
-	brainrotPart:SetAttribute("BrainrotWorldName", brainrotPart.Name)
-	brainrotPart.Name = "Handle"
-	brainrotPart.Anchored = false
-	brainrotPart.Massless = true
-	brainrotPart.CanCollide = false
-
-	--// [IMPORTANT] Parent part into tool, then tool into backpack
-	brainrotPart.Parent = tool
 	tool.Parent = backpack
-	--// [IMPORTANT] Auto-equip immediately after pickup (so it appears in hands)
+	
+	-- 🔥 GLOBAL EQUIP DETECTION (robust fix)
 	local character = player.Character
 	if character then
-		local hum = character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			print("[BrainrotCarryService] Auto-equipping brainrot tool for:", player.Name)
-			hum:EquipTool(tool)
-		end
+
+		character.ChildAdded:Connect(function(child)
+			if child == tool then
+
+				print("[BrainrotCarryService] Brainrot re-equipped detected via Character.ChildAdded")
+
+				local handle = tool:FindFirstChild("Handle", true)
+				if not handle or not handle:IsA("BasePart") then
+					warn("[BrainrotCarryService] Re-equip failed: Handle missing")
+					return
+				end
+
+				player:SetAttribute("IsBrainrotEquipped", true)
+
+				self:_weldBrainrotToHands(player, tool, handle)
+				self:_StartTwoHandHold(player, handle)
+
+				if self.BlocksSpawnAreaService then
+					self.BlocksSpawnAreaService:UpdatePlayerSpeed(player)
+				end
+			end
+		end)
+
+		character.ChildRemoved:Connect(function(child)
+			if child == tool then
+				print("[BrainrotCarryService] Brainrot unequipped detected via Character.ChildRemoved")
+
+				player:SetAttribute("IsBrainrotEquipped", false)
+				self:_StopTwoHandHold(player)
+				self:_unweldBrainrotFromHands(tool)
+			end
+		end)
+
 	end
+	
+	-- 🔥 HARD STOP if tool leaves character (player switches item)
+	tool.AncestryChanged:Connect(function(_, parent)
+		local character = player.Character
+		if not character then return end
 
-	--// [IMPORTANT] Auto-equip immediately after pickup
-	local character = player.Character
-	if character then
-		local hum = character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			print("[BrainrotCarryService] Auto-equipping brainrot tool for:", player.Name)
-			hum:EquipTool(tool)
+		-- If tool is no longer in character, stop hold
+		if parent ~= character then
+			if holdTrackByPlayer[player] then
+				print("[BrainrotCarryService] Brainrot tool left character → stopping hold")
+				self:_StopTwoHandHold(player)
+			end
 		end
-	end
-
-
-	print("[BrainrotCarryService] ✅ Brainrot converted into Tool:", tool.Name, "for:", player.Name)
-
-	--// [IMPORTANT] Maintain “has brainrot in inventory” flag
-	player:SetAttribute("IsCarryingBrainrot", true)
-
-	--// [EVENT] Equipped/Unequipped debug + attribute
-	tool.Equipped:Connect(function()
-		--// Event: Equipped
-		print("[BrainrotCarryService] Brainrot EQUIPPED:", player.Name, tool.Name)
-
-		player:SetAttribute("IsBrainrotEquipped", true)
-
-		--// [IMPORTANT] Start two-hand hold pose
-		self:_StartTwoHandHold(player)
 	end)
 
-	tool.Unequipped:Connect(function()
-		--// Event: Unequipped
-		print("[BrainrotCarryService] Brainrot UNEQUIPPED:", player.Name, tool.Name)
+	local character = player.Character
+	if character then
+		local hum = character:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum:EquipTool(tool)
 
+			-- 🔥 FORCE EQUIPPED STATE IMMEDIATELY
+			player:SetAttribute("IsBrainrotEquipped", true)
+
+			-- 🔥 Sync ownership state immediately
+			local ownerId = tool:GetAttribute("OwnedByUserId")
+			player:SetAttribute("OwnsEquippedBrainrot", ownerId == player.UserId)
+
+			task.wait(0.05)
+			self:_weldBrainrotToHands(player, tool, handlePart)
+			self:_StartTwoHandHold(player, handlePart)
+		end
+	end
+
+	player:SetAttribute("IsCarryingBrainrot", true)
+
+	tool.Unequipped:Connect(function()
 		player:SetAttribute("IsBrainrotEquipped", false)
 
-		--// [IMPORTANT] Stop two-hand hold pose
+		-- DO NOT TOUCH OWNERSHIP HERE
+		-- Ownership stays stored on the tool
+
 		self:_StopTwoHandHold(player)
+		self:_unweldBrainrotFromHands(tool)
 	end)
 
 	return tool
 end
-
-function BrainrotCarryService:_applyTwoHandVisual(player: Player, tool: Tool, handle: BasePart)
-	--// Function: _applyTwoHandVisual
-	--// Creates a LEFT-hand visual clone so brainrot appears in both hands (visual only).
-
-	print("[BrainrotCarryService] _applyTwoHandVisual() for:", player.Name, "tool:", tool.Name)
-
-	local character = player.Character
-	--// [IF] no character
-	if not character then
-		print("[BrainrotCarryService] _applyTwoHandVisual() FAIL -> no character")
-		return
-	end
-
-	--// [IMPORTANT] Find left hand part (R15: LeftHand, R6: Left Arm)
-	local leftHand: BasePart? = character:FindFirstChild("LeftHand") :: BasePart?
-	if not leftHand or not leftHand:IsA("BasePart") then
-		leftHand = character:FindFirstChild("Left Arm") :: BasePart?
-	end
-
-	--// [IF] missing left hand
-	if not leftHand or not leftHand:IsA("BasePart") then
-		print("[BrainrotCarryService] _applyTwoHandVisual() FAIL -> left hand not found")
-		return
-	end
-
-	--// [IMPORTANT] Cleanup old visual if exists
-	local old = character:FindFirstChild("BrainrotLeftVisual")
-	if old then
-		old:Destroy()
-	end
-
-	--// [IMPORTANT] Clone handle (VISUAL ONLY)
-	local leftVisual = handle:Clone()
-	leftVisual.Name = "BrainrotLeftVisual"
-
-	--// [IMPORTANT] Safety: no collision
-	leftVisual.CanCollide = false
-	leftVisual.Massless = true
-	leftVisual.Anchored = false
-
-	--// [IMPORTANT] Remove proximity prompt from visual if it exists
-	local prompt = leftVisual:FindFirstChild(BrainrotConfig.PROMPT_NAME)
-	if prompt then
-		prompt:Destroy()
-	end
-
-	--// [IMPORTANT] Remove CollectionService tag (avoid prompt systems)
-	pcall(function()
-		CollectionService:RemoveTag(leftVisual, BrainrotConfig.BRAINROT_TAG_NAME)
-	end)
-
-	--// [IMPORTANT] Position near left hand (tweak offsets if needed)
-	leftVisual.CFrame = leftHand.CFrame * CFrame.new(0, 0, -0.6)
-
-	--// [IMPORTANT] Weld visual to left hand
-	local weld = Instance.new("WeldConstraint")
-	weld.Name = "BrainrotLeftVisualWeld"
-	weld.Part0 = leftHand
-	weld.Part1 = leftVisual
-	weld.Parent = leftVisual
-
-	leftVisual.Parent = character
-
-	print("[BrainrotCarryService] ✅ Left-hand visual created for:", player.Name)
-end
-
 
 function BrainrotCarryService:_disablePickupPrompt(brainrotPart: BasePart)
 	--// Function: _disablePickupPrompt
@@ -404,23 +487,14 @@ end
 
 function BrainrotCarryService:_ensurePickupPrompt(brainrotPart: BasePart)
 
-	--// [IF] don't create prompts in inventory/tools
 	if not brainrotPart:IsDescendantOf(workspace) then
-		print("[BrainrotCarryService] _ensurePickupPrompt ignored (not in workspace):", brainrotPart:GetFullName())
 		return
 	end
-
-	--// Function: _ensurePickupPrompt
-	--// Ensures prompt exists and connects Triggered.
-
-	print("[BrainrotCarryService] _ensurePickupPrompt() for:", brainrotPart:GetFullName())
 
 	local brainrotId = ensureBrainrotId(brainrotPart)
 	local prompt = brainrotPart:FindFirstChild(BrainrotConfig.PROMPT_NAME)
 
 	if not prompt or not prompt:IsA("ProximityPrompt") then
-		print("[BrainrotCarryService] Creating ProximityPrompt for BrainrotId:", brainrotId)
-
 		local newPrompt = Instance.new("ProximityPrompt")
 		newPrompt.Name = BrainrotConfig.PROMPT_NAME
 		newPrompt.ActionText = BrainrotConfig.PROMPT_ACTION_TEXT
@@ -428,97 +502,31 @@ function BrainrotCarryService:_ensurePickupPrompt(brainrotPart: BasePart)
 		newPrompt.KeyboardKeyCode = BrainrotConfig.PROMPT_KEYCODE
 		newPrompt.MaxActivationDistance = BrainrotConfig.PROMPT_MAX_DISTANCE
 		newPrompt.RequiresLineOfSight = BrainrotConfig.PROMPT_REQUIRES_LOS
-		newPrompt.HoldDuration = BrainrotConfig.PROMPT_HOLD_DURATION
-		newPrompt.Parent = brainrotPart
 
+		-- ✅ FIXED INTERACTION TIME
+		newPrompt.HoldDuration = 0.2
+
+		newPrompt.Parent = brainrotPart
 		prompt = newPrompt
 	else
-		print("[BrainrotCarryService] Updating existing prompt for BrainrotId:", brainrotId)
-
-		prompt.ActionText = BrainrotConfig.PROMPT_ACTION_TEXT
-		prompt.ObjectText = BrainrotConfig.PROMPT_OBJECT_TEXT
-		prompt.KeyboardKeyCode = BrainrotConfig.PROMPT_KEYCODE
-		prompt.MaxActivationDistance = BrainrotConfig.PROMPT_MAX_DISTANCE
-		prompt.RequiresLineOfSight = BrainrotConfig.PROMPT_REQUIRES_LOS
-		prompt.HoldDuration = BrainrotConfig.PROMPT_HOLD_DURATION
+		prompt.HoldDuration = 0.2 -- enforce
 	end
 
-	--// IF: carried -> keep disabled
 	if brainrotPart:GetAttribute("IsCarried") == true then
 		prompt.Enabled = false
-		print("[BrainrotCarryService] Brainrot carried -> prompt disabled:", brainrotId)
 		return
 	end
 
 	prompt.Enabled = true
 
-	--// Disconnect old connection if any
 	if promptTriggeredConnections[brainrotPart] then
 		promptTriggeredConnections[brainrotPart]:Disconnect()
 		promptTriggeredConnections[brainrotPart] = nil
-		print("[BrainrotCarryService] Old Triggered connection disconnected for BrainrotId:", brainrotId)
 	end
-
-	--// Connect Triggered
-	print("[BrainrotCarryService] Connecting prompt Triggered for BrainrotId:", brainrotId)
 
 	promptTriggeredConnections[brainrotPart] = prompt.Triggered:Connect(function(player: Player)
-		--// Event: prompt triggered
-		print("[BrainrotCarryService] Prompt triggered by:", player.Name, "BrainrotId:", brainrotId)
 		self:TryPickup(player, brainrotPart)
 	end)
-end
-
-function BrainrotCarryService:_attachBrainrotToCharacter(player: Player, brainrotPart: BasePart): boolean
-	--// Function: _attachBrainrotToCharacter
-	--// Welds brainrot to HRP.
-
-	print("[BrainrotCarryService] _attachBrainrotToCharacter() called for:", player.Name)
-
-	local character = player.Character
-	if not character then
-		print("[BrainrotCarryService] FAIL -> no character:", player.Name)
-		return false
-	end
-
-	local hrp = character:FindFirstChild("HumanoidRootPart")
-	if not hrp or not hrp:IsA("BasePart") then
-		print("[BrainrotCarryService] FAIL -> no HRP:", player.Name)
-		return false
-	end
-
-	--// Store original physics once
-	if originalAnchoredByBrainrot[brainrotPart] == nil then
-		originalAnchoredByBrainrot[brainrotPart] = brainrotPart.Anchored
-		originalCanCollideByBrainrot[brainrotPart] = brainrotPart.CanCollide
-		originalMasslessByBrainrot[brainrotPart] = brainrotPart.Massless
-		print("[BrainrotCarryService] Stored original physics for:", brainrotPart:GetFullName())
-	end
-
-	brainrotPart:SetAttribute("IsCarried", true)
-	brainrotPart:SetAttribute("CarriedByUserId", player.UserId)
-
-	brainrotPart.Anchored = false
-	brainrotPart.CanCollide = false
-	brainrotPart.Massless = true
-
-	brainrotPart.Parent = character
-	brainrotPart.CFrame = hrp.CFrame * BrainrotConfig.CARRY_OFFSET_CFRAME
-
-	local oldWeld = brainrotPart:FindFirstChild("BrainrotCarryWeld")
-	if oldWeld then
-		oldWeld:Destroy()
-		print("[BrainrotCarryService] Old weld destroyed:", brainrotPart:GetFullName())
-	end
-
-	local weld = Instance.new("WeldConstraint")
-	weld.Name = "BrainrotCarryWeld"
-	weld.Part0 = hrp
-	weld.Part1 = brainrotPart
-	weld.Parent = brainrotPart
-
-	print("[BrainrotCarryService] ✅ Weld created for:", player.Name)
-	return true
 end
 
 function BrainrotCarryService:_placeBrainrotAtWorldPosition(player: Player, brainrotPart: BasePart, worldPos: Vector3)
@@ -578,16 +586,33 @@ end
 function BrainrotCarryService:TryPickup(player: Player, brainrotPart: BasePart)
 	--// Function: TryPickup
 	--// Triggered by ProximityPrompt.
+	--// [NEW] Checks BlocksSpawnAreaService permission.
 
 	print("[BrainrotCarryService] TryPickup() called by:", player.Name)
 
-	if not isValidBrainrotPart(brainrotPart) then
-		return
+	local modelPath = brainrotPart:GetAttribute("BrainrotModel")
+	local brainrotInstance = brainrotPart
+
+	if modelPath then
+		local model = workspace:FindFirstChild(modelPath, true)
+		if model and model:IsA("Model") then
+			brainrotInstance = model
+			print("[BrainrotCarryService] Using Model brainrot:", model:GetFullName())
+		end
 	end
 
 	if brainrotPart:GetAttribute("IsCarried") == true then
 		print("[BrainrotCarryService] TryPickup blocked -> already carried")
 		return
+	end
+
+	--// [NEW] Check BlocksSpawnArea permission
+	if self.BlocksSpawnAreaService then
+		local canPickup = self.BlocksSpawnAreaService:CanPickupBrainrot(player)
+		if not canPickup then
+			print("[BrainrotCarryService] TryPickup BLOCKED -> not in BlocksSpawnArea:", player.Name)
+			return
+		end
 	end
 
 	--// [IMPORTANT] Limit inventory to MAX_BRAINROT_INVENTORY
@@ -615,6 +640,12 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotPart: BasePart)
 	player:SetAttribute("IsCarryingBrainrot", true)
 
 	self.Client.CarryStateChanged:Fire(player, true, brainrotPart)
+	
+	-- 🔥 FORCE SPEED UPDATE AFTER PICKUP
+	local blocksService = self.BlocksSpawnAreaService
+	if blocksService then
+		blocksService:UpdatePlayerSpeed(player)
+	end
 
 	print("[BrainrotCarryService] ✅ Pickup success:", player.Name)
 end
@@ -622,10 +653,19 @@ end
 function BrainrotCarryService:DropBrainrot(player: Player, reason: string?, _dropWorldPos: Vector3?)
 	--// Function: DropBrainrot
 	--// Drops the equipped brainrot Tool by extracting its Handle and placing it in front of the player.
-	--// IMPORTANT: Handle will be ANCHORED in world because it has NO collisions (otherwise it falls through floor).
+	--// [NEW] Checks BlocksSpawnAreaService permission.
 
 	local why = reason or "Unknown"
 	print("[BrainrotCarryService] DropBrainrot() called for:", player.Name, "Reason:", why)
+
+	--// [NEW] Check BlocksSpawnArea permission (unless forced by system)
+	if self.BlocksSpawnAreaService and reason ~= "SlideCollisionDrop" and reason ~= "PunchHitDrop" then
+		local canDrop = self.BlocksSpawnAreaService:CanDropBrainrot(player)
+		if not canDrop then
+			print("[BrainrotCarryService] DropBrainrot BLOCKED -> not in BlocksSpawnArea:", player.Name)
+			return
+		end
+	end
 
 	--// [IMPORTANT] Validate character
 	local character = player.Character
@@ -654,6 +694,11 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?, _dro
 
 	--// [IMPORTANT] Get Handle
 	local handle = equippedTool:FindFirstChild("Handle")
+
+	if not handle then
+		handle = equippedTool:FindFirstChild("Handle", true) -- recursive search
+	end
+
 	if not handle or not handle:IsA("BasePart") then
 		warn("[BrainrotCarryService] Equipped brainrot tool missing Handle:", equippedTool.Name)
 		return
@@ -666,10 +711,12 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?, _dro
 		hum:UnequipTools()
 	end
 
+	self:_unweldBrainrotFromHands(equippedTool)
+
 	--// [IMPORTANT] Wait 1 tick so grips release (prevents "Parent locked" error)
 	task.wait()
 
-	--// [IMPORTANT] Stop two-hand pose (if you add it below)
+	--// [IMPORTANT] Stop two-hand pose
 	if self._StopTwoHandHold then
 		self:_StopTwoHandHold(player)
 	end
@@ -681,17 +728,114 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?, _dro
 	local folder = getOrCreateBrainrotFolder()
 	print("[BrainrotCarryService] Moving Handle back to:", folder:GetFullName())
 
-	--// ✅ CRITICAL: parent first
-	handle.Parent = folder
-	--// [IMPORTANT] Reset carried markers so prompt is allowed again
-	handle:SetAttribute("IsCarried", false)
-	handle:SetAttribute("CarriedByUserId", nil)
+	-- Check if this was a Model brainrot
+	local parentModel = handle.Parent
+	local wasModel = equippedTool:GetAttribute("IsModelBrainrot") == true
+
+	if wasModel then
+		print("[BrainrotCarryService] Dropping Model brainrot:", parentModel.Name)
+
+		-- Move entire model back to workspace folder
+		local folder = getOrCreateBrainrotFolder()
+		parentModel.Parent = folder
+
+		-- RE-ANCHOR all parts when dropped (for stable placement)
+		for _, part in ipairs(parentModel:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.Anchored = true
+				part.CanCollide = false
+				part.Massless = false
+				print("[BrainrotCarryService] Re-anchored part:", part.Name)
+			end
+		end
+
+		-- Restore RootPart name
+		local originalName = handle:GetAttribute("OriginalName")
+		if originalName then
+			handle.Name = originalName
+			handle:SetAttribute("OriginalName", nil)
+		else
+			handle.Name = "RootPart"  -- Default to RootPart
+		end
+
+		-- Reset attributes
+		if parentModel:IsA("Model") then
+			parentModel:SetAttribute("IsCarried", false)
+			parentModel:SetAttribute("CarriedByUserId", nil)
+		end
+
+		handle:SetAttribute("IsCarried", false)
+		handle:SetAttribute("CarriedByUserId", nil)
+
+		-- Place model in front of player
+		-- 🔥 Custom fixed Y drop + fixed Y rotation for MODEL brainrots
+
+		local character = player.Character
+		if character then
+			local hrp = character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				-- Position in front of player (keep X/Z)
+				local forwardPos = (hrp.CFrame * CFrame.new(0, 0, -4)).Position
+
+				-- Force Y to -7.4
+				local fixedPos = Vector3.new(forwardPos.X, -7.4, forwardPos.Z)
+
+				-- 🔥 Fixed Y rotation = -90 degrees
+				local rotation = CFrame.Angles(0, math.rad(-90), 0)
+
+				parentModel:PivotTo(CFrame.new(fixedPos) * rotation)
+			end
+		end
+
+		-- Re-add tag to MODEL
+		pcall(function()
+			CollectionService:AddTag(parentModel, BrainrotConfig.BRAINROT_TAG_NAME)
+		end)
+
+		-- Add prompt to RootPart for pickup
+		self:_ensurePickupPrompt(handle)
+
+		print("[BrainrotCarryService] Model drop complete")
+
+
+	else
+		-- Single part brainrot (original logic)
+		--// ✅ CRITICAL: parent first
+		handle.Parent = folder
+		--// [IMPORTANT] Reset carried markers so prompt is allowed again
+		handle:SetAttribute("IsCarried", false)
+		handle:SetAttribute("CarriedByUserId", nil)
+
+		print("[BrainrotCarryService] Drop reset attributes -> IsCarried=false, CarriedByUserId=nil for:", handle:GetFullName())
+
+		--// [IMPORTANT] Restore name (optional) so it's not always "Handle"
+		local originalName = handle:GetAttribute("BrainrotWorldName")
+		if typeof(originalName) == "string" and originalName ~= "" then
+			handle.Name = originalName
+			print("[BrainrotCarryService] Restored world name:", handle.Name)
+		end
+
+		--// [IMPORTANT] World physics: NO collision but MUST be anchored (otherwise falls through floor)
+		handle.CanCollide = false
+		handle.Massless = false
+		handle.Anchored = true
+
+		--// [IMPORTANT] Place IN FRONT of player
+		self:_placeBrainrotInFrontOfPlayer(player, handle)
+
+		--// [IMPORTANT] Re-add tag + prompt so it can be picked again
+		pcall(function()
+			CollectionService:AddTag(handle, BrainrotConfig.BRAINROT_TAG_NAME)
+		end)
+
+		self:_ensurePickupPrompt(handle)
+	end
 
 	print("[BrainrotCarryService] Drop reset attributes -> IsCarried=false, CarriedByUserId=nil for:", handle:GetFullName())
 
 	print("[BrainrotCarryService] Handle parent is now:", handle.Parent and handle.Parent:GetFullName() or "nil")
 
-	--// [IMPORTANT] Restore name (optional) so it’s not always "Handle"
+	--// [IMPORTANT] Restore name (optional) so it's not always "Handle"
 	local originalName = handle:GetAttribute("BrainrotWorldName")
 	if typeof(originalName) == "string" and originalName ~= "" then
 		handle.Name = originalName
@@ -726,6 +870,12 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?, _dro
 	--// [DEBUG] Tell client carry stopped
 	self.Client.CarryStateChanged:Fire(player, false, nil)
 
+	-- 🔥 FORCE SPEED UPDATE AFTER DROP
+	local blocksService = self.BlocksSpawnAreaService
+	if blocksService then
+		blocksService:UpdatePlayerSpeed(player)
+	end
+
 	--// [IMPORTANT] Destroy ONLY tool shell after handle is safe in workspace
 	print("[BrainrotCarryService] Destroying tool shell AFTER drop:", equippedTool.Name)
 	equippedTool:Destroy()
@@ -745,30 +895,46 @@ end
 function BrainrotCarryService.Client:RequestDrop(player: Player, reason: string?)
 	--// Function: Client.RequestDrop
 	--// Client request drop (default key G). No custom position.
+	--// [NEW] Checks BlocksSpawnArea permission.
 
 	print("[BrainrotCarryService] Client.RequestDrop called by:", player.Name, "reason:", reason or "nil")
+
+	--// [NEW] Check BlocksSpawnArea permission
+	if self.Server.BlocksSpawnAreaService then
+		local canDrop = self.Server.BlocksSpawnAreaService:CanDropBrainrot(player)
+		if not canDrop then
+			print("[BrainrotCarryService] Client.RequestDrop BLOCKED -> not in BlocksSpawnArea:", player.Name)
+			return
+		end
+	end
+
 	self.Server:DropBrainrot(player, reason or "ClientRequested", nil)
 end
 
 function BrainrotCarryService:_registerBrainrot(brainrotInst: Instance)
 	--// Function: _registerBrainrot
-	--// Ensures prompt exists on tagged brainrot.
+	--// Ensures prompt exists on tagged brainrot (supports Model + BasePart)
 
-	--// [IF] ignore non-workspace brainrots (inventory/tools)
 	if not brainrotInst:IsDescendantOf(workspace) then
 		print("[BrainrotCarryService] _registerBrainrot ignored (not in workspace):", brainrotInst:GetFullName())
 		return
 	end
 
-
 	print("[BrainrotCarryService] _registerBrainrot() called for:", brainrotInst:GetFullName())
 
-	if not isValidBrainrotPart(brainrotInst) then
+	local isValid, promptPart = isValidBrainrot(brainrotInst)
+	if not isValid or not promptPart then
 		return
 	end
 
-	self:_ensurePickupPrompt(brainrotInst :: BasePart)
+	-- Store reference to model if applicable
+	if brainrotInst:IsA("Model") then
+		promptPart:SetAttribute("BrainrotModel", brainrotInst:GetFullName())
+	end
+
+	self:_ensurePickupPrompt(promptPart)
 end
+
 
 function BrainrotCarryService:KnitInit()
 	--// Function: KnitInit
@@ -782,10 +948,7 @@ function BrainrotCarryService:KnitInit()
 		--// Event: PlayerRemoving
 		print("[BrainrotCarryService] PlayerRemoving -> forcing drop if carrying:", player.Name)
 		self:DropBrainrot(player, "PlayerRemoving", nil)
-		--// Cleanup debug hitbox on leaving
-		self:_cleanupSlideDebugPart(player)
 	end)
-	
 
 	print("[BrainrotCarryService] KnitInit() complete")
 end
@@ -793,8 +956,21 @@ end
 function BrainrotCarryService:KnitStart()
 	--// Function: KnitStart
 	--// Register existing tagged brainrots + listen for new tags.
+	--// [NEW] Get BlocksSpawnAreaService reference.
 
 	print("[BrainrotCarryService] KnitStart() start")
+
+	--// [NEW] Get BlocksSpawnAreaService
+	local ok, serviceOrErr = pcall(function()
+		return Knit.GetService("BlocksSpawnAreaService")
+	end)
+
+	if ok then
+		self.BlocksSpawnAreaService = serviceOrErr
+		print("[BrainrotCarryService] Got BlocksSpawnAreaService ✅")
+	else
+		warn("[BrainrotCarryService] BlocksSpawnAreaService not found:", serviceOrErr)
+	end
 
 	local tagged = CollectionService:GetTagged(BrainrotConfig.BRAINROT_TAG_NAME)
 	print("[BrainrotCarryService] Tagged brainrots count:", #tagged)

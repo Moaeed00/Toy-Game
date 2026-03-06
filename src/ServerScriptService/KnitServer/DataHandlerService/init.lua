@@ -45,9 +45,7 @@ local EnumDataValue = {
 	["Coins"] = "Coins",
 }
 
-local DataHandlerService = Knit.CreateService({
-	Name = "DataHandlerService",
-})
+local DataHandlerService = Knit.CreateService { Name = "DataHandlerService" }
 
 DataHandlerService.OnPlayerProfileLoaded = Signal.new()
 DataHandlerService.BeforeLastSave = Signal.new()
@@ -130,7 +128,7 @@ end
 function DataHandlerService:UpdateCoins(player: Player, amountEarned: number)
     local playerData = self:GetPlayerData(player)
     if playerData then
-        local prevCoins = playerData[EnumDataValue.Coins]
+        local prevCoins = playerData.Coins
         local updatedCoins = prevCoins + amountEarned
         self:SetPlayerData(player, {Coins = updatedCoins})
         CoinsDataStoreModule:SaveData(player, math.floor(updatedCoins))
@@ -225,8 +223,29 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
+		PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
 	end
 end
+
+
+function DataHandlerService:ReturnTopTenPlayers()
+	local coins = {}
+	local points = {}
+
+	pcall(function()
+		coins = CoinsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	pcall(function()
+		points = PointsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	return {
+		Coins = coins,
+		Points = points,
+	}
+end
+
 
 --Initialization
 function DataHandlerService:KnitInit() end
