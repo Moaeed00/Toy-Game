@@ -21,6 +21,10 @@ local PlayerService: Players = game:GetService("Players")
 local ServerScriptService: ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
+local CoinsDataStoreModule = require(GlobalDataStores:WaitForChild("CoinsDataStore"))
+local PointsDataStoreModule = require(GlobalDataStores:WaitForChild("PointsDataStore"))
+
 -- [References] --
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
@@ -105,6 +109,36 @@ local function OnPlayerAdded(player: Player)
 		-- This condition should only happen when the Roblox server is shutting down
 		player:Kick(`Profile load fail - Please rejoin`)
 	end
+end
+
+----    [Currency]        ----
+function DataHandlerService:DeductCoins(player, amount)
+    local data = self:GetPlayerData(player)
+
+    if amount <= 0 then return false end
+
+    if data.Coins >= amount then
+        data.Coins -= amount
+        self:SetPlayerData(player, {[EnumDataValue.Coins] = data.Coins})
+        CoinsDataStoreModule:SaveData(player, math.floor(data.Coins))
+        return true
+    end
+    return false
+end
+
+function DataHandlerService:GetCoins(player)
+    local data = self:GetPlayerData(player)
+    return data.Coins
+end
+
+function DataHandlerService:UpdateCoins(player: Player, amountEarned: number)
+    local playerData = self:GetPlayerData(player)
+    if playerData then
+        local prevCoins = playerData.Coins
+        local updatedCoins = prevCoins + amountEarned
+        self:SetPlayerData(player, {Coins = updatedCoins})
+        CoinsDataStoreModule:SaveData(player, math.floor(updatedCoins))
+    end
 end
 
 local function Main()
@@ -225,6 +259,7 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
+		PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
@@ -268,6 +303,26 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end
+
+
+function DataHandlerService:ReturnTopTenPlayers()
+	local coins = {}
+	local points = {}
+
+	pcall(function()
+		coins = CoinsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	pcall(function()
+		points = PointsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	return {
+		Coins = coins,
+		Points = points,
+	}
+end
+
 
 --Initialization
 function DataHandlerService:KnitInit() end
