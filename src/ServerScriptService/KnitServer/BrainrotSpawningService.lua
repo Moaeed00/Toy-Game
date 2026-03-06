@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
 local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
@@ -195,6 +196,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     animationTrack:AdjustSpeed(1)
     animationTrack:Play()
 
+    CollectionService:AddTag(spawnedBrainrot, "Brainrot")
     spawnedBrainrot:SetAttribute("Name", brainrotName)
     spawnedBrainrot:SetAttribute("RarityType", brainrotData.RarityType)
     spawnedBrainrot:SetAttribute("CashPerSecond", brainrotData.CashPerSecond)

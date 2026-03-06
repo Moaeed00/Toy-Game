@@ -27,7 +27,7 @@ local BlocksSpawnAreaService = Knit.CreateService({
 local playersInArea: { [Player]: boolean } = {}
 
 --// Reference to the BlocksSpawnArea part
-local blocksSpawnAreaPart: BasePart? = nil
+local blocksSpawnAreaPart: Part? = nil
 
 --// ------------------------------
 --// Debug print helper
@@ -105,7 +105,7 @@ local function markBrainrotAsOwned(brainrotTool: Tool, player: Player)
 
 	--// [IMPORTANT] Set ownership attribute on the tool
 	brainrotTool:SetAttribute("OwnedByUserId", player.UserId)
-	
+
 	--// [IMPORTANT] Also mark on the Handle if it exists
 	local handle = brainrotTool:FindFirstChild("Handle")
 	if handle then
@@ -240,10 +240,10 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 	if brainrotTool then
 		--// [CRITICAL] Mark brainrot as owned when exiting area
 		markBrainrotAsOwned(brainrotTool, player)
-		
+
 		--// [IMPORTANT] Update ownership attribute
 		player:SetAttribute("OwnsEquippedBrainrot", true)
-		
+
 		dprint("Player exited with brainrot -> NOW OWNS IT:", player.Name)
 	end
 
@@ -347,13 +347,13 @@ function BlocksSpawnAreaService:_setupPlayer(player: Player)
 		--// Event: IsBrainrotEquipped changed
 		local isEquipped = player:GetAttribute("IsBrainrotEquipped")
 		dprint("IsBrainrotEquipped changed for:", player.Name, "->", isEquipped)
-		
+
 		--// [IMPORTANT] Update ownership status
 		if isEquipped then
 			local isOwned = doesPlayerOwnEquippedBrainrot(player)
 			player:SetAttribute("OwnsEquippedBrainrot", isOwned)
 		end
-		
+
 		self:UpdatePlayerSpeed(player)
 	end)
 
@@ -438,10 +438,10 @@ function BlocksSpawnAreaService:KnitStart()
 	dprint("KnitStart() start")
 
 	--// [IMPORTANT] Find BlocksSpawnArea part in Workspace
-	blocksSpawnAreaPart = workspace:FindFirstChild(Config.BLOCKS_SPAWN_AREA_NAME)
+	blocksSpawnAreaPart = workspace:WaitForChild("Environment"):FindFirstChild(Config.BLOCKS_SPAWN_AREA_NAME)
 
 	--// IF: not found
-	if not blocksSpawnAreaPart or not blocksSpawnAreaPart:IsA("BasePart") then
+	if not blocksSpawnAreaPart or not blocksSpawnAreaPart:IsA("Part") then
 		warn("[BlocksSpawnAreaService] BlocksSpawnArea part not found in Workspace!")
 		warn("[BlocksSpawnAreaService] Please create a Part named:", Config.BLOCKS_SPAWN_AREA_NAME)
 		return
