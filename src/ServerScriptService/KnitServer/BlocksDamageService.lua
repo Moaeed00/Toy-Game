@@ -70,6 +70,7 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
 end
 
 function BlocksDamageService:PlayParticlesOnBlockHit(block: Model)
+    BlockHitParticlesAttachment = BlockHitParticlesAttachment:Clone()
     BlockHitParticlesAttachment.Parent = block:WaitForChild(block.Name):WaitForChild("MiniBlocksSpawnPoint")
     local BlockHitParticles = BlockHitParticlesAttachment:GetChildren()
     for _, Particle: ParticleEmitter in ipairs(BlockHitParticles) do
