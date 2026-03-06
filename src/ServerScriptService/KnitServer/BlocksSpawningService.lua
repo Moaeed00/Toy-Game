@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PhysicsService = game:GetService("PhysicsService")
 
 local BlocksConfig = require(ReplicatedStorage.Configuration.Blocks.BlocksConfig)
-local FieldBase: Part = workspace:WaitForChild("Field"):WaitForChild("Base")
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
 local BlockModels = ReplicatedStorage.Assets.Blocks
-local BlocksSpawnArea: Part = workspace:WaitForChild("Field"):WaitForChild("BlocksSpawnArea")
+local Base: Part = workspace:WaitForChild("Environment"):WaitForChild("Base")
+local BlocksSpawnArea: Part = workspace:WaitForChild("Environment"):WaitForChild("BlocksSpawnArea")
 local NormalBlocksSpawnArea: Part = BlocksSpawnArea:WaitForChild("NormalBlocksSpawnArea")
 local SpecialBlocksSpawnArea: Part = BlocksSpawnArea:WaitForChild("SpecialBlocksSpawnArea")
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -101,7 +101,7 @@ end
 
 function BlocksSpawningService:GetGroundPositionToPlace(block: Model): number
     local blockHeight = block:GetExtentsSize().Y
-    local groundY = FieldBase.Position.Y + (FieldBase.Size.Y / 2)
+    local groundY = Base.Position.Y + (Base.Size.Y / 2)
     local finalY = groundY + (blockHeight / 2)
 
     return finalY
