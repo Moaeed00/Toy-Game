@@ -39,7 +39,7 @@ local function hookCoinsPart(part: BasePart)
 			amount = 1
 		end
 
-		DataHandlerService:UpdateCoins(plr, amount)
+		DataHandlerService:UpdateMoney(plr, amount)
 	end)
 end
 

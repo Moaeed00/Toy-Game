@@ -5,7 +5,6 @@
 
 return {
 	Points = 10000,
-	Coins = 50,
 	Footballs = {
 		Equipped = 1,
 		Owned = { 1 },

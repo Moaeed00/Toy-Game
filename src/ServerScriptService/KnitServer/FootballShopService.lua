@@ -106,7 +106,7 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 		return
 	end
 
-	local currentCoins = DataStoreHandler:GetCoins(player)
+	local currentCoins = DataStoreHandler:GetMoney(player)
 	if currentCoins < config.Price then
 		return {
 			Success = false,
@@ -114,7 +114,7 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 		}
 	end
 
-	DataStoreHandler:SetCoins(player, -config.Price)
+	DataStoreHandler:UpdateMoney(player, -config.Price)
 	table.insert(data.Footballs.Owned, config.Id)
 	self.Server:EquipFootball(player, footballName)
 	self.Server.UpdateClientDataEvent:Fire(player, data)

@@ -111,36 +111,6 @@ local function OnPlayerAdded(player: Player)
 	end
 end
 
-----    [Currency]        ----
-function DataHandlerService:DeductCoins(player, amount)
-    local data = self:GetPlayerData(player)
-
-    if amount <= 0 then return false end
-
-    if data.Coins >= amount then
-        data.Coins -= amount
-        self:SetPlayerData(player, {[EnumDataValue.Coins] = data.Coins})
-        CoinsDataStoreModule:SaveData(player, math.floor(data.Coins))
-        return true
-    end
-    return false
-end
-
-function DataHandlerService:GetCoins(player)
-    local data = self:GetPlayerData(player)
-    return data.Coins
-end
-
-function DataHandlerService:UpdateCoins(player: Player, amountEarned: number)
-    local playerData = self:GetPlayerData(player)
-    if playerData then
-        local prevCoins = playerData.Coins
-        local updatedCoins = prevCoins + amountEarned
-        self:SetPlayerData(player, {Coins = updatedCoins})
-        CoinsDataStoreModule:SaveData(player, math.floor(updatedCoins))
-    end
-end
-
 local function Main()
 	for _, player in PlayerService:GetPlayers() do
 		OnPlayerAdded(player)
@@ -191,22 +161,6 @@ function DataHandlerService:SetPlayerData(player: Player, dataTable: { [string]:
 		self.OnPlayerDataChanged:Fire(player, playerProfile.Data)
 	else
 		warn("Profile not found while setting data")
-	end
-end
-
-function DataHandlerService:GetCoins(player: Player)
-	local playerData = self:GetPlayerData(player)
-	if playerData then
-		return playerData.Coins
-	end
-end
-
-function DataHandlerService:SetCoins(player: Player, newCoins: number)
-	local playerData = self:GetPlayerData(player)
-	if playerData then
-		local previousCoins = playerData.Coins
-		local updatedCoins = previousCoins + newCoins
-		self:SetPlayerData(player, { Coins = updatedCoins })
 	end
 end
 
@@ -300,10 +254,10 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
+		CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end
-
 
 function DataHandlerService:ReturnTopTenPlayers()
 	local coins = {}
@@ -322,7 +276,6 @@ function DataHandlerService:ReturnTopTenPlayers()
 		Points = points,
 	}
 end
-
 
 --Initialization
 function DataHandlerService:KnitInit() end
