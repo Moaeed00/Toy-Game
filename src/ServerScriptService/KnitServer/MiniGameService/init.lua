@@ -204,6 +204,7 @@ function MiniGameService:EndMiniGame(player: Player)
 	player:SetAttribute("InMiniGame", nil)
 	player:SetAttribute("Mode", nil)
 	CharacterSize:ScaleDown(player)
+	PlayerPositionReferences[player.UserId] = nil
 
 	self:ReleaseSlot(player)
 end
