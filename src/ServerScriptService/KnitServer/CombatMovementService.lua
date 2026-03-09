@@ -117,6 +117,7 @@ function CombatMovementService:_enableRealRagdoll(player: Player)
 	if not character then return end
 
 	local hum = character:FindFirstChildOfClass("Humanoid")
+	local hrp = character:FindFirstChild("HumanoidRootPart")
 	pcall(function()
 		hrp:SetNetworkOwner(nil)
 	end)
@@ -140,7 +141,7 @@ function CombatMovementService:_enableRealRagdoll(player: Player)
 			local part0 = joint.Part0
 			local part1 = joint.Part1
 			if not part0 or not part1 then continue end
-			
+
 			local isNeck = joint.Name == "Neck"
 
 			-- Create attachments
@@ -225,9 +226,15 @@ function CombatMovementService:_disableRealRagdoll(player: Player)
 		if constraint then
 			local att0 = constraint.Attachment0
 			local att1 = constraint.Attachment1
-			if constraint.Parent then constraint:Destroy() end
-			if att0 then att0:Destroy() end
-			if att1 then att1:Destroy() end
+			if constraint.Parent then
+				constraint:Destroy()
+			end
+			if att0 then
+				att0:Destroy()
+			end
+			if att1 then
+				att1:Destroy()
+			end
 		end
 	end
 
@@ -237,7 +244,7 @@ function CombatMovementService:_disableRealRagdoll(player: Player)
 	hrp.Anchored = false
 
 	print("🟣 Restoring humanoid state at:", os.clock())
-	
+
 	-- Fully freeze motion
 	for _, part in ipairs(character:GetDescendants()) do
 		if part:IsA("BasePart") then
@@ -261,9 +268,15 @@ function CombatMovementService:_disableRealRagdoll(player: Player)
 		if constraint then
 			local att0 = constraint.Attachment0
 			local att1 = constraint.Attachment1
-			if constraint.Parent then constraint:Destroy() end
-			if att0 then att0:Destroy() end
-			if att1 then att1:Destroy() end
+			if constraint.Parent then
+				constraint:Destroy()
+			end
+			if att0 then
+				att0:Destroy()
+			end
+			if att1 then
+				att1:Destroy()
+			end
 		end
 	end
 
@@ -429,10 +442,14 @@ function CombatMovementService:_bumpTarget(
 	local duration = distance / math.max(horizontalVelocity, 1)
 
 	local oldLV = targetHRP:FindFirstChild("KnockbackLinearVelocity")
-	if oldLV then oldLV:Destroy() end
+	if oldLV then
+		oldLV:Destroy()
+	end
 
 	local oldAtt = targetHRP:FindFirstChild("KnockbackAttachment")
-	if oldAtt then oldAtt:Destroy() end
+	if oldAtt then
+		oldAtt:Destroy()
+	end
 
 	local att = Instance.new("Attachment")
 	att.Name = "KnockbackAttachment"
@@ -447,8 +464,12 @@ function CombatMovementService:_bumpTarget(
 	lv.Parent = targetHRP
 
 	task.delay(duration, function()
-		if lv and lv.Parent then lv:Destroy() end
-		if att and att.Parent then att:Destroy() end
+		if lv and lv.Parent then
+			lv:Destroy()
+		end
+		if att and att.Parent then
+			att:Destroy()
+		end
 	end)
 
 	print("🚀 KnockbackDistance:", distance, "Duration:", duration)
@@ -534,7 +555,7 @@ function CombatMovementService:_slideBumpLoop(
 				local otherHRP = otherChar:FindFirstChild("HumanoidRootPart")
 				if otherHRP and otherHRP:IsA("BasePart") then
 					print("[SLIDE HIT] Using Power:", finalPower, "Up:", finalUp)
-					
+
 					--// Play slide hit sound
 					local soundTemplate = SlideHitSound
 
@@ -553,10 +574,10 @@ function CombatMovementService:_slideBumpLoop(
 					sound.Parent = otherHRP
 					sound:Play()
 					game:GetService("Debris"):AddItem(sound, 3)
-					
+
 					-- Get knockback distance from GearModule
 					local GearModule = require(ReplicatedStorage:WaitForChild("GearModule"))
-					
+
 					-- Find slider's equipped slide tool to get distance
 					local sliderChar = slider.Character
 					if sliderChar then
@@ -571,11 +592,10 @@ function CombatMovementService:_slideBumpLoop(
 							end
 						end
 					end
-					
+
 					local knockbackDistance = 10 -- safe default
 
 					local GearModule = require(ReplicatedStorage:WaitForChild("GearModule"))
-
 					local sliderChar = slider.Character
 					if sliderChar then
 						for _, tool in ipairs(sliderChar:GetChildren()) do
@@ -588,7 +608,7 @@ function CombatMovementService:_slideBumpLoop(
 							end
 						end
 					end
-					
+
 					self:_bumpTarget(
 						sliderHRP,
 						otherHRP,
@@ -596,7 +616,7 @@ function CombatMovementService:_slideBumpLoop(
 						finalUp,
 						knockbackDistance
 					)
-					
+
 					-- NEW: Apply ragdoll physics for slide hits
 					self:_enableRealRagdoll(otherPlayer)
 
@@ -675,7 +695,7 @@ function CombatMovementService:_doSlide(player: Player): (boolean, string)
 	--// [CRITICAL] Check if already sliding
 	local currentlySliding = player:GetAttribute("IsSliding")
 	print("[CombatMovementService] IsSliding attribute BEFORE:", currentlySliding)
-	
+
 	if currentlySliding == true then
 		dprint("_doSlide() BLOCKED -> already sliding:", player.Name)
 		return false, "AlreadySliding"
@@ -752,7 +772,7 @@ function CombatMovementService:_doSlide(player: Player): (boolean, string)
 	task.delay(gearStats.Duration, function()
 		print("[CombatMovementService] ========================================")
 		print("[CombatMovementService] ⏹️ SLIDE CLEANUP STARTING for:", player.Name)
-		
+
 		if lv and lv.Parent then
 			lv:Destroy()
 			print("[CombatMovementService] ✅ LinearVelocity destroyed")
@@ -804,7 +824,7 @@ function CombatMovementService:KnitInit()
 	Players.PlayerAdded:Connect(function(player: Player)
 		print("[CombatMovementService] PlayerAdded -> resetting IsSliding for:", player.Name)
 		player:SetAttribute("IsSliding", false)
-		
+
 		player.CharacterAdded:Connect(function()
 			print("[CombatMovementService] CharacterAdded -> resetting IsSliding for:", player.Name)
 			player:SetAttribute("IsSliding", false)
@@ -832,7 +852,7 @@ end
 
 function CombatMovementService:KnitStart()
 	dprint("KnitStart() start")
-	
+
 	Players.PlayerAdded:Connect(function(player)
 
 		player.CharacterAdded:Connect(function(character)
