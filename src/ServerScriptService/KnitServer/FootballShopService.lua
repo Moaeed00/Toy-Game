@@ -114,7 +114,7 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 		}
 	end
 
-	DataStoreHandler:UpdateMoney(player, -config.Price)
+	DataStoreHandler:DeductMoney(player, config.Price)
 	table.insert(data.Footballs.Owned, config.Id)
 	self.Server:EquipFootball(player, footballName)
 	self.Server.UpdateClientDataEvent:Fire(player, data)
