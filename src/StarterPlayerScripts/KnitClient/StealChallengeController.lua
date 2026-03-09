@@ -3,8 +3,9 @@ local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Configurations = ReplicatedStorage:WaitForChild("Configurations")
-local EntitiesConfiguration = require(Configurations:WaitForChild("EntitiesConfiguration"))
+local Configuration = ReplicatedStorage:WaitForChild("Configuration")
+local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local player: Player = Players.LocalPlayer
 local ConfettiParticles: Part = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("VFX"):WaitForChild("Confetti")
@@ -25,23 +26,17 @@ local TimerValue: TextLabel = Main:WaitForChild("TimerFrame"):WaitForChild("Time
 local EntityInfo: {}
 local ChallengeData: {}
 
+local StealPoints
+local productId
 local ChallengePending = false
 local OpponentPlayerName
 
 local StealChallengeService
+local ProductPurchaseService
 
 local StealChallengeController = Knit.CreateController({
 	Name = "StealChallengeController",
 })
-
--- function getPlayerName(UserId: number)
--- 	local Player = Players:GetPlayerByUserId(UserId)
--- 	if Player then
--- 		return Player.Name
--- 	else
--- 		return "UnKnown Player"
--- 	end
--- end
 
 function FinishChallenge()
 	ChallengePending = false
@@ -56,6 +51,8 @@ function FinishChallenge()
 
 	EntityInfo = nil
 	OpponentPlayerName = nil
+	StealPoints = nil
+	productId = nil
 end
 
 function AnnounceWinnerToOwner(Result: string)
@@ -136,7 +133,7 @@ end
 
 function HandlePointsRejection()
 	--Prompt Notification
-	-- print(`Challenge Declined you got {EntityInfo.StealPoints} points`)
+	-- print(`Challenge Declined you got {StealPoints} points`)
 	print(`Challenge Declined`)
 end
 
@@ -146,10 +143,13 @@ function HandlePointDeclineButton()
 		return
 	end
 
-	if PlayerPoints.Value < EntityInfo.StealPoints then
+	if PlayerPoints.Value < StealPoints then
 		--Prompt Notification
 		print("Points Not Enough")
-		StealChallengeService.StealChallenge:Fire("ShowRobuxPrompt")
+		if not productId then
+			return
+		end
+		ProductPurchaseService.PromptPurchase:Fire(productId)
 	else
 		StealChallengeService.StealChallenge:Fire("PointsRejection")
 		--Prompt Notification Brainrot Saved Sucessfully
@@ -190,7 +190,6 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 	end
 
 	OpponentPlayerName = StealerPlayerName
-	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Stealer", true)
 	ChallengePending = true
@@ -227,13 +226,15 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 end
 
 function StealChallengeController:AcceptChallenge()
-	self.StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
+	StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
 end
 
 function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
+		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end
 
 	if State == "ChallengeRevoked" then
@@ -258,11 +259,11 @@ end
 
 function StealChallengeController:KnitInit()
 	StealChallengeService = Knit.GetService("StealChallengeService")
+	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 end
 
 function StealChallengeController:KnitStart()
-	print("StealChallengeController Started")
-	StealChallengeController.StealChallengeService = Knit.GetService("StealChallengeService")
+	-- print("StealChallengeController Started")
 
 	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)

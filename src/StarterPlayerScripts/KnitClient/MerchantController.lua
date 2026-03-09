@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
-local BrainrotsData = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
 local Gradients: Folder = ReplicatedStorage.Assets.Gradients
 local Knit = require(ReplicatedStorage.Packages.Knit)
 

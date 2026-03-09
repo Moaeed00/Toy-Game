@@ -4,7 +4,7 @@ local FootballTools = ReplicatedStorage:WaitForChild("Assets").Tools
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 
 local FootballShopService = Knit.CreateService {
 	Name = "FootballShopService",
@@ -19,7 +19,7 @@ function FootballShopService:KnitInit()
 end
 
 function FootballShopService:KnitStart()
-	FootballShopService.PurchaseProductService = Knit.GetService("PurchaseProductService")
+	FootballShopService.PurchaseProductService = Knit.GetService("ProductPurchaseService")
     FootballShopService.PlayerData = {}
 
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)
@@ -106,7 +106,7 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 		return
 	end
 
-	local currentCoins = DataStoreHandler:GetCoins(player)
+	local currentCoins = DataStoreHandler:GetMoney(player)
 	if currentCoins < config.Price then
 		return {
 			Success = false,
@@ -114,7 +114,7 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 		}
 	end
 
-	DataStoreHandler:SetCoins(player, -config.Price)
+	DataStoreHandler:UpdateMoney(player, -config.Price)
 	table.insert(data.Footballs.Owned, config.Id)
 	self.Server:EquipFootball(player, footballName)
 	self.Server.UpdateClientDataEvent:Fire(player, data)

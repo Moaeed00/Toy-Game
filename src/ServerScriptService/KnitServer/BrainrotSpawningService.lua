@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
 local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
@@ -7,9 +8,9 @@ local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
 local Camera = workspace.CurrentCamera
 local SparkleParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles.Sparkles:WaitForChild("Attachment")
-local BlockSpawnRarities = require(ReplicatedStorage.Configurations.Blocks.BlockSpawnRarities)
-local BrainrotVariantsConfig = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsVariantConfig)
-local BrainrotsData = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
+local BlockSpawnRarities = require(ReplicatedStorage.Configuration.Blocks.BlockSpawnRarities)
+local BrainrotVariantsConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BrainrotSpawnService = Knit.CreateService {
@@ -195,6 +196,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     animationTrack:AdjustSpeed(1)
     animationTrack:Play()
 
+    CollectionService:AddTag(spawnedBrainrot, "Brainrot")
     spawnedBrainrot:SetAttribute("Name", brainrotName)
     spawnedBrainrot:SetAttribute("RarityType", brainrotData.RarityType)
     spawnedBrainrot:SetAttribute("CashPerSecond", brainrotData.CashPerSecond)

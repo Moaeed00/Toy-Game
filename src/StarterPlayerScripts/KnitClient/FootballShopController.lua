@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
-local FootballsConfig = require(ReplicatedStorage.Configurations.Footballs.FootballsConfig)
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local GradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local PlayerGui = Player:WaitForChild("PlayerGui")

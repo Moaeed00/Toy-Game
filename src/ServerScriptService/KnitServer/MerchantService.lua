@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local BrainrotsData = require(ReplicatedStorage.Configurations.Brainrots.BrainrotsConfig)
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -84,7 +84,7 @@ function MerchantService.Client:Sell(player: Player, itemName: string)
     toolToRemove:Destroy()
 
 	local reward = data.SellPrice
-    DataStoreHandler:SetCoins(player, reward)
+    DataStoreHandler:UpdateMoney(player, reward)
     self.Server:SyncPlayer(player)
     return reward
 end
@@ -107,7 +107,7 @@ function MerchantService.Client:SellAll(player: Player)
         tool:Destroy()
     end
 
-	DataStoreHandler:SetCoins(player, totalUpdatedCoins)
+	DataStoreHandler:UpdateMoney(player, totalUpdatedCoins)
     self.Server:SyncPlayer(player)
     return totalUpdatedCoins
 end
