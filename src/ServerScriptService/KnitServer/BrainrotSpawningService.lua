@@ -299,7 +299,7 @@ function BrainrotSpawnService:PlayScreenSparkles()
     for _, Particle: ParticleEmitter in ipairs(SparkleParticlesAttachment:GetChildren()) do
         local Clone = Particle:Clone()
         Clone.Parent = Attachment
-        Particle:Emit(math.random(2, 5))
+        Clone:Emit(math.random(2, 5))
     end
 end
 
@@ -324,6 +324,10 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
         local timeLeft = timerValue
 
         while timeLeft > 0 do
+            if brainrot:GetAttribute("Timer") == 0 then
+                return
+            end
+
             timeLeft = math.max(0, timeLeft - 0.1)
 
             -- keep 1 decimal precision, incase 24.6 -> 25.0
@@ -336,6 +340,10 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
         brainrot:Destroy()
         self.BlocksSpawningService:SpawnBlocks(1)
     end)
+end
+
+function BrainrotSpawnService:StopBrainrotTimer(brainrot: Model)
+    brainrot:SetAttribute("Timer", 0)
 end
 
 return BrainrotSpawnService
