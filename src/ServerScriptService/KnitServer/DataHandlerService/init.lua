@@ -21,6 +21,10 @@ local PlayerService: Players = game:GetService("Players")
 local ServerScriptService: ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
+local CoinsDataStoreModule = require(GlobalDataStores:WaitForChild("CoinsDataStore"))
+local PointsDataStoreModule = require(GlobalDataStores:WaitForChild("PointsDataStore"))
+
 -- [References] --
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
@@ -209,6 +213,7 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
+		PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
@@ -249,8 +254,27 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
+		CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
+end
+
+function DataHandlerService:ReturnTopTenPlayers()
+	local coins = {}
+	local points = {}
+
+	pcall(function()
+		coins = CoinsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	pcall(function()
+		points = PointsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	return {
+		Coins = coins,
+		Points = points,
+	}
 end
 
 --Initialization

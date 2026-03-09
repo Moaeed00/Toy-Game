@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local functions = require(ReplicatedStorage.Shared.Utils.functions)
 
-local TWENTY_FOUR_HOUR = 24
+local TWENTY_FOUR_HOUR = 86400
 
 local offlineEarningsUtils = {}
 

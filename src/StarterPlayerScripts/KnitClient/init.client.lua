@@ -1,11 +1,15 @@
+--// init.client.lua
+--// Boots Knit client and loads all controllers.
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-Knit.AddControllers(script)
+print("[KnitClient] Adding controllers (deep) from:", script.Parent:GetFullName())
+Knit.AddControllersDeep(script.Parent)
 
-Knit.Start()
-	:andThen(function()
-		--print("Knit Client Started!")
-	end)
-	:catch(warn)
+Knit.Start():andThen(function()
+	print("[KnitClient] Knit Client Started!")
+end):catch(function(err)
+	warn("[KnitClient] Knit Client failed to start:", err)
+end)

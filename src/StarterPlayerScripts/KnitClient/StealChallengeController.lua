@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -7,6 +8,7 @@ local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfig
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local player: Player = Players.LocalPlayer
+local ConfettiParticles: Part = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("VFX"):WaitForChild("Confetti")
 
 local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
@@ -14,17 +16,17 @@ Trove = Trove.new()
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
 local ChallengeGui: ScreenGui = PlayerGui:WaitForChild("ChallengeGui")
 local Main: Frame = ChallengeGui:WaitForChild("Main")
-local PointsButton: TextButton = Main:WaitForChild("Points")
-local RobuxButton: TextButton = Main:WaitForChild("Robux")
+local Buttons: Frame = Main:WaitForChild("Buttons")
+local AcceptButton: ImageButton = Buttons:WaitForChild("Accept")
+local DeclineButton: ImageButton = Buttons:WaitForChild("Decline")
+local PointsText: TextLabel = DeclineButton:WaitForChild("Points")
 local MessageValue: TextLabel = Main:WaitForChild("Message")
-local DeclineMessage: TextLabel = Main:WaitForChild("DeclineMessage")
-local TimerValue: TextLabel = Main:WaitForChild("Timer")
+local TimerValue: TextLabel = Main:WaitForChild("TimerFrame"):WaitForChild("Timer")
 
 local EntityInfo: {}
 local ChallengeData: {}
 
 local StealPoints
-local RobuxPrice
 local productId
 local ChallengePending = false
 local OpponentPlayerName
@@ -43,16 +45,13 @@ function FinishChallenge()
 	player:SetAttribute("Stealer", false)
 
 	ChallengeGui.Enabled = false
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 	MessageValue.Visible = false
-	DeclineMessage.Visible = false
-	RobuxButton.Visible = false
-	PointsButton.Visible = false
 	TimerValue.Visible = false
 
 	EntityInfo = nil
 	OpponentPlayerName = nil
 	StealPoints = nil
-	RobuxPrice = nil
 	productId = nil
 end
 
@@ -87,7 +86,28 @@ function AnnounceWinnerToStealer(Result: string)
 	end
 end
 
-function AnnounceWinner(Result: string)
+function PlayConfetti(slotName: string)
+	if not slotName then
+		return
+	end
+	local Confetti = ConfettiParticles:Clone()
+	Confetti.Parent = workspace
+	local ConfettiPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
+	Confetti:PivotTo(ConfettiPositionReference.CFrame)
+
+	local duration = 5
+	for _, confetti: ParticleEmitter in ipairs(Confetti:GetChildren()) do
+		confetti.Enabled = true
+	end
+	task.delay(duration, function()
+		for _, confetti: ParticleEmitter in ipairs(Confetti:GetChildren()) do
+			confetti.Enabled = false
+		end
+	end)
+end
+
+function AnnounceWinner(Result: string, slotName: string)
+	PlayConfetti(slotName)
 	if player:GetAttribute("Owner") then
 		AnnounceWinnerToOwner(Result)
 	elseif player:GetAttribute("Stealer") then
@@ -97,6 +117,7 @@ end
 
 function StartChallenge()
 	ChallengePending = false
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 	ChallengeGui.Enabled = false
 end
 
@@ -125,6 +146,10 @@ function HandlePointDeclineButton()
 	if PlayerPoints.Value < StealPoints then
 		--Prompt Notification
 		print("Points Not Enough")
+		if not productId then
+			return
+		end
+		ProductPurchaseService.PromptPurchase:Fire(productId)
 	else
 		StealChallengeService.StealChallenge:Fire("PointsRejection")
 		--Prompt Notification Brainrot Saved Sucessfully
@@ -146,7 +171,11 @@ function StartTimer(Time: number)
 			RmainingTime -= 1
 			print("ChallengeTimeLeftClient", RmainingTime)
 
-			TimerValue.Text = `Challenge Will be Started in {RmainingTime} Sec`
+			if RmainingTime < 10 then
+				TimerValue.Text = "00:0" .. RmainingTime
+			else
+				TimerValue.Text = "00:" .. RmainingTime
+			end
 			task.wait(1)
 		end
 		--Hide Robux Purchase Prompt
@@ -165,6 +194,7 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 	player:SetAttribute("Stealer", true)
 	ChallengePending = true
 
+	Buttons.Visible = false
 	ChallengeGui.Enabled = true
 	MessageValue.Visible = true
 
@@ -173,7 +203,7 @@ function ChallengeSent(StealerPlayerName: string, Time: number)
 	StartTimer(Time)
 end
 
-function ChallengeRecieved(StealerPlayerName: string, Time: number)
+function ChallengeReceived(StealerPlayerName: string, Time: number)
 	if not ChallengeData then
 		warn("ChallengeData missing")
 		return
@@ -185,25 +215,25 @@ function ChallengeRecieved(StealerPlayerName: string, Time: number)
 	player:SetAttribute("Owner", true)
 	ChallengePending = true
 
+	Buttons.Visible = true
 	ChallengeGui.Enabled = true
 	MessageValue.Visible = true
-	DeclineMessage.Visible = true
-	RobuxButton.Visible = true
-	PointsButton.Visible = true
 
 	MessageValue.Text = `{StealerPlayerName} has challenged you for {ChallengeData.EntityName} Brainrot`
-	RobuxButton.Text = `{RobuxPrice} Robux`
-	PointsButton.Text = `{StealPoints} Points`
+	PointsText.Text = `{EntityInfo.StealPoints} Points`
 
 	StartTimer(Time)
 end
 
-function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {})
+function StealChallengeController:AcceptChallenge()
+	StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
+end
+
+function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
-		RobuxPrice = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellRobux
 		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end
 
@@ -213,7 +243,7 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 	elseif State == "ChallengeSent" then
 		ChallengeSent(Message, Time)
 	elseif State == "ChallengeReceived" then
-		ChallengeRecieved(Message, Time)
+		ChallengeReceived(Message, Time)
 	elseif State == "RobuxRejection" then
 		HandleRobuxRejection()
 	elseif State == "PointsRejection" then
@@ -223,7 +253,7 @@ function StealChallengeController:HandleStates(State: string, Message: string, T
 	elseif State == "ChallengeFinished" then
 		FinishChallenge()
 	elseif State == "WinnerAnnouncement" then
-		AnnounceWinner(Message)
+		AnnounceWinner(Message, SlotName)
 	end
 end
 
@@ -235,19 +265,14 @@ end
 function StealChallengeController:KnitStart()
 	-- print("StealChallengeController Started")
 
-	StealChallengeService.StealChallenge:Connect(
-		function(State: string, Message: string, Time: number, CurrentChallengeData: {})
-			self:HandleStates(State, Message, Time, CurrentChallengeData)
-		end
-	)
-
-	PointsButton.Activated:Connect(HandlePointDeclineButton)
-	RobuxButton.Activated:Connect(function()
-		if not productId then
-			return
-		end
-		ProductPurchaseService.PromptPurchase:Fire(productId)
+	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
 	end)
+
+	AcceptButton.Activated:Connect(function()
+		self:AcceptChallenge()
+	end)
+	DeclineButton.Activated:Connect(HandlePointDeclineButton)
 end
 
 return StealChallengeController

@@ -7,6 +7,7 @@ local Utils = ServerScriptService:WaitForChild("Utils")
 
 local ScoringHelperServer = require(script:WaitForChild("ScoringHelperServer"))
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
+local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootBalls = Assets:WaitForChild("FootBalls")
@@ -14,6 +15,7 @@ local Toys = workspace:WaitForChild("Toys")
 
 local RoundTime = 20
 local KickResetTime = 3
+local ScaleValue = 1.5
 
 local FootBallCollisionGroup = "FootBall"
 
@@ -28,6 +30,7 @@ local ClonedFootBalls = {}
 local BallSpawnReferences = {}
 local ActiveGames = {}
 local ActiveChallenges: {} = {}
+local PlayerPositionReferences: {} = {}
 
 local DataHandlerService
 local StealChallengeService
@@ -118,8 +121,8 @@ function MiniGameService:ReleaseSlot(player)
 	Slots[SlotName] = false
 	player:SetAttribute("MiniGameSlot", nil)
 
-	local Prompt = ProximityPrompts[SlotName]
-	Prompt.Enabled = true
+	local Prompt: ProximityPrompt = ProximityPrompts[SlotName]
+	self:ToggleTeleporter(Prompt, true)
 end
 
 function MiniGameService:SetSlot(player, SlotName)
@@ -127,8 +130,8 @@ function MiniGameService:SetSlot(player, SlotName)
 		return warn(`{SlotName} Slot is Already Assigned`)
 	end
 
-	local Prompt = ProximityPrompts[SlotName]
-	Prompt.Enabled = false
+	local Prompt: ProximityPrompt = ProximityPrompts[SlotName]
+	self:ToggleTeleporter(Prompt, false)
 
 	Slots[SlotName] = true
 	player:SetAttribute("MiniGameSlot", SlotName)
@@ -179,7 +182,7 @@ function MiniGameService:StartTimer(player)
 	end)
 end
 
-function MiniGameService:EndMiniGame(player)
+function MiniGameService:EndMiniGame(player: Player)
 	if not ActiveGames[player.UserId] then
 		return
 	end
@@ -200,6 +203,8 @@ function MiniGameService:EndMiniGame(player)
 	player:SetAttribute("HasScored", nil)
 	player:SetAttribute("InMiniGame", nil)
 	player:SetAttribute("Mode", nil)
+	CharacterSize:ScaleDown(player)
+	PlayerPositionReferences[player.UserId] = nil
 
 	self:ReleaseSlot(player)
 end
@@ -215,8 +220,14 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 		return warn("FootBall Not Assigned")
 	end
 
+	local PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
+	player.Character:PivotTo(PlayerPositionReference.CFrame)
+
+	PlayerPositionReferences[player.UserId] = PlayerPositionReference
+
 	player:SetAttribute("InMiniGame", true)
 	player:SetAttribute("Mode", "Solo")
+	CharacterSize:ScaleUp(player, ScaleValue)
 
 	ActiveGames[player.UserId] = {
 		TimeLeft = RoundTime,
@@ -302,6 +313,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 	local player1 = Challenge.Players[1]
 	local player2 = Challenge.Players[2]
 	local ScoreCard = self:ResolveWinner(player1, player2, QuittingPlayer)
+	local SlotData = {}
 
 	for _, Player in ipairs(Challenge.Players) do
 		local score = ScoringHelperServer:GetScore(Player)
@@ -314,6 +326,7 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 			self.Client.EndMiniGame:Fire(Player)
 		end
 
+		SlotData[Player.UserId] = Player:GetAttribute("MiniGameSlot")
 		Challenge.Running = false
 		ActiveChallenges[Challenge.Id] = nil
 
@@ -325,11 +338,12 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		Player:SetAttribute("HasScored", nil)
 		Player:SetAttribute("InMiniGame", nil)
 		Player:SetAttribute("Mode", nil)
+		CharacterSize:ScaleDown(Player)
 
 		self:ReleaseSlot(Player)
 	end
 
-	StealChallengeService:HandleWinner(ChallengeGameId, ScoreCard, QuittingPlayer)
+	StealChallengeService:HandleWinner(ChallengeGameId, ScoreCard, QuittingPlayer, SlotData)
 end
 
 function MiniGameService:StartChallengeTimer(ChallengeGameId: number)
@@ -370,8 +384,14 @@ function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
 			return warn("FootBall Not Assigned")
 		end
 
+		local PlayerPositionReference = Toys:WaitForChild(Slot):WaitForChild("PlayerPositionReference")
+		Player.Character:PivotTo(PlayerPositionReference.CFrame)
+
+		PlayerPositionReferences[Player.UserId] = PlayerPositionReference
+
 		Player:SetAttribute("InMiniGame", true)
 		Player:SetAttribute("Mode", "Challenge")
+		CharacterSize:ScaleUp(Player, ScaleValue)
 	end
 
 	ActiveChallenges[ChallengeGameId] = {
@@ -438,6 +458,28 @@ function MiniGameService:HandleStates(player, State, SlotName)
 	end
 end
 
+function MiniGameService:ToggleTeleporter(proximityPrompt: ProximityPrompt, toggle: boolean)
+	proximityPrompt.Enabled = toggle
+	local Parts = proximityPrompt.Parent.Parent:GetChildren()
+	if not toggle then
+		for _, part in ipairs(Parts) do
+			if part.Name == "TopCylinder" or part.Name == "BottomCylinder" then
+				print("Kk", part.Name)
+				part.Transparency = 1
+			end
+		end
+		return
+	end
+	for _, part in ipairs(Parts) do
+		if part.Name == "TopCylinder" then
+			part.Transparency = 0.25
+		end
+		if part.Name == "BottomCylinder" then
+			part.Transparency = 0.5
+		end
+	end
+end
+
 --Initializers
 function MiniGameService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
@@ -448,22 +490,37 @@ function MiniGameService:KnitStart()
 	-- print("MiniGameService Started")
 	for _, ProximityPrompt: ProximityPrompt in Toys:GetDescendants() do
 		if ProximityPrompt.Name == "MiniGamePrompt" and ProximityPrompt:IsA("ProximityPrompt") then
-			ProximityPrompt.Enabled = true
-
+			self:ToggleTeleporter(ProximityPrompt, true)
 			ProximityPrompt.Triggered:Connect(function(player)
 				if player:GetAttribute("InMiniGame") then
 					return
 				end
-				ProximityPrompt.Enabled = false
-				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Name)
+				self:ToggleTeleporter(ProximityPrompt, false)
+				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Parent.Name)
 			end)
 
-			ProximityPrompts[ProximityPrompt.Parent.Parent.Name] = ProximityPrompt
+			ProximityPrompts[ProximityPrompt.Parent.Parent.Parent.Name] = ProximityPrompt
 		end
 	end
 
 	self.Client.MiniGame:Connect(function(player, State)
 		self:HandleStates(player, State)
+	end)
+
+	Players.PlayerAdded:Connect(function(player)
+		player.CharacterAdded:Connect(function(Character)
+			if player:GetAttribute("InMiniGame") then
+				local HRP = Character:WaitForChild("HumanoidRootPart")
+				local PlayerPositionReference = PlayerPositionReferences[player.UserId]
+
+				if not HRP or not PlayerPositionReference then
+					return
+				end
+
+				CharacterSize:ScaleUp(player, ScaleValue)
+				player.Character:PivotTo(PlayerPositionReference.CFrame)
+			end
+		end)
 	end)
 
 	Players.PlayerRemoving:Connect(PlayerRemoved)

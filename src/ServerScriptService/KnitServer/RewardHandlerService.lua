@@ -1,6 +1,8 @@
 --[Services]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
+
 --[Modules]
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -9,9 +11,23 @@ local RewardHandlerService = Knit.CreateService({
 	Client = {},
 })
 
--- local DataHandlerService
+local DataHandlerService
 
 local RewardHandlers = {}
+
+function RewardHandlers.Football(player: Player, RewardData: {}, _mode: string)
+	local FootballShopService = Knit.GetService("FootballShopService")
+    local data = DataHandlerService:GetPlayerData(player)
+    local footballName = RewardData.ItemName
+    local footballData = FootballsConfig[footballName]
+    local footballId = footballData.Id
+
+    if footballData then
+        table.insert(data.Footballs.Owned, footballId)
+        FootballShopService.Client.UpdateClientDataEvent:Fire(player, data.Footballs)
+        -- FootballShopService:EquipFootball(player, footballName)
+    end
+end
 
 function RewardHandlers.Steal(Player: Player, _RewardData: {}, Mode: string)
 	if Mode == "Unlock" then
@@ -40,7 +56,7 @@ function RewardHandlerService:GiveReward(Player: Player, RewardType: string, Rew
 end
 
 function RewardHandlerService:KnitInit()
-	-- DataHandlerService = Knit.GetService("DataHandlerService")
+	DataHandlerService = Knit.GetService("DataHandlerService")
 end
 
 function RewardHandlerService:KnitStart() end
