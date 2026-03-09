@@ -188,9 +188,10 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrotPart.Transparency = 1
 
     -- start brainrot idle animation
-    local spawnedBrainrotIdleAnimation: Animation = ReplicatedStorage.Assets.Animations:WaitForChild("Brainrot_Idle")
-    -- local spawnedBrainrotIdleAnimation: Animation = spawnedBrainrot:WaitForChild("Anims"):WaitForChild("Idle")
     local spawnedBrainrotAnimator: Animator = spawnedBrainrot:FindFirstChildOfClass("AnimationController"):FindFirstChildOfClass("Animator")
+    local spawnedBrainrotIdleAnimation: Animation = Instance.new("Animation")
+    spawnedBrainrotIdleAnimation.Parent = spawnedBrainrotAnimator
+    spawnedBrainrotIdleAnimation.AnimationId = brainrotData.IdleAnimationID
     local animationTrack: AnimationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
     animationTrack.Looped = true
     animationTrack:AdjustSpeed(1)
