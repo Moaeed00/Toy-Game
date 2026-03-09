@@ -9,11 +9,11 @@ return {
 
 	Types = {
 		Success = {
-			Color = Color3.fromRGB(255, 255, 255),
+			Color = Color3.fromRGB(0, 255, 0),
 		},
 
 		Error = {
-			Color = Color3.fromRGB(200, 0, 0),
+			Color = Color3.fromRGB(255, 0, 0),
 		},
 	},
 }

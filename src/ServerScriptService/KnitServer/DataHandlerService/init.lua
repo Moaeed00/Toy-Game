@@ -21,11 +21,16 @@ local PlayerService: Players = game:GetService("Players")
 local ServerScriptService: ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
+local CoinsDataStoreModule = require(GlobalDataStores:WaitForChild("CoinsDataStore"))
+local PointsDataStoreModule = require(GlobalDataStores:WaitForChild("PointsDataStore"))
+
 -- [References] --
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local ProfileStoreModule = require(ServerScriptService.ServerPackages.profilestore)
 local PROFILE_TEMPLATE = require(script:WaitForChild("ProfileTemplate"))
+local Format = require(ReplicatedStorage.Libraries.Format)
 
 -- local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
 
@@ -43,7 +48,9 @@ local EnumDataValue = {
 
 local DataHandlerService = Knit.CreateService({
 	Name = "DataHandlerService",
-	Client = {},
+	Client = {
+		UpdateMoney = Knit.CreateSignal(),
+	},
 })
 
 DataHandlerService.OnPlayerProfileLoaded = Signal.new()
@@ -92,7 +99,7 @@ local function OnPlayerAdded(player: Player)
 			print(`Profile loaded for {player.DisplayName}!`)
 
 			-- Fire any events you need to after the profile has been freshly loaded
-
+			DataHandlerService.Client.UpdateMoney:Fire(player, Profiles[player].Data.Money)
 			-- For Leaderboard Initialization
 		else
 			-- The player has left before the profile session started
@@ -160,10 +167,13 @@ end
 -- LeaderStat Helpers
 local function SetLeaderboardStats(player: Player, Name: string, value: number)
 	local LeaderStats = player:FindFirstChild("leaderstats")
-	local AttrName = LeaderStats:FindFirstChild(Name)
+	local Attr = LeaderStats:FindFirstChild(Name)
 
-	if AttrName then
-		AttrName.Value = value
+	if Attr.Name == "Cash" then
+		DataHandlerService.Client.UpdateMoney:Fire(player, value)
+		Attr.Value = Format.abbreviate(value)
+	else
+		Attr.Value = value
 	end
 end
 
@@ -203,8 +213,68 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
+		PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
+end
+
+-- Coins Helpers
+function DataHandlerService:DeductMoney(player: Player, amount: number)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		if amount <= 0 then
+			return false
+		end
+
+		if data.Money >= amount then
+			data.Money -= amount
+			self:SetPlayerData(player, { Money = data.Money })
+			SetLeaderboardStats(player, "Cash", data.Money)
+			return true
+		end
+		return false
+	end
+
+	return false
+end
+
+function DataHandlerService:GetMoney(player: Player)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		return data.Money
+	end
+end
+
+function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
+	local playerData = self:GetPlayerData(player)
+
+	if playerData then
+		local prevMoney = playerData.Money
+		local updatedMoney = prevMoney + MoneyEarned
+		self:SetPlayerData(player, { Money = updatedMoney })
+		CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
+		SetLeaderboardStats(player, "Cash", updatedMoney)
+	end
+end
+
+function DataHandlerService:ReturnTopTenPlayers()
+	local coins = {}
+	local points = {}
+
+	pcall(function()
+		coins = CoinsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	pcall(function()
+		points = PointsDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
+	return {
+		Coins = coins,
+		Points = points,
+	}
 end
 
 --Initialization

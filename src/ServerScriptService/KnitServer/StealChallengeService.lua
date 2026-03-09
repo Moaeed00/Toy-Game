@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
+local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
 
 local ActiveChallenges: {} = {}
@@ -12,11 +13,13 @@ local ChallengeTime = 10
 
 local DataHandlerService
 local MiniGameService
+local StealService
 
 local StealChallengeService = Knit.CreateService({
 	Name = "StealChallengeService",
 	Client = {
 		StealChallenge = Knit.CreateSignal(),
+		AcceptChallengeButtonEvent = Knit.CreateSignal(),
 	},
 })
 
@@ -58,20 +61,20 @@ function IsChallengeValid(ChallengeData: {})
 	end
 
 	local StealingPlayerPoints = DataHandlerService:GetPoints(StealingPlayer)
-	local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+	local StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 
-	if not EntityInfo then
-		return false, "EntityInfo Not Found"
+	if not StealPoints then
+		return false, "StealPoints Not Found"
 	end
 
-	if StealingPlayerPoints < EntityInfo.StealPoints then
+	if StealingPlayerPoints < StealPoints then
 		return false, "Not Enough Points"
 	end
 
 	return true
 end
 
-function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer)
+function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, QuittingPlayer, SlotData)
 	if not (ActiveChallenges[ChallengeId].State == "Started") then
 		return
 	end
@@ -96,11 +99,13 @@ function StealChallengeService:HandleWinner(ChallengeId: string, ScoreCard: {}, 
 		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Draw")
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Draw")
 	elseif ScoreCard.WinnerUserID == ChallengeData.StealerUserId then
-		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner")
+		StealService:HandleWinner(StealingPlayer, "Winner", OwnerPlayer)
+		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Loser")
 	else
+		StealService:HandleWinner(StealingPlayer, "Loser", OwnerPlayer)
 		self.Client.StealChallenge:Fire(StealingPlayer, "WinnerAnnouncement", "Loser")
-		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner")
+		self.Client.StealChallenge:Fire(OwnerPlayer, "WinnerAnnouncement", "Winner", nil, nil, SlotData[StealingPlayer.UserId])
 	end
 
 	self:FinishChallenge(ChallengeId, QuittingPlayer)
@@ -134,6 +139,8 @@ function StealChallengeService:FinishChallenge(ChallengeId: string, QuittingPlay
 
 	ActiveChallenges[ChallengeId] = nil
 
+	StealService:Cleanup(OwnerPlayer, StealingPlayer)
+
 	self.Client.StealChallenge:Fire(OwnerPlayer, "ChallengeFinished")
 	self.Client.StealChallenge:Fire(StealingPlayer, "ChallengeFinished")
 end
@@ -155,26 +162,12 @@ function StealChallengeService:HandleRobuxRejection(player: Player)
 	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
 	local OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
 
+	local EntityPrice = ActiveChallenges[ChallengeId].StealPoints
+	DataHandlerService:DeductPoints(StealingPlayer, EntityPrice)
+
 	self.Client.StealChallenge:Fire(StealingPlayer, "RobuxRejection")
 	self.Client.StealChallenge:Fire(OwnerPlayer, "RobuxRejection")
 	self:FinishChallenge(ChallengeId)
-end
-
-function StealChallengeService:HandleRobuxPrompt(player: Player)
-	local ChallengeId = player:GetAttribute("ChallengeId")
-	if not ChallengeId or not ActiveChallenges[ChallengeId] then
-		return warn("ChallengeID not Found")
-	end
-
-	if not (ActiveChallenges[ChallengeId].OwnerUserId == player.UserId) then
-		return warn("Not Rejected By Owner")
-	end
-
-	if ActiveChallenges[ChallengeId].State ~= "Pending" then
-		return warn("Challenge Already Started")
-	end
-
-	--Prompr Robux Purchase
 end
 
 function StealChallengeService:HandlePointsRejection(player: Player)
@@ -191,7 +184,7 @@ function StealChallengeService:HandlePointsRejection(player: Player)
 		return warn("Challenge Already Started")
 	end
 
-	local EntityPrice = ActiveChallenges[ChallengeId].EntityInfo.StealPoints
+	local EntityPrice = ActiveChallenges[ChallengeId].StealPoints
 
 	if not EntityPrice then
 		return warn("EntityPrice Not Found")
@@ -202,7 +195,7 @@ function StealChallengeService:HandlePointsRejection(player: Player)
 	end
 
 	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
-	-- DataHandlerService:UpdatePoints(StealingPlayer, EntityPrice)
+	DataHandlerService:DeductPoints(StealingPlayer, EntityPrice)
 
 	self.Client.StealChallenge:Fire(StealingPlayer, "PointsRejection")
 
@@ -236,6 +229,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 		StealingPlayer:SetAttribute("InMiniGame", true)
 
 		local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		local StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 
 		ActiveChallenges[ChallengeId] = {
 			OwnerUserId = ChallengeData.OwnerUserId,
@@ -243,6 +237,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 			EntityName = ChallengeData.EntityName,
 			EntityRarity = ChallengeData.EntityRarity,
 			EntityInfo = EntityInfo,
+			StealPoints = StealPoints,
 			TimeLeft = ChallengeTime,
 			State = "Pending",
 		}
@@ -265,7 +260,7 @@ end
 
 function StealChallengeService:StartChallenge(ChallengeId: string)
 	local Challenge = ActiveChallenges[ChallengeId]
-	if not Challenge or Challenge.State ~= "Pending" then
+	if not Challenge or Challenge.State ~= "Pending" or Challenge.State == "Finished" then
 		return
 	end
 
@@ -273,6 +268,9 @@ function StealChallengeService:StartChallenge(ChallengeId: string)
 
 	local OwnerPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].OwnerUserId)
 	local StealingPlayer = Players:GetPlayerByUserId(ActiveChallenges[ChallengeId].StealerUserId)
+
+	local EntityPrice = ActiveChallenges[ChallengeId].StealPoints
+	DataHandlerService:DeductPoints(StealingPlayer, EntityPrice)
 
 	self.Client.StealChallenge:Fire(OwnerPlayer, "ChallengeStarted")
 	self.Client.StealChallenge:Fire(StealingPlayer, "ChallengeStarted")
@@ -290,28 +288,29 @@ function StealChallengeService:HandleStates(player: Player, State: string, Chall
 		self:TryStartChallenge(player, ChallengeData)
 	elseif State == "PointsRejection" then
 		self:HandlePointsRejection(player)
-	elseif State == "ShowRobuxPrompt" then
-		self:HandleRobuxPrompt(player)
 	end
 end
 
 function StealChallengeService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
+	StealService = Knit.GetService("StealService")
 	MiniGameService = Knit.GetService("MiniGameService")
 end
 
 function StealChallengeService:KnitStart()
-	print("StealChallengeService Started")
+	-- print("StealChallengeService Started")
 	self.Client.StealChallenge:Connect(function(player: Player, State: string, ChallengeData: {})
 		self:HandleStates(player, State, ChallengeData)
 	end)
 
-	Players.PlayerRemoving:Connect(PlayerRemoved)
+	self.Client.AcceptChallengeButtonEvent:Connect(function(_player: Player, ChallengeData: {})
+		local OwnerPlayer = Players:GetPlayerByUserId(ChallengeData.OwnerUserId)
+		local ChallengeId = OwnerPlayer:GetAttribute("ChallengeId")
 
-	local TestStealEvent: BindableEvent = workspace:WaitForChild("TestStealEvent")
-	TestStealEvent.Event:Connect(function(player, ChallengeData: {})
-		self:HandleStates(player, "Challenge", ChallengeData)
+		ActiveChallenges[ChallengeId].TimeLeft = 0
 	end)
+
+	Players.PlayerRemoving:Connect(PlayerRemoved)
 end
 
 return StealChallengeService

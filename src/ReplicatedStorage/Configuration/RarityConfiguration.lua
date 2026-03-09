@@ -1,3 +1,8 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Assets = ReplicatedStorage:WaitForChild("Assets")
+local Gradients = Assets:WaitForChild("Effects"):WaitForChild("Gradients")
+
 export type Rarity = {
 	DisplayName: string,
 	Color: Color3,
@@ -43,19 +48,49 @@ return {
 
 	Secret = {
 		DisplayName = "Secret",
-		Color = Color3.fromRGB(255, 255, 255),
-		Weight = 5 / 100,
+		Color = Gradients:WaitForChild("Secret"),
+		Weight = 9 / 100,
 	},
 
 	Celestial = {
 		DisplayName = "Celestial",
-		Color = Color3.fromRGB(255, 0, 255),
-		Weight = 4 / 100,
+		Color = Gradients:WaitForChild("Celestial"),
+		Weight = 8 / 100,
 	},
 
 	Fire = {
 		DisplayName = "Fire",
-		Color = Color3.fromRGB(255, 136, 0),
-		Weight = 3 / 100,
+		Color = Gradients:WaitForChild("Fire"),
+		Weight = 7 / 100,
+	},
+
+	Abyssal = {
+		DisplayName = "Abyssal",
+		Color = Gradients:WaitForChild("Abyssal"),
+		Weight = 6 / 100,
+	},
+
+	Void = {
+		DisplayName = "Void",
+		Color = Gradients:WaitForChild("Void"),
+		Weight = 5 / 100,
+	},
+
+	Ancient = {
+		DisplayName = "Ancient",
+		Color = Color3.fromRGB(210, 170, 110),
+		Weight = 4 / 100,
+	},
+
+	Neon = {
+		DisplayName = "Neon",
+		Color = Gradients:WaitForChild("Neon"),
+		Weight = 3.5 / 100,
+	},
+
+	Rainbow = {
+		DisplayName = "Rainbow",
+		Color = Gradients:WaitForChild("Rainbow"),
+		Weight = 3.4 / 100,
 	},
 }

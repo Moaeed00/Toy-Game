@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -6,7 +7,6 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
-local CharacterSize = require(script:WaitForChild("CharacterSize"))
 
 local player: Player = Players.LocalPlayer
 local camera: Camera = workspace.CurrentCamera
@@ -21,7 +21,11 @@ Trove = Trove.new()
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
+local CountDownTextUIStroke: UIStroke = CountDownValue:WaitForChild("UIStroke")
+local TimerGui: ScreenGui = PlayerGui:WaitForChild("TimerGui")
+local TimerValue: TextLabel = TimerGui:WaitForChild("Main"):WaitForChild("Timer")
 
+local PlayerBase = workspace:WaitForChild("Bases")
 local Toys = workspace:WaitForChild("Toys")
 
 local MiniGameController = Knit.CreateController({
@@ -32,20 +36,21 @@ local POWER = 90
 local LIFT = 30
 local CountDownTime = 3
 
-local ScaleValue = 1.5
-
 local CanKick = false
 local GameRunning = false
 local CountDownRunning = false
 local GameMode
 
+local CameraController
 local MiniGameService
 local SlotName: string
 local FootBall: MeshPart
 local BallSpawnReference: BasePart
-local PlayerPositionReference: BasePart
-local TimerGui: SurfaceGui
-local TimerValue: TextLabel
+
+function TeleportPlayersToBase()
+	local SpawnPart = PlayerBase:WaitForChild(tostring(player.UserId)):WaitForChild("Spawn")
+	player.Character:PivotTo(SpawnPart.CFrame)
+end
 
 function HandleBallSpawn()
 	FootBall.CFrame = BallSpawnReference.CFrame
@@ -80,10 +85,15 @@ function GetDirection(Pos: Vector2)
 end
 
 function Kick(Positions: Vector2)
-	local Direction = GetDirection(Positions)
+	local character: Model = player.Character
+	local humanoid: Humanoid = character:WaitForChild("Humanoid")
 
-	FootBall.Anchored = false
-	FootBall.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
+	local track = MiniGameController.FootballController:PlayKickBallAnimation(humanoid)
+	track:GetMarkerReachedSignal("KickMoment"):Once(function()
+		local Direction = GetDirection(Positions)
+		FootBall.Anchored = false
+		FootBall.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
+	end)
 end
 
 function EnableGameControls()
@@ -127,9 +137,6 @@ function EnableGameControls()
 end
 
 function StartTimer(Time: number)
-	TimerGui = Toys:WaitForChild(SlotName):WaitForChild("Timer"):WaitForChild("TimerGui")
-	TimerValue = TimerGui:WaitForChild("Main"):WaitForChild("Timer")
-
 	local RmainingTime = math.round((Time - Workspace:GetServerTimeNow()))
 
 	if not RmainingTime then
@@ -144,7 +151,11 @@ function StartTimer(Time: number)
 			RmainingTime -= 1
 			print("TimeLeftClient", RmainingTime)
 
-			TimerValue.Text = RmainingTime
+			if RmainingTime < 10 then
+				TimerValue.Text = "00:0" .. RmainingTime
+			else
+				TimerValue.Text = "00:" .. RmainingTime
+			end
 			task.wait(1)
 		end
 		TimerGui.Enabled = false
@@ -155,11 +166,38 @@ function StartCountDown()
 	CountDownGui.Enabled = true
 	CountDownRunning = true
 
+	local originalSize = CountDownValue.Size
+	local biggerSize = UDim2.fromScale(originalSize.X.Scale * 1.25, originalSize.Y.Scale * 1.25)
+	local growTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+	local shrinkTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
 	task.spawn(function()
-		while CountDownTime >= 0 and CountDownRunning do
-			CountDownValue.Text = CountDownTime
-			task.wait(1)
-			CountDownTime -= 1
+		for count = CountDownTime, 1, -1 do
+			if not CountDownRunning then
+				break
+			end
+
+			CountDownValue.Text = tonumber(count)
+			CountDownValue.Size = originalSize
+			CountDownValue.TextTransparency = 0
+			CountDownTextUIStroke.Transparency = 0
+
+			local growTween = TweenService:Create(CountDownValue, growTweenInfo, { Size = biggerSize })
+			growTween:Play()
+			growTween.Completed:Wait()
+
+			local shrinkTween = TweenService:Create(CountDownValue, shrinkTweenInfo, { Size = originalSize })
+			shrinkTween:Play()
+			shrinkTween.Completed:Wait()
+
+			local fadeCountdownValueTween = TweenService:Create(CountDownValue, TweenInfo.new(0.2), { TextTransparency = 1 })
+			fadeCountdownValueTween:Play()
+
+			local fadeCountDownTextUIStrokeTween = TweenService:Create(CountDownTextUIStroke, TweenInfo.new(0.2), { Transparency = 1 })
+			fadeCountDownTextUIStrokeTween:Play()
+
+			fadeCountdownValueTween.Completed:Wait()
+			task.wait(0.1)
 		end
 
 		CountDownGui.Enabled = false
@@ -168,18 +206,43 @@ function StartCountDown()
 	end)
 end
 
+function LockCameraRotation()
+	local cameraModule = PlayerModule:GetCameras()
+	CameraController = cameraModule.activeCameraController
+
+	if CameraController then
+		CameraController:Enable(false)
+	end
+end
+
+function SetMiniGameCamera()
+	local character = player.Character
+	local head = character:WaitForChild("Head")
+
+	local offset = Vector3.new(0, 12, 20)
+	local cameraPosition = head.Position + offset
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = CFrame.new(cameraPosition, cameraPosition + Vector3.new(0, 0, -1))
+end
+
+function UnlockCameraRotation()
+	if CameraController then
+		CameraController:Enable(true)
+	end
+end
+
 function MiniGameController:InitializeMiniGame()
 	SlotName = player:GetAttribute("MiniGameSlot")
 	FootBall = workspace:WaitForChild(player.Name .. "_FootBall")
 	BallSpawnReference = Toys:WaitForChild(SlotName):WaitForChild("BallSpawnReference")
-	PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
 
-	player.Character:PivotTo(PlayerPositionReference.CFrame)
+	SetMiniGameCamera()
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+	LockCameraRotation()
 
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
 	ScoringHelperClient:Initialize()
-	CharacterSize:ScaleUp(player, ScaleValue)
 
 	PlayerControls:Disable()
 	StartCountDown()
@@ -227,17 +290,20 @@ function MiniGameController:EndMiniGame()
 	IndicatorHelperClient:CleanUp()
 	ScoringHelperClient:CleanUp()
 	WallPushers:CleanUp()
-	CharacterSize:ScaleDown(player)
 	Trove:Destroy()
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+	UnlockCameraRotation()
 	PlayerControls:Enable()
+	TeleportPlayersToBase()
 end
 
 function MiniGameController:KnitInit()
+	MiniGameController.FootballController = Knit.GetController("FootballController")
 	MiniGameService = Knit.GetService("MiniGameService")
 end
 
 function MiniGameController:KnitStart()
-	print("MiniGameController Started")
+	-- print("MiniGameController Started")
 
 	MiniGameService.MiniGame:Connect(function(State, Time, Mode)
 		self:HandleStates(State, Time, Mode)
@@ -247,16 +313,6 @@ function MiniGameController:KnitStart()
 		self:EndMiniGame()
 	end)
 
-	player.CharacterAdded:Connect(function(Character)
-		if GameRunning then
-			local HRP = Character:WaitForChild("HumanoidRootPart")
-			if not HRP then
-				return
-			end
-
-			player.Character:PivotTo(PlayerPositionReference.CFrame)
-		end
-	end)
 end
 
 return MiniGameController
