@@ -191,7 +191,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     local spawnedBrainrotAnimator: Animator = spawnedBrainrot:FindFirstChildOfClass("AnimationController"):FindFirstChildOfClass("Animator")
     local spawnedBrainrotIdleAnimation: Animation = Instance.new("Animation")
     spawnedBrainrotIdleAnimation.Parent = spawnedBrainrotAnimator
-    spawnedBrainrotIdleAnimation.AnimationId = brainrotData.IdleAnimationID
+    spawnedBrainrotIdleAnimation.AnimationId = "rbxassetid://" .. brainrotData.IdleAnimationID
     local animationTrack: AnimationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
     animationTrack.Looped = true
     animationTrack:AdjustSpeed(1)
