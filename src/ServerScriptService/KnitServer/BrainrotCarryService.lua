@@ -111,12 +111,6 @@ function BrainrotCarryService:_weldBrainrotToHands(player: Player, tool: Tool, h
 
 	print("✅ Motor6D created!")
 
-	if ownerSuccess then
-		print("✅ Network owner set!")
-	else
-		print("⚠️ Network owner failed")
-	end
-
 	-- 🔥 NOW unanchor (motor exists, network owner set)
 	handlePart.Anchored = false
 	handlePart.CanCollide = false
