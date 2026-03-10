@@ -8,6 +8,7 @@ local EntityInBase = require(ServerScriptService.Classes.Base.EntityInBase)
 local entityUtils = require(ServerScriptService.Utils.entityUtils)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local whenBaseDestroyed = require(script.whenBaseDestroyed)
+local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local offlineEarningsUtils = require(ServerScriptService.Utils.offlineEarningsUtils)
 -- local Signal = require(ReplicatedStorage.Libraries.Signal)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
@@ -71,6 +72,32 @@ local PlayerBase: constructor = Class(
 		self:Init()
 	end
 )
+
+function PlayerBase.RemoveFromBaseEarning(self: PlayerBase, entityName: string)
+	local _biome, entityData = getBiomeByEntity(entityName)
+	if entityData then
+		local moneyPerSec = math.floor(entityData.MoneyPerSec)
+		local existingValue = self._player:GetAttribute("MoneyPerSec")
+		if existingValue then
+			local updatedValue = existingValue - moneyPerSec
+			self._player:SetAttribute("MoneyPerSec", updatedValue)
+		end
+	end
+end
+
+function PlayerBase.AddToBaseEarning(self: PlayerBase, entityName: string)
+	local _biome, entityData = getBiomeByEntity(entityName)
+	if entityData then
+		local moneyPerSec = math.floor(entityData.MoneyPerSec)
+		local existingValue = self._player:GetAttribute("MoneyPerSec")
+		local updatedValue = moneyPerSec
+		if existingValue then
+			updatedValue = existingValue + moneyPerSec
+		end
+
+		self._player:SetAttribute("MoneyPerSec", updatedValue)
+	end
+end
 
 function PlayerBase.ComputeOfflineRewards(self: PlayerBase, data: {}, entity: {}, offlineMoney: number)
 	local currentTime = os.time()
@@ -217,6 +244,9 @@ function PlayerBase.RemoveEntity(self: PlayerBase, id: string)
 		return
 	end
 
+	local entityName = entity:GetName()
+	self:RemoveFromBaseEarning(entityName)
+
 	entity:Destroy()
 	self._entitiesInBases[id] = nil
 end
@@ -257,6 +287,8 @@ function PlayerBase.PlaceEntity(
 	local entityInBase =
 		EntityInBase.new(self._service, self._timerservice, player, biomeName, entityName, mutationName, slotPart)
 	local entityId = entityInBase:GetId()
+
+	self:AddToBaseEarning(entityName)
 
 	slotPart:SetAttribute(AttributesConfiguration.SLOT_TAKEN, true)
 	self._entitiesInBases[entityId] = entityInBase
