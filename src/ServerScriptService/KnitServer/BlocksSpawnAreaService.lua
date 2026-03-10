@@ -244,6 +244,16 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 		--// [IMPORTANT] Update ownership attribute
 		player:SetAttribute("OwnsEquippedBrainrot", true)
 
+		brainrotTool:FindFirstChildOfClass("Model"):SetAttribute("TimerPaused", true)
+
+		local meshPart: MeshPart = brainrotTool:FindFirstChildOfClass("Model"):FindFirstChildOfClass("MeshPart")
+		if meshPart then
+			local infoGUI: BillboardGui = meshPart:FindFirstChild("InfoGUI")
+			if infoGUI then
+				infoGUI.Enabled = false
+			end
+		end
+
 		dprint("Player exited with brainrot -> NOW OWNS IT:", player.Name)
 	end
 

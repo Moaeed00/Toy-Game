@@ -331,6 +331,9 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
             if brainrot:GetAttribute("Timer") == 0 then
                 return
             end
+            if brainrot:GetAttribute("TimerPaused") then
+                return
+            end
 
             timeLeft = math.max(0, timeLeft - 0.1)
 
