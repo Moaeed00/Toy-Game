@@ -138,7 +138,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     align.Position = kickTarget
     align.Parent = ball
 
-    task.wait(0.4) -- forward movement duration
+    task.wait(0.43) -- forward movement duration
 
     if root and root.Parent then
         local returnPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
