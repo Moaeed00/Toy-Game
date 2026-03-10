@@ -11,6 +11,8 @@ local HttpService = game:GetService("HttpService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local BrainrotConfig = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("BrainrotConfig"))
 
+local BaseService
+
 local BrainrotCarryService = Knit.CreateService({
 	Name = "BrainrotCarryService",
 	Client = {
@@ -110,12 +112,6 @@ function BrainrotCarryService:_weldBrainrotToHands(player: Player, tool: Tool, h
 		* BrainrotConfig.CARRY_ROTATION_OFFSET
 
 	print("✅ Motor6D created!")
-
-	if ownerSuccess then
-		print("✅ Network owner set!")
-	else
-		print("⚠️ Network owner failed")
-	end
 
 	-- 🔥 NOW unanchor (motor exists, network owner set)
 	handlePart.Anchored = false
@@ -261,7 +257,19 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 	if not brainrotModel or not brainrotModel:IsA("Model") then return end
 
 	local rootPart = brainrotModel:FindFirstChild("RootPart")
-	if not rootPart or rootPart:GetAttribute("IsCarried") then return end
+	if not rootPart then return end
+
+	-- ATOMIC LOCK (prevents duplicate pickup)
+	if rootPart:GetAttribute("PickupLocked") then
+		return
+	end
+
+	rootPart:SetAttribute("PickupLocked", true)
+
+	if rootPart:GetAttribute("IsCarried") then
+		rootPart:SetAttribute("PickupLocked", false)
+		return
+	end
 
 	if self.BlocksSpawnAreaService then
 		if not self.BlocksSpawnAreaService:CanPickupBrainrot(player) then
@@ -284,10 +292,21 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 	end
 
 	local tool = self:_createBrainrotTool(player, brainrotModel)
-	if not tool then return end
+
+	if not tool then
+		rootPart:SetAttribute("PickupLocked", false)
+		return
+	end
 
 	rootPart:SetAttribute("IsCarried", true)
+	rootPart:SetAttribute("PickupLocked", false)
+
 	player:SetAttribute("IsCarryingBrainrot", true)
+
+	-- Store brainrot info for ownership later
+	player:SetAttribute("CarriedBrainrotBiome", brainrotModel:GetAttribute("Biome"))
+	player:SetAttribute("CarriedBrainrotName", brainrotModel.Name)
+	player:SetAttribute("CarriedBrainrotMutation", brainrotModel:GetAttribute("Mutation"))
 
 	self.Client.CarryStateChanged:Fire(player, true, rootPart)
 
@@ -296,6 +315,33 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 	end
 
 	print("✅ Pickup complete!")
+end
+
+function BrainrotCarryService:GiveOwnership(player: Player)
+
+	if not player:GetAttribute("IsBrainrotEquipped") then
+		return
+	end
+
+	local biomeName = player:GetAttribute("CarriedBrainrotBiome")
+	local entityName = player:GetAttribute("CarriedBrainrotName")
+	local mutationName = player:GetAttribute("CarriedBrainrotMutation")
+
+	if not biomeName or not entityName then
+		return
+	end
+
+	if not BaseService then
+		warn("BaseService not available")
+		return
+	end
+
+	BaseService:GiveTool(player, biomeName, entityName, mutationName)
+
+	player:SetAttribute("OwnsEquippedBrainrot", true)
+
+	print("✅ Brainrot ownership granted")
+
 end
 
 function BrainrotCarryService:DropBrainrot(player: Player, reason: string?)
@@ -350,7 +396,7 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?)
 
 		for _, part in ipairs(parentModel:GetDescendants()) do
 			if part:IsA("BasePart") then
-				part.Anchored = false
+				part.Anchored = true
 				part.CanCollide = false
 				part.Massless = true
 			end
@@ -362,7 +408,10 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?)
 		local hrp = character:FindFirstChild("HumanoidRootPart")
 		if hrp then
 			local forwardPos = (hrp.CFrame * CFrame.new(0, 0, -4)).Position
-			local fixedPos = Vector3.new(forwardPos.X, -7.4, forwardPos.Z)
+			
+			-- FORCE Y LEVEL
+			local fixedPos = Vector3.new(forwardPos.X, -6.8, forwardPos.Z)
+
 			local rotation = CFrame.Angles(0, math.rad(-90), 0)
 			parentModel:PivotTo(CFrame.new(fixedPos) * rotation)
 		end
@@ -417,7 +466,7 @@ function BrainrotCarryService:_setupPrompt(brainrotModel: Model)
 	prompt.MaxActivationDistance = BrainrotConfig.PROMPT_MAX_DISTANCE
 	prompt.RequiresLineOfSight = BrainrotConfig.PROMPT_REQUIRES_LOS
 	prompt.HoldDuration = 0.2
-	prompt.Enabled = not rootPart:GetAttribute("IsCarried")
+	prompt.Enabled = not rootPart:GetAttribute("IsCarried") and not rootPart:GetAttribute("PickupLocked")
 
 	if promptConnections[rootPart] then
 		promptConnections[rootPart]:Disconnect()
@@ -443,6 +492,10 @@ end
 function BrainrotCarryService:KnitStart()
 	pcall(function()
 		self.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
+	end)
+
+	pcall(function()
+		BaseService = Knit.GetService("BaseService")
 	end)
 
 	for _, model in ipairs(CollectionService:GetTagged(BrainrotConfig.BRAINROT_TAG_NAME)) do
