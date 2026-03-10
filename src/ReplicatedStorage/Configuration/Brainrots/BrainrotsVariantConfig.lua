@@ -1,6 +1,6 @@
 return {
 	VARIANTS = {{
-		Prefix = "Gold ",
+		Prefix = "Golden ",
 		Chance = 0.08,
 		Color = Color3.fromRGB(255, 215, 0),
     }, {
