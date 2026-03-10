@@ -10,6 +10,7 @@ local FocusEffect: {} = require(LobbyHUDHelpers:WaitForChild("FocusEffect"))
 local LobbyCircleTouch: {} = require(LobbyHUDHelpers:WaitForChild("LobbyCircleTouch"))
 local Format: {} = require(ReplicatedStorage.Libraries.Format)
 local CounterTween: {} = require(ReplicatedStorage.Utility.Countertween)
+local CashAnimation: {} = require(ReplicatedStorage.Utility.CashAnimation)
 
 ----	[References]		----
 local Player = Players.LocalPlayer
@@ -81,8 +82,13 @@ local function moneyFormatter(v: number): string
 	return `${Format.commaNumber(v)}`
 end
 
-local function OnCashChanged(newValue: number)
+local function OnCashChanged(newValue: number, FirsTime: boolean)
 	local prev = CounterTween.GetCurrentValue(CurrencyTextHolder)
+
+	if not FirsTime then
+		CashAnimation.play(prev, newValue)
+	end
+
 	CounterTween.Animate(CurrencyTextHolder, prev, newValue, {
 		Duration = 0.35,
 		Formatter = moneyFormatter,
@@ -199,6 +205,7 @@ function Hud:KnitStart()
 	end
 
 	self:SetupHudValues()
+	CashAnimation.init(MainGui)
 end
 
 return Hud
