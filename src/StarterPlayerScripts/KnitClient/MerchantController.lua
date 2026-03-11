@@ -25,10 +25,10 @@ end
 function MerchantController:KnitStart()
     MerchantController.CameraController = Knit.GetController("CameraController")
     MerchantController.MerchantService = Knit.GetService("MerchantService")
+    MerchantController.LobbyHud = Knit.GetController("Hud")
     MerchantController.CurrentInventory = {}
     MerchantController.ActiveFrames = {}
 
-    self:ConnectSellBrainrots()
     self:ConnectCloseButton()
 
     self.MerchantService.InventoryUpdateEvent:Connect(function(inventorySnapshot: {})
@@ -43,24 +43,14 @@ function MerchantController:KnitStart()
     end)
 end
 
-function MerchantController:ConnectSellBrainrots()
-    local proximityPrompt: ProximityPrompt = workspace.Environment:WaitForChild("SellShop"):WaitForChild("Prompt"):WaitForChild("ProximityPrompt")
-    if proximityPrompt then
-        proximityPrompt.Triggered:Connect(function()
-            self:ToggleSellShopUI(true)
-        end)
-    end
-end
-
 function MerchantController:ConnectCloseButton()
     CloseButton.Activated:Connect(function()
-        self:ToggleSellShopUI(false)
+        self.LobbyHud:CloseContainer("Merchant")
     end)
 end
 
-function MerchantController:ToggleSellShopUI(toggle: boolean)
-    self.CameraController:ToggleCameraBlurEffect(toggle)
-    MerchantGui.Enabled = toggle
+function MerchantController:SetEnabled(enabled: boolean)
+    MerchantGui.Enabled = enabled
 end
 
 function MerchantController:RefreshUI()
