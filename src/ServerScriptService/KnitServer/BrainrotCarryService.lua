@@ -158,7 +158,8 @@ function BrainrotCarryService:_createBrainrotTool(player: Player, brainrotModel:
 	local id = HttpService:GenerateGUID(false)
 
 	local tool = Instance.new("Tool")
-	tool.Name = "Brainrot_" .. string.sub(id, 1, 6)
+	-- tool.Name = "Brainrot_" .. string.sub(id, 1, 6)
+	tool.Name = brainrotModel.Name
 	tool.RequiresHandle = true
 	tool.CanBeDropped = false
 	tool:SetAttribute("IsBrainrotTool", true)
