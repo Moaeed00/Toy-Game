@@ -7,6 +7,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 1,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "137113682765648",
 	},
 	["Trippi Troppi"] = {
 		Rarity = 50000000,
@@ -14,6 +15,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 2,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "111161455172518",
 	},
 	["Fluri Flura"] = {
 		Rarity = 40000000,
@@ -21,6 +23,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 3,
 		Type = "Air",
         Timer = 30,
+        IdleAnimationID = "87049863001649",
 	},
 	["Pipi Kiwi"] = {
 		Rarity = 30000000,
@@ -28,6 +31,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 4,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "84837446689156",
 	},
 	["Svinina Bombardino"] = {
 		Rarity = 20000000,
@@ -35,6 +39,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 6,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "128225293813400",
 	},
 	["Brr Brr Patapim"] = {
 		Rarity = 10000000,
@@ -42,6 +47,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 8,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "122559066664500",
 	},
 	["Boneca Ambalabu"] = {
 		Rarity = 9000000,
@@ -49,6 +55,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 10,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "78416943019031",
 	},
 	["Cacto Hipopotamo"] = {
 		Rarity = 8000000,
@@ -56,6 +63,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 12,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "129198004804550",
 	},
 	["Gangster Footera"] = {
 		Rarity = 7000000,
@@ -63,6 +71,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 14,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "135876601596450",
 	},
 	["Chimpanzini Bananini"] = {
 		Rarity = 6000000,
@@ -70,6 +79,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 18,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "119152648186721",
 	},
 	["Frigo Camelo"] = {
 		Rarity = 5000000,
@@ -77,6 +87,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 20,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "90583968473819",
 	},
 	Garamararam = {
 		Rarity = 4000000,
@@ -84,6 +95,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 24,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "119071723858641",
 	},
 	["Talpa Di Fero"] = {
 		Rarity = 3500000,
@@ -91,20 +103,23 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 26,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "82230121002174",
 	},
-	["Ta Ta Ta Ta Sahur"] = {
+	["Tatatata Sahur"] = {
 		Rarity = 3000000,
 		RarityType = "Rare",
 		CashPerSecond = 28,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "70467163409213",
 	},
-	["Tung Sahur"] = {
+	["Tung Tung Sahur"] = {
 		Rarity = 2700000,
 		RarityType = "Rare",
 		CashPerSecond = 32,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "134662929935334",
 	},
 	["Trippi Troppi Troppa Trippa"] = {
 		Rarity = 2400000,
@@ -112,6 +127,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 44,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "79287457248711",
 	},
 	["Bobrito Bandito"] = {
 		Rarity = 2100000,
@@ -119,6 +135,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 56,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "74690734135693",
 	},
 	["Trulimero Trulicina"] = {
 		Rarity = 1800000,
@@ -126,20 +143,23 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 68,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "109196834334122",
 	},
-	Madudung = {
+	Madung = {
 		Rarity = 1600000,
 		RarityType = "Rare",
 		CashPerSecond = 76,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "123473669513490",
 	},
-	["Bananita Dolphinita"] = {
+	["Bananito Delfinito"] = {
 		Rarity = 1400000,
 		RarityType = "Rare",
 		CashPerSecond = 84,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "128779613199778",
 	},
 	["Rhino Toasterino"] = {
 		Rarity = 900000,
@@ -147,6 +167,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 96,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "110538082510571",
 	},
 	["Orangutini Ananassini"] = {
 		Rarity = 800000,
@@ -154,6 +175,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 108,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "97128951022077",
 	},
 	["Odin Din Din Dun"] = {
 		Rarity = 700000,
@@ -161,6 +183,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 120,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "113250326274067",
 	},
 	["Cappuccino Assassino"] = {
 		Rarity = 600000,
@@ -168,13 +191,15 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 132,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "91508657190285",
 	},
-	["Brri Brri Bicus Dicus"] = {
+	["Brr Bicus Dicus"] = {
 		Rarity = 500000,
 		RarityType = "Epic",
 		CashPerSecond = 144,
 		Type = "Air",
         Timer = 30,
+        IdleAnimationID = "114157964762947",
 	},
 	["Glorbo Fruttodrillo"] = {
 		Rarity = 450000,
@@ -182,6 +207,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 160,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "97656649303430",
 	},
 	["Bambini Crostini"] = {
 		Rarity = 400000,
@@ -189,6 +215,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 180,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "75325003538555",
 	},
 	["Avocadini Guffo"] = {
 		Rarity = 350000,
@@ -196,13 +223,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 200,
 		Type = "Air",
         Timer = 30,
-	},
-	["Quesadilla Crocodila"] = {
-		Rarity = 330000,
-		RarityType = "Epic",
-		CashPerSecond = 225,
-		Type = "None",
-        Timer = 30,
+        IdleAnimationID = "109172282813062",
 	},
 	["Six Seven"] = {
 		Rarity = 300000,
@@ -210,13 +231,15 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 250,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "128440259644370",
 	},
-	["Ballerina Cappuccina"] = {
+	["Balerina Capucina"] = {
 		Rarity = 250000,
 		RarityType = "Legendary",
 		CashPerSecond = 320,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "98084990037952",
 	},
 	["Chef Crabracadabra"] = {
 		Rarity = 210000,
@@ -224,6 +247,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 480,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "134525017294235",
 	},
 	["Strawberrelli Flamingelli"] = {
 		Rarity = 180000,
@@ -231,6 +255,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 640,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "91960180162946",
 	},
 	["Pandaccini Bananini"] = {
 		Rarity = 150000,
@@ -238,20 +263,23 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 820,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "83720431126601",
 	},
-	Matteo = {
+	Mateo = {
 		Rarity = 130000,
 		RarityType = "Legendary",
 		CashPerSecond = 950,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "87854282484561",
 	},
-	["Burbaloni Luliloli"] = {
+	["Burbaloni Loliloli"] = {
 		Rarity = 110000,
 		RarityType = "Legendary",
 		CashPerSecond = 1040,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "84457584090186",
 	},
 	["Pipi Potato"] = {
 		Rarity = 90000,
@@ -259,6 +287,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 1100,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "103215349100772",
 	},
 	["Blueberrinni Octopusini"] = {
 		Rarity = 70000,
@@ -266,6 +295,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 1160,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "86470565237388",
 	},
 	["Bombombini Gusini"] = {
 		Rarity = 50000,
@@ -273,6 +303,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 1300,
 		Type = "Air",
         Timer = 30,
+        IdleAnimationID = "74132471582266",
 	},
 	["Bombardiro Crocodilo"] = {
 		Rarity = 40000,
@@ -280,20 +311,23 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 1360,
 		Type = "Air",
         Timer = 30,
+        IdleAnimationID = "110808175306449",
 	},
-	["Cocofanto Elefanto"] = {
+	["Elefanto Cocofanto"] = {
 		Rarity = 32000,
 		RarityType = "Mythic",
 		CashPerSecond = 1520,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "94263383103588",
 	},
-	["Girafa Celeste"] = {
+	["Girafa Celestre"] = {
 		Rarity = 25000,
 		RarityType = "Mythic",
 		CashPerSecond = 1760,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "82967378573130",
 	},
 	["Tralalero Tralala"] = {
 		Rarity = 20000,
@@ -301,6 +335,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 2000,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "134208416607994",
 	},
 	["Orcalero Orcala"] = {
 		Rarity = 15000,
@@ -308,6 +343,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 2240,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "85470681735904",
 	},
 	["Cavallo Virtuoso"] = {
 		Rarity = 12000,
@@ -315,6 +351,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 2480,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "85514514688528",
 	},
 	["Zibra Zubra Zibralini"] = {
 		Rarity = 10000,
@@ -322,13 +359,15 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 2720,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "125708577359364",
 	},
-	["Ballerino Lololo"] = {
+	["Balerino Lololo"] = {
 		Rarity = 9000,
 		RarityType = "Mythic",
 		CashPerSecond = 3040,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "100736583618239",
 	},
 	["Gorillo Watermelondrillo"] = {
 		Rarity = 8000,
@@ -336,6 +375,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 3200,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "121669309389326",
 	},
 	Lerulerulerule = {
 		Rarity = 7000,
@@ -343,6 +383,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 3340,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "113944673008104",
 	},
 	["La Vacca Saturno Saturnita"] = {
 		Rarity = 5000,
@@ -350,6 +391,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 3700,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "74251053903533",
 	},
 	["Pot Hotspot"] = {
 		Rarity = 4000,
@@ -357,6 +399,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 3850,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "108674086019292",
 	},
 	["Los Tralaleritos"] = {
 		Rarity = 3000,
@@ -364,6 +407,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 4160,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "119212925111511",
 	},
 	["Dragon Cannelloni"] = {
 		Rarity = 2000,
@@ -371,6 +415,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 4640,
 		Type = "Air",
         Timer = 30,
+        IdleAnimationID = "127778181093662",
 	},
 	["Esok Sekolah"] = {
 		Rarity = 1500,
@@ -378,6 +423,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 5040,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "134795063690692",
 	},
 	["Job Job Job Sahur"] = {
 		Rarity = 1000,
@@ -385,6 +431,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 5520,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "115738251148992",
 	},
 	["Strawberry Elephant"] = {
 		Rarity = 800,
@@ -392,6 +439,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 5920,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "79871916866333",
 	},
 	["Agarrini La Pallini"] = {
 		Rarity = 600,
@@ -399,6 +447,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 6400,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "127843445745919",
 	},
 	["Karkerkar Kurkur"] = {
 		Rarity = 500,
@@ -406,6 +455,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 6800,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "90520952784864",
 	},
 	["Tralalita Tralala"] = {
 		Rarity = 400,
@@ -413,6 +463,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 7200,
 		Type = "Water",
         Timer = 30,
+        IdleAnimationID = "82309982591316",
 	},
 	["Torrtuginni Dragonfrutini"] = {
 		Rarity = 300,
@@ -420,6 +471,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 8500,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "90443757660334",
 	},
 	["Espresso Signora"] = {
 		Rarity = 200,
@@ -427,6 +479,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 8880,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "80435230744346",
 	},
 	["Tigroligre Frutonni"] = {
 		Rarity = 100,
@@ -434,6 +487,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 10000,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "86994308079290",
 	},
 	Pakrahmatmamat = {
 		Rarity = 80,
@@ -441,6 +495,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 12000,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "82634170798863",
 	},
 	Pakrahmatmatina = {
 		Rarity = 60,
@@ -448,6 +503,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 15000,
 		Type = "None",
         Timer = 30,
+        IdleAnimationID = "86986835818770",
 	},
 	["Chicleteira Bicicleteira"] = {
 		Rarity = 40,
@@ -455,150 +511,7 @@ local BRAINROTS_DATA = {
 		CashPerSecond = 20000,
 		Type = "None",
         Timer = 30,
-	},
-	["Cachorrito Melonito"] = {
-		Rarity = 20,
-		RarityType = "God",
-		CashPerSecond = 35000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Noo My Examen"] = {
-		Rarity = 17,
-		RarityType = "God",
-		CashPerSecond = 43000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Yess My Examen"] = {
-		Rarity = 15,
-		RarityType = "God",
-		CashPerSecond = 47000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Tric Trac Barabum"] = {
-		Rarity = 0,
-		RarityType = "Epic",
-		CashPerSecond = 225,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Lionel Cactuseli"] = {
-		Rarity = 0,
-		RarityType = "Legendary",
-		CashPerSecond = 1200,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Tirilikalika Tirilikalako"] = {
-		Rarity = 0,
-		RarityType = "Legendary",
-		CashPerSecond = 1250,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Ganganzelli Trulala"] = {
-		Rarity = 0,
-		RarityType = "Mythic",
-		CashPerSecond = 3500,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	Tralaledon = {
-		Rarity = 0,
-		RarityType = "Mythic",
-		CashPerSecond = 3600,
-		Type = "Water",
-        Timer = 30,
-		Craft = true,
-	},
-	["La Grande Combinasion"] = {
-		Rarity = 0,
-		RarityType = "Secret",
-		CashPerSecond = 9200,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Triplito Tralaleritos"] = {
-		Rarity = 0,
-		RarityType = "Secret",
-		CashPerSecond = 9500,
-		Type = "Water",
-        Timer = 30,
-		Craft = true,
-	},
-	["Chicleteirina Bicicleteirina"] = {
-		Rarity = 0,
-		RarityType = "God",
-		CashPerSecond = 25000,
-		Type = "Water",
-        Timer = 30,
-		Craft = true,
-	},
-	["Chillin Chili"] = {
-		Rarity = 0,
-		RarityType = "God",
-		CashPerSecond = 30000,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Swag Soda"] = {
-		Rarity = 0,
-		RarityType = "God",
-		CashPerSecond = 40000,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["W Or L"] = {
-		Rarity = 0,
-		RarityType = "God",
-		CashPerSecond = 45000,
-		Type = "None",
-        Timer = 30,
-		Craft = true,
-	},
-	["Banana Dancana"] = {
-		Rarity = 12,
-		RarityType = "OG",
-		CashPerSecond = 50000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Illuminato Triangolo"] = {
-		Rarity = 10,
-		RarityType = "OG",
-		CashPerSecond = 60000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Nyannini Cattalini"] = {
-		Rarity = 8,
-		RarityType = "OG",
-		CashPerSecond = 75000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Bananini Kittini"] = {
-		Rarity = 5,
-		RarityType = "OG",
-		CashPerSecond = 100000,
-		Type = "None",
-        Timer = 30,
-	},
-	["Smurfo Gatto"] = {
-		Rarity = 2,
-		RarityType = "OG",
-		CashPerSecond = 150000,
-		Type = "None",
-        Timer = 30,
+        IdleAnimationID = "103037349728309",
 	},
 }
 
@@ -615,6 +528,7 @@ end
 for index, brainrot in pairs(BRAINROTS_DATA) do
 	BrainrotsData[index] = {
 		Rarity = brainrot.Rarity,
+		IdleAnimationID = brainrot.IdleAnimationID,
 		-- Image = BrainrotImages[i];
 		RarityType = brainrot.RarityType,
 		CashPerSecond = brainrot.CashPerSecond,

@@ -15,6 +15,8 @@ end
 function FootballController:KnitStart()
     FootballController.FootballService = Knit.GetService("FootballService")
 
+    FootballController.IsKicking = false
+
     task.wait(2)
     self:OnFootballToolTriggered()
 end
@@ -32,11 +34,20 @@ function FootballController:OnFootballToolTriggered()
         end)
 
         football.Activated:Connect(function()
+            if self.IsKicking then
+                return
+            end
+            self.IsKicking = true
+
             local currentBallPosition = ball.CFrame.Position
             local track = self:PlayKickBallAnimation(humanoid)
 
             track:GetMarkerReachedSignal("KickMoment"):Once(function()
                 self.FootballService.KickBallEvent:Fire(currentBallPosition)
+            end)
+
+            track.Stopped:Once(function()
+                self.IsKicking = false
             end)
         end)
 

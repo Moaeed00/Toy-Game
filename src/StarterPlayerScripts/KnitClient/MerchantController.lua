@@ -39,6 +39,7 @@ function MerchantController:KnitStart()
         self.MerchantService:SellAll():andThen(function(totalInventoryValue: number)
             local message = `Inventory sold for ${self:FormatNumber(tostring(totalInventoryValue))}`
             NotificationHandler:DisplayNotificationMessage(message, "Success")
+            self:UpdateTotalValue(0)
         end)
     end)
 end
@@ -119,7 +120,7 @@ function MerchantController:ClearFrames()
 	table.clear(self.ActiveFrames)
 end
 
-function MerchantController:UpdateTotalValue(totalValue)
+function MerchantController:UpdateTotalValue(totalValue: number)
 	InventoryValue.Text = "Total Value: $" .. self:FormatNumber(totalValue)
 end
 

@@ -48,7 +48,7 @@ local function get_slot_label(slot: BasePart): TextLabel
 end
 
 local function moneyFormatter(v: number): string
-	return `${Format.abbreviate(math.floor(v))}`
+	return `${Format.commaNumber(math.floor(v))}`
 end
 
 local EntityBase: constructor = Class(
@@ -96,9 +96,13 @@ local EntityBase: constructor = Class(
 function EntityBase.GenerateMoney(self: EntityInBase)
 	self._slotLabel.Parent.Parent.Enabled = true
 	self._slotLabelOffline.Visible = false
+	local isCollecting = false
 
 	self._connections:Add(self._timerservice.SecondPast:Connect(function()
-		-- local playerData = self._service:GetPlayerData(self._player)
+		if isCollecting then
+			return
+		end
+
 		local _, entityData = getBiomeByEntity(self._entityName)
 		if not entityData then
 			return
@@ -115,7 +119,7 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		})
 
 		if self._offlineMoney > 0 then
-			self._slotLabelOffline.Text = `Offline: ${Format.abbreviate(self._offlineMoney)}`
+			self._slotLabelOffline.Text = `Offline: ${Format.commaNumber(self._offlineMoney)}`
 			self._slotLabelOffline.Visible = true
 		else
 			self._slotLabelOffline.Text = "$0"
@@ -124,6 +128,10 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 	end))
 
 	self._connections:Add(self._slot.Plate.Touched:Connect(function(hit: BasePart)
+		if isCollecting then
+			return
+		end
+
 		local playerWhoTouched = getPlayerFromCharacter(hit.Parent)
 		if not playerWhoTouched then
 			return
@@ -131,6 +139,8 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		if playerWhoTouched ~= self._player then
 			return
 		end
+
+		isCollecting = true
 
 		self._service:UpdateMoney(self._player, self._pendingMoney)
 
@@ -143,10 +153,11 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 			self._slotLabelOffline.Text = "$0"
 		end
 
-		CounterTween.Animate(self._slotLabel, self._pendingMoney, 0, {
-			Duration = 0.2,
-			Formatter = moneyFormatter,
-		})
+		CounterTween.Cleanup(self._slotLabel)
+		self._slotLabel.Text = "$0"
+
+		task.wait(0.5)
+		isCollecting = false
 	end))
 end
 

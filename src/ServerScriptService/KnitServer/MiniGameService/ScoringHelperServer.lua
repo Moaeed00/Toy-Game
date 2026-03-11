@@ -75,7 +75,7 @@ function ScoringHelperServer:Initialize(player: Player, OpponentPlayer: Player)
 
 	for _, part: BasePart in ipairs(ScoringParts:GetChildren()) do
 		trove:Connect(part.Touched, function(hit)
-			if hit.Name ~= player.Name .. "_FootBall" then
+			if hit.Parent.Name ~= player.Name .. "_FootBall" then
 				return
 			end
 
