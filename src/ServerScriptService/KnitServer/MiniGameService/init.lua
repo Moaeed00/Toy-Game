@@ -80,7 +80,7 @@ function MiniGameService:ResetBall(player)
 	local BallSpawnReference = BallSpawnReferences[player]
 
 	if BallSpawnReference then
-		FootBall.CFrame = BallSpawnReference.CFrame
+		FootBall:PivotTo(BallSpawnReference.CFrame)
 	end
 end
 
@@ -107,7 +107,7 @@ function MiniGameService:SpawnBall(player, SlotName, BallName)
 
 	self:ResetBall(player)
 
-	ClonedFootball:SetNetworkOwner(player)
+	ClonedFootball.PrimaryPart:SetNetworkOwner(player)
 
 	return true
 end

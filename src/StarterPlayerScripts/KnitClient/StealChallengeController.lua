@@ -92,7 +92,8 @@ function PlayConfetti(slotName: string)
 	end
 	local Confetti = ConfettiParticles:Clone()
 	Confetti.Parent = workspace
-	local ConfettiPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
+	local ConfettiPositionReference: Part =
+		workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
 	Confetti:PivotTo(ConfettiPositionReference.CFrame)
 
 	local duration = 5
@@ -210,7 +211,6 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 	end
 
 	OpponentPlayerName = StealerPlayerName
-	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Owner", true)
 	ChallengePending = true
@@ -220,7 +220,8 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 	MessageValue.Visible = true
 
 	MessageValue.Text = `{StealerPlayerName} has challenged you for {ChallengeData.EntityName} Brainrot`
-	PointsText.Text = `{EntityInfo.StealPoints} Points`
+
+	PointsText.Text = `{StealPoints} Points`
 
 	StartTimer(Time)
 end
@@ -229,7 +230,13 @@ function StealChallengeController:AcceptChallenge()
 	StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
 end
 
-function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+function StealChallengeController:HandleStates(
+	State: string,
+	Message: string,
+	Time: number,
+	CurrentChallengeData: {},
+	SlotName: string
+)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
 		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
@@ -265,9 +272,11 @@ end
 function StealChallengeController:KnitStart()
 	-- print("StealChallengeController Started")
 
-	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
-		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
-	end)
+	StealChallengeService.StealChallenge:Connect(
+		function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+			self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
+		end
+	)
 
 	AcceptButton.Activated:Connect(function()
 		self:AcceptChallenge()

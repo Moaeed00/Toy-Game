@@ -18,8 +18,9 @@ local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
 local StealGUi: ScreenGui = PlayerGui:WaitForChild("StealGUi")
 local Main: Frame = StealGUi:WaitForChild("Main")
 local Message: TextLabel = Main:WaitForChild("Message")
-local ChallengeButton: TextButton = Main:WaitForChild("Challenge")
-local RobuxButton: TextButton = Main:WaitForChild("Robux")
+local Buttons: Frame = Main:WaitForChild("Buttons")
+local ChallengeButton: TextButton = Buttons:WaitForChild("Challenge")
+local RobuxButton: TextButton = Buttons:WaitForChild("Robux")
 local CloseButton: TextButton = Main:WaitForChild("Close")
 
 --[Variables]
@@ -86,10 +87,10 @@ function StealController:EnableUI(
 
 	BiomeData = StealConfiguration[biomeName]
 	local RobuxPrice = BiomeData.Price
-	RobuxButton.Text = `{RobuxPrice} Robux`
+	RobuxButton.Frame.TextLabel.Text = `{RobuxPrice} Robux`
 
 	local ChallengePoints = BiomeData.StealPoints
-	ChallengeButton.Text = `Challenge with {ChallengePoints} Points`
+	ChallengeButton.Points.Text = `{ChallengePoints} Points`
 
 	StealGUi.Enabled = true
 end

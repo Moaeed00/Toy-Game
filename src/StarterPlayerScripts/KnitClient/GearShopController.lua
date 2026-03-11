@@ -5,6 +5,12 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Player = Players.LocalPlayer
+
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local GearShopGui: ScreenGui = PlayerGui:WaitForChild("GearGui")
+local GearFrame: Frame = GearShopGui:WaitForChild("GearFrame")
+local CloseButton: ImageButton = GearFrame:WaitForChild("CloseButton")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -28,12 +34,12 @@ GearShopController.GearShopService = nil
 --// ==========================================
 function GearShopController:BuyGear(gearName: string)
 	dprint("BuyGear() ->", gearName)
-	
+
 	if not self.GearShopService then
 		warn("[GearShopController] GearShopService not available!")
 		return
 	end
-	
+
 	--// Call server
 	self.GearShopService:BuyGear(gearName)
 end
@@ -43,12 +49,12 @@ end
 --// ==========================================
 function GearShopController:ToggleAutoBuy(gearName: string, enabled: boolean)
 	dprint("ToggleAutoBuy() ->", gearName, enabled)
-	
+
 	if not self.GearShopService then
 		warn("[GearShopController] GearShopService not available!")
 		return
 	end
-	
+
 	--// Call server
 	self.GearShopService:ToggleAutoBuy(gearName, enabled)
 end
@@ -58,7 +64,7 @@ end
 --// ==========================================
 local function onPurchaseResult(success: boolean, gearName: string, message: string)
 	dprint("PurchaseResult ->", gearName, "success:", success, "message:", message)
-	
+
 	--// You can add UI feedback here (notifications, sounds, etc.)
 	if success then
 		print("✅ Successfully purchased:", gearName)
@@ -83,22 +89,40 @@ end
 --// ==========================================
 function GearShopController:KnitInit()
 	dprint("KnitInit() start")
-	
+
 	--// Get service
 	self.GearShopService = Knit.GetService("GearShopService")
 	dprint("Got GearShopService:", self.GearShopService)
-	
+
 	--// Connect to signals
 	self.GearShopService.PurchaseResult:Connect(onPurchaseResult)
 	self.GearShopService.GearUpdated:Connect(onGearUpdated)
-	
+
 	dprint("KnitInit() complete")
 end
 
 function GearShopController:KnitStart()
 	dprint("KnitStart() start")
-	
+
+	GearShopController.LobbyHud = Knit.GetController("Hud")
+
+	self:ConnectCloseButton()
+
 	dprint("KnitStart() complete")
+end
+
+--// ==========================================
+--// Handle UI Toggles
+--// ==========================================
+
+function GearShopController:ConnectCloseButton()
+	CloseButton.Activated:Connect(function()
+		self.LobbyHud:CloseContainer("GearShop")
+	end)
+end
+
+function GearShopController:SetEnabled(enabled: boolean)
+	GearFrame.Visible = enabled
 end
 
 return GearShopController

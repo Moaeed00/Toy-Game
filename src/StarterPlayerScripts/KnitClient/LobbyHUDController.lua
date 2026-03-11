@@ -26,6 +26,9 @@ local DataHandlerService
 
 local Controllers = {
 	-- DailySpin = "SpinClient",
+	FootballShop = "FootballShopController",
+	Merchant = "MerchantController",
+	GearShop = "GearShopController",
 }
 
 local Hud = Knit.CreateController({
@@ -44,6 +47,9 @@ Hud.Controller = { MainGui = Hud }
 
 local GUIS = {
 	-- DailySpin = "DailySpin",
+	FootballShop = "FootballShopGui",
+	Merchant = "MerchantGui",
+	GearShop = "GearGui",
 }
 
 Hud.GUI = { MainGui = MainGui }
