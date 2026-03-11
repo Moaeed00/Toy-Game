@@ -176,21 +176,25 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     if brainrotVariant == BASE_VARIANT_FOLDER then
         selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
     else
+        print("******************** brainrot spawned **************", brainrotVariant.Prefix .. brainrotName)
         selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotVariant.Prefix .. brainrotName)
     end
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
     spawnedBrainrot.Parent = BrainrotsFolder
 
-    local finalCFrame = blockPart.CFrame * CFrame.new(0, 2.3, 0) * CFrame.Angles(math.rad(90), 0, math.rad(-90))
+    local _, size = spawnedBrainrot:GetBoundingBox()
+    local yOffset = size.Y / 2
+    local finalCFrame = blockPart.CFrame * CFrame.new(0, yOffset, 0) * CFrame.Angles(0, math.rad(180), 0)
     spawnedBrainrot:PivotTo(finalCFrame)
 
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
     spawnedBrainrotPart.Transparency = 1
 
     -- start brainrot idle animation
-    local spawnedBrainrotIdleAnimation: Animation = ReplicatedStorage.Assets.Animations:WaitForChild("Brainrot_Idle")
-    -- local spawnedBrainrotIdleAnimation: Animation = spawnedBrainrot:WaitForChild("Anims"):WaitForChild("Idle")
     local spawnedBrainrotAnimator: Animator = spawnedBrainrot:FindFirstChildOfClass("AnimationController"):FindFirstChildOfClass("Animator")
+    local spawnedBrainrotIdleAnimation: Animation = Instance.new("Animation")
+    spawnedBrainrotIdleAnimation.Parent = spawnedBrainrotAnimator
+    spawnedBrainrotIdleAnimation.AnimationId = "rbxassetid://" .. brainrotData.IdleAnimationID
     local animationTrack: AnimationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
     animationTrack.Looped = true
     animationTrack:AdjustSpeed(1)
@@ -299,7 +303,7 @@ function BrainrotSpawnService:PlayScreenSparkles()
     for _, Particle: ParticleEmitter in ipairs(SparkleParticlesAttachment:GetChildren()) do
         local Clone = Particle:Clone()
         Clone.Parent = Attachment
-        Particle:Emit(math.random(2, 5))
+        Clone:Emit(math.random(2, 5))
     end
 end
 
@@ -324,6 +328,13 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
         local timeLeft = timerValue
 
         while timeLeft > 0 do
+            if brainrot:GetAttribute("Timer") == 0 then
+                return
+            end
+            if brainrot:GetAttribute("TimerPaused") then
+                return
+            end
+
             timeLeft = math.max(0, timeLeft - 0.1)
 
             -- keep 1 decimal precision, incase 24.6 -> 25.0
@@ -336,6 +347,10 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
         brainrot:Destroy()
         self.BlocksSpawningService:SpawnBlocks(1)
     end)
+end
+
+function BrainrotSpawnService:StopBrainrotTimer(brainrot: Model)
+    brainrot:SetAttribute("Timer", 0)
 end
 
 return BrainrotSpawnService

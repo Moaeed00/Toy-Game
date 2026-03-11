@@ -1,7 +1,7 @@
 return {
     ["Common"]    = { "Common", "Uncommon", "Rare", "Epic" },
     ["Uncommon"]  = { "Common", "Uncommon", "Rare" },
-    ["Rare"]      = { "Common", "Uncommon", "Gold" },
+    ["Rare"]      = { "Common", "Uncommon", "Golden" },
     ["Epic"]      = { "Uncommon", "Rare", "Epic" },
     ["Legendary"] = { "Uncommon", "Rare", "Epic", "Legendary" },
     ["Mythic"]    = { "Epic", "Legendary", "Mythic" },
