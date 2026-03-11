@@ -19,9 +19,9 @@ end
 function FootballShopController:KnitStart()
     FootballShopController.CameraController = Knit.GetController("CameraController")
     FootballShopController.FootballShopService = Knit.GetService("FootballShopService")
+    FootballShopController.LobbyHud = Knit.GetController("Hud")
     FootballShopController.ShopGenerated = false
 
-    self:ConnectFootballShopDetection()
     self:ConnectCloseButton()
 
     self.FootballShopService.UpdateClientDataEvent:Connect(function(data)
@@ -35,24 +35,14 @@ function FootballShopController:KnitStart()
     end)
 end
 
-function FootballShopController:ConnectFootballShopDetection()
-    local proximityPrompt: ProximityPrompt = workspace.Environment:WaitForChild("FootballShop"):WaitForChild("Prompt"):WaitForChild("ProximityPrompt")
-    if proximityPrompt then
-        proximityPrompt.Triggered:Connect(function()
-            self:ToggleFootballShopUI(true)
-        end)
-    end
-end
-
 function FootballShopController:ConnectCloseButton()
     CloseButton.Activated:Connect(function()
-        self:ToggleFootballShopUI(false)
+        self.LobbyHud:CloseContainer("FootballShop")
     end)
 end
 
-function FootballShopController:ToggleFootballShopUI(toggle: boolean)
-    self.CameraController:ToggleCameraBlurEffect(toggle)
-    FootballShopGui.Enabled = toggle
+function FootballShopController:SetEnabled(enabled: boolean)
+    FootballShopGui.Enabled = enabled
 end
 
 function FootballShopController:GenerateShopData()
