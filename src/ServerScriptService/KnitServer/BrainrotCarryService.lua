@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
+local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local BrainrotConfig = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("BrainrotConfig"))
@@ -114,21 +115,28 @@ function BrainrotCarryService:_weldBrainrotToHands(player: Player, tool: Tool, h
 	print("✅ Motor6D created!")
 
 	-- 🔥 NOW unanchor (motor exists, network owner set)
-	handlePart.Anchored = false
+	-- ensure weld exists before unanchoring
 	handlePart.CanCollide = false
 	handlePart.Massless = true
+	handlePart.Anchored = false
+
+	for _, part in ipairs(handlePart.Parent:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.Massless = true
+		end
+	end
 	print("✅ Handle unanchored!")
 
 	-- Unanchor mesh parts
 	local parentModel = handlePart.Parent
 	if parentModel and parentModel:IsA("Model") then
 		for _, part in ipairs(parentModel:GetDescendants()) do
-			for _, part in ipairs(parentModel:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.Anchored = false
-					part.CanCollide = false
-					part.Massless = true
-				end
+			if part:IsA("BasePart") then
+				part.Anchored = false
+				part.CanCollide = false
+				part.Massless = true
 			end
 		end
 		print("✅ All parts unanchored!")
@@ -144,121 +152,99 @@ function BrainrotCarryService:_unweldBrainrotFromHands(tool: Tool)
 	end
 end
 
-function BrainrotCarryService:_createBrainrotTool(player: Player, brainrotModel: Model): Tool?
-	print("🛠️ Creating tool...")
+function BrainrotCarryService:_attachBrainrotModel(player: Player, brainrotModel: Model): Model?
+	print("🧠 Attaching model...")
 
-	local backpack = player:FindFirstChildOfClass("Backpack")
-	if not backpack then return nil end
+	local character = player.Character
+	if not character then return nil end
 
 	local rootPart = brainrotModel:FindFirstChild("RootPart")
 	if not rootPart or not rootPart:IsA("BasePart") then
 		return nil
 	end
 
-	local id = HttpService:GenerateGUID(false)
+	CollectionService:RemoveTag(brainrotModel, BrainrotConfig.BRAINROT_TAG_NAME)
 
-	local tool = Instance.new("Tool")
-	-- tool.Name = "Brainrot_" .. string.sub(id, 1, 6)
-	tool.Name = brainrotModel.Name
-	tool.RequiresHandle = true
-	tool.CanBeDropped = false
-	tool:SetAttribute("IsBrainrotTool", true)
-	tool:SetAttribute("BrainrotId", id)
-	tool:SetAttribute("IsModelBrainrot", true)
-
-	-- 🔥 KEEP ALL PARTS ANCHORED!
-	local handle = rootPart
-
+	-- weld all parts to root
 	for _, part in ipairs(brainrotModel:GetDescendants()) do
 		if part:IsA("BasePart") then
 			part.CanCollide = false
 			part.Massless = true
 
-			if part ~= handle then
+			if part ~= rootPart then
 				local weld = Instance.new("WeldConstraint")
-				weld.Part0 = handle
+				weld.Part0 = rootPart
 				weld.Part1 = part
-				weld.Parent = handle
+				weld.Parent = rootPart
 			end
 		end
 	end
 
-	rootPart.Name = "Handle"
-	CollectionService:RemoveTag(brainrotModel, BrainrotConfig.BRAINROT_TAG_NAME)
-	brainrotModel.Parent = tool
-	tool.Parent = backpack
+	-- parent to character
+	brainrotModel.Parent = character
 
-	print("✅ Tool in backpack (parts ANCHORED)")
+	-- anchor temporarily
+	rootPart.Anchored = true
 
-	tool.Unequipped:Connect(function()
-		print("🔴 Unequipped!")
-		player:SetAttribute("IsBrainrotEquipped", false)
-		self:_stopHoldAnimation(player)
-		self:_unweldBrainrotFromHands(tool)
-	end)
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return nil end
 
-	local character = player.Character
-	if character then
-		local hum = character:FindFirstChildOfClass("Humanoid")
-		if hum then
-			print("📦 Equipping...")
-			hum:EquipTool(tool)
+	rootPart.CFrame =
+		hrp.CFrame
+		* BrainrotConfig.CARRY_CENTER_OFFSET
+		* BrainrotConfig.CARRY_ROTATION_OFFSET
 
-			-- 🔥 Wait for tool to fully enter character!
-			task.wait(0.1)
+	local weld = Instance.new("WeldConstraint")
+	weld.Name = "BrainrotCarryWeld"
+	weld.Part0 = hrp
+	weld.Part1 = rootPart
+	weld.Parent = rootPart
 
-			print("🔧 Tool in character, NOW welding & unanchoring...")
-			player:SetAttribute("IsBrainrotEquipped", true)
-
-			-- NOW weld and unanchor (tool is in character!)
-			self:_weldBrainrotToHands(player, tool, rootPart)
-			self:_playHoldAnimation(player)
-
-			-- Re-equip detection
-			task.spawn(function()
-				task.wait(0.2)
-
-				character.ChildAdded:Connect(function(child)
-					if child == tool then
-						print("⚠️ RE-EQUIPPED!")
-						player:SetAttribute("IsBrainrotEquipped", true)
-
-						task.wait(0.1)
-
-						local handle = tool:FindFirstChild("Handle", true)
-						if handle and handle:IsA("BasePart") then
-							self:_weldBrainrotToHands(player, tool, handle)
-							self:_playHoldAnimation(player)
-						end
-
-						if self.BlocksSpawnAreaService then
-							self.BlocksSpawnAreaService:UpdatePlayerSpeed(player)
-						end
-					end
-				end)
-
-				character.ChildRemoved:Connect(function(child)
-					if child == tool then
-						player:SetAttribute("IsBrainrotEquipped", false)
-						self:_stopHoldAnimation(player)
-						self:_unweldBrainrotFromHands(tool)
-					end
-				end)
-			end)
+	-- 🔥 UNANCHOR ALL PARTS WHEN PICKED
+	for _, part in ipairs(brainrotModel:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+			part.Massless = true
 		end
 	end
 
-	print("✅ Tool creation complete!")
-	return tool
+	player:SetAttribute("IsBrainrotEquipped", true)
+
+	self:_playHoldAnimation(player)
+
+	return brainrotModel
 end
 
 function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
-	print("📦 TryPickup!")
+
+	print("[BrainrotCarryService] TryPickup called by:", player.Name)
+
+	if not brainrotModel or not brainrotModel:IsA("Model") then
+		print("[BrainrotCarryService] Invalid brainrot model")
+		return
+	end
+
+	-- 🔴 PLAYER ALREADY CARRYING CHECK
+	if player:GetAttribute("IsCarryingBrainrot") then
+		print("[BrainrotCarryService] Player already carrying brainrot:", player.Name)
+		return
+	end
 
 	if not brainrotModel or not brainrotModel:IsA("Model") then return end
 
 	local rootPart = brainrotModel:FindFirstChild("RootPart")
-	if not rootPart then return end
+
+	if not rootPart then
+		print("[BrainrotCarryService] RootPart missing")
+		return
+	end
+
+	-- 🔴 BRAINROT ALREADY CARRIED
+	if brainrotModel:GetAttribute("IsCarried") then
+		print("[BrainrotCarryService] Brainrot already carried by another player:", brainrotModel.Name)
+		return
+	end
 
 	-- ATOMIC LOCK (prevents duplicate pickup)
 	if rootPart:GetAttribute("PickupLocked") then
@@ -292,14 +278,17 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 		promptConnections[rootPart] = nil
 	end
 
-	local tool = self:_createBrainrotTool(player, brainrotModel)
+	-- 🔴 LOCK MODEL BEFORE ATTACH
+	brainrotModel:SetAttribute("IsCarried", true)
+
+	local tool = self:_attachBrainrotModel(player, brainrotModel)
 
 	if not tool then
+		print("[BrainrotCarryService] Attach failed, unlocking brainrot")
+		brainrotModel:SetAttribute("IsCarried", false)
 		rootPart:SetAttribute("PickupLocked", false)
 		return
 	end
-
-	rootPart:SetAttribute("IsCarried", true)
 	rootPart:SetAttribute("PickupLocked", false)
 
 	player:SetAttribute("IsCarryingBrainrot", true)
@@ -320,106 +309,292 @@ end
 
 function BrainrotCarryService:GiveOwnership(player: Player)
 
+	print("========== GiveOwnership START ==========")
+	print("[BrainrotCarryService] Player:", player.Name)
+	print("[BrainrotCarryService] IsBrainrotEquipped:", player:GetAttribute("IsBrainrotEquipped"))
+
 	if not player:GetAttribute("IsBrainrotEquipped") then
+		print("[BrainrotCarryService] ❌ Player not holding brainrot")
 		return
 	end
 
+	local character = player.Character
+	if not character then
+		print("[BrainrotCarryService] ❌ Character missing")
+		return
+	end
+
+	print("[BrainrotCarryService] Searching brainrot model in character...")
+
+	local brainrotModel: Model? = nil
+
+	for _, child in ipairs(character:GetChildren()) do
+		print("[BrainrotCarryService] Child:", child.Name, child.ClassName)
+
+		if child:IsA("Model") and child:GetAttribute("IsCarried") then
+			brainrotModel = child
+			print("[BrainrotCarryService] ✅ Found brainrot:", child.Name)
+			break
+		end
+	end
+
+	if not brainrotModel then
+		print("[BrainrotCarryService] ❌ No carried brainrot model found")
+		return
+	end
+
+	local entityName = brainrotModel.Name
+	local mutationName = brainrotModel:GetAttribute("Mutation")
+
+	-- 🔥 determine biome automatically
 	local biomeName = player:GetAttribute("CarriedBrainrotBiome")
-	local entityName = player:GetAttribute("CarriedBrainrotName")
-	local mutationName = player:GetAttribute("CarriedBrainrotMutation")
 
-	if not biomeName or not entityName then
+	if not biomeName then
+		local biomeData = getBiomeByEntity(entityName)
+		if biomeData then
+			biomeName = biomeData
+		end
+	end
+
+	print("[BrainrotCarryService] biome:", biomeName)
+	print("[BrainrotCarryService] entity:", entityName)
+	print("[BrainrotCarryService] mutation:", mutationName)
+
+	if not biomeName then
+		print("[BrainrotCarryService] ❌ biome still missing")
 		return
 	end
 
-	if not BaseService then
-		warn("BaseService not available")
-		return
+	------------------------------------------------
+	-- STOP HOLD ANIMATION
+	------------------------------------------------
+	print("[BrainrotCarryService] Stopping animation")
+	self:_stopHoldAnimation(player)
+
+	------------------------------------------------
+	-- CALL BASE SERVICE FIRST
+	------------------------------------------------
+	print("[BrainrotCarryService] BaseService reference:", BaseService)
+
+	print("[BrainrotCarryService] 🚀 Calling BaseService:GiveTool")
+
+	BaseService:GiveTool(
+		player,
+		biomeName,
+		entityName,
+		mutationName
+	)
+
+	print("[BrainrotCarryService] Tool given to player")
+
+	-- wait one frame so the tool appears in backpack
+	task.wait()
+
+	local backpack = player:FindFirstChildOfClass("Backpack")
+
+	if backpack then
+		for _, tool in ipairs(backpack:GetChildren()) do
+			if tool:IsA("Tool") and tool.Name == entityName then
+
+				print("[BrainrotCarryService] Found new tool:", tool.Name)
+
+				tool:SetAttribute("IsBrainrotTool", true)
+
+				-- also mark ownership so BlocksSpawnArea works
+				tool:SetAttribute("OwnedByUserId", player.UserId)
+
+				print("[BrainrotCarryService] Brainrot attributes applied")
+
+			end
+		end
 	end
 
-	BaseService:GiveTool(player, biomeName, entityName, mutationName)
+	print("[BrainrotCarryService] Tool given to player")
+
+	------------------------------------------------
+	-- SMALL DELAY (allow backpack replication)
+	------------------------------------------------
+	task.wait()
+
+	------------------------------------------------
+	-- NOW DESTROY MODEL
+	------------------------------------------------
+	print("[BrainrotCarryService] Destroying carried model AFTER tool creation")
+
+	brainrotModel:Destroy()
+
+	player:SetAttribute("IsCarryingBrainrot", false)
+	player:SetAttribute("IsBrainrotEquipped", false)
+
+	-- equip the tool that was just created
+	task.defer(function()
+
+		local character = player.Character
+		if not character then return end
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if not humanoid then return end
+
+		for _, tool in ipairs(player.Backpack:GetChildren()) do
+			if tool:IsA("Tool") and tool.Name == entityName then
+				humanoid:EquipTool(tool)
+				print("[BrainrotCarryService] Equipped new brainrot tool:", tool.Name)
+				break
+			end
+		end
+
+	end)
 
 	player:SetAttribute("OwnsEquippedBrainrot", true)
 
-	print("✅ Brainrot ownership granted")
+	print("[BrainrotCarryService] ✅ GiveTool executed")
+	print("========== GiveOwnership END ==========")
 
 end
 
 function BrainrotCarryService:DropBrainrot(player: Player, reason: string?)
+
+	print("[BrainrotCarryService] DropBrainrot() called for:", player.Name)
+
 	if self.BlocksSpawnAreaService and reason ~= "SlideCollisionDrop" and reason ~= "PunchHitDrop" then
 		if not self.BlocksSpawnAreaService:CanDropBrainrot(player) then
+			print("[BrainrotCarryService] Drop blocked by BlocksSpawnAreaService")
 			return
 		end
 	end
 
 	local character = player.Character
-	if not character then return end
+	if not character then
+		print("[BrainrotCarryService] No character")
+		return
+	end
 
-	local equippedTool: Tool? = nil
+	local brainrotModel: Model? = nil
+
 	for _, child in ipairs(character:GetChildren()) do
-		if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") then
-			equippedTool = child
+		if child:IsA("Model") and child:GetAttribute("IsCarried") then
+			brainrotModel = child
 			break
 		end
 	end
 
-	if not equippedTool then return end
-
-	self:_stopHoldAnimation(player)
-
-	local handle = equippedTool:FindFirstChild("Handle", true)
-	if not handle or not handle:IsA("BasePart") then
-		equippedTool:Destroy()
+	if not brainrotModel then
+		print("[BrainrotCarryService] No carried brainrot found")
 		return
 	end
 
-	local hum = character:FindFirstChildOfClass("Humanoid")
-	if hum then
-		hum:UnequipTools()
+	print("[BrainrotCarryService] Found brainrot:", brainrotModel.Name)
+
+	self:_stopHoldAnimation(player)
+
+	local root = brainrotModel:FindFirstChild("RootPart")
+	if not root or not root:IsA("BasePart") then
+		print("[BrainrotCarryService] RootPart missing")
+		return
 	end
 
-	self:_unweldBrainrotFromHands(equippedTool)
-	task.wait()
+	----------------------------------------------------
+	-- REMOVE carry weld
+	----------------------------------------------------
+	for _, obj in ipairs(brainrotModel:GetDescendants()) do
+		if obj:IsA("WeldConstraint") and obj.Name == "BrainrotCarryWeld" then
+			print("[BrainrotCarryService] Removing carry weld")
+			obj:Destroy()
+		end
+	end
 
-	equippedTool.RequiresHandle = false
+	----------------------------------------------------
+	-- RESET PHYSICS
+	----------------------------------------------------
+	for _, part in ipairs(brainrotModel:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.AssemblyLinearVelocity = Vector3.zero
+			part.AssemblyAngularVelocity = Vector3.zero
+		end
+	end
 
+	print("[BrainrotCarryService] Physics cleared")
+
+	----------------------------------------------------
+	-- REBUILD MODEL WELDS (VERY IMPORTANT)
+	----------------------------------------------------
+	for _, obj in ipairs(root:GetChildren()) do
+		if obj:IsA("WeldConstraint") then
+			obj:Destroy()
+		end
+	end
+
+	for _, part in ipairs(brainrotModel:GetDescendants()) do
+		if part:IsA("BasePart") and part ~= root then
+
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = root
+			weld.Part1 = part
+			weld.Parent = root
+
+			part.Anchored = true
+			part.CanCollide = false
+			part.Massless = true
+
+		end
+	end
+
+	print("[BrainrotCarryService] Model welds rebuilt")
+
+	----------------------------------------------------
+	-- ANCHOR ROOT
+	----------------------------------------------------
+	root.Anchored = true
+	root.CanCollide = false
+	root.Massless = false
+
+	----------------------------------------------------
+	-- MOVE MODEL TO WORKSPACE
+	----------------------------------------------------
 	local folder = workspace:FindFirstChild(BrainrotConfig.WORKSPACE_BRAINROT_FOLDER_NAME)
+
 	if not folder then
 		folder = Instance.new("Folder")
 		folder.Name = BrainrotConfig.WORKSPACE_BRAINROT_FOLDER_NAME
 		folder.Parent = workspace
 	end
 
-	local parentModel = handle.Parent
+	brainrotModel.Parent = folder
 
-	if equippedTool:GetAttribute("IsModelBrainrot") then
-		parentModel.Parent = folder
+	print("[BrainrotCarryService] Model moved to workspace")
 
-		for _, part in ipairs(parentModel:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.Anchored = true
-				part.CanCollide = false
-				part.Massless = true
-			end
-		end
+	----------------------------------------------------
+	-- PLACE MODEL IN FRONT OF PLAYER
+	----------------------------------------------------
+	local hrp = character:FindFirstChild("HumanoidRootPart")
 
-		handle.Name = "RootPart"
-		handle:SetAttribute("IsCarried", false)
+	if hrp then
 
-		local hrp = character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			local forwardPos = (hrp.CFrame * CFrame.new(0, 0, -4)).Position
-			
-			-- FORCE Y LEVEL
-			local fixedPos = Vector3.new(forwardPos.X, -6.8, forwardPos.Z)
+		local forwardPos = (hrp.CFrame * CFrame.new(0,0,-4)).Position
 
-			local rotation = CFrame.Angles(0, math.rad(-90), 0)
-			parentModel:PivotTo(CFrame.new(fixedPos) * rotation)
-		end
+		local fixedPos = Vector3.new(
+			forwardPos.X,
+			-6.8,
+			forwardPos.Z
+		)
 
-		CollectionService:AddTag(parentModel, BrainrotConfig.BRAINROT_TAG_NAME)
-		self:_setupPrompt(parentModel)
+		brainrotModel:PivotTo(
+			CFrame.new(fixedPos) * CFrame.Angles(0, math.rad(-90), 0)
+		)
+
+		print("[BrainrotCarryService] Brainrot placed at:", fixedPos)
+
 	end
+
+	----------------------------------------------------
+	-- RESET ATTRIBUTES
+	----------------------------------------------------
+	root:SetAttribute("IsCarried", false)
+	brainrotModel:SetAttribute("IsCarried", false)
+
+	CollectionService:AddTag(brainrotModel, BrainrotConfig.BRAINROT_TAG_NAME)
+
+	self:_setupPrompt(brainrotModel)
 
 	player:SetAttribute("IsCarryingBrainrot", false)
 	player:SetAttribute("IsBrainrotEquipped", false)
@@ -433,7 +608,8 @@ function BrainrotCarryService:DropBrainrot(player: Player, reason: string?)
 		self.BlocksSpawnAreaService:UpdatePlayerSpeed(player)
 	end
 
-	equippedTool:Destroy()
+	print("[BrainrotCarryService] Drop completed")
+
 end
 
 function BrainrotCarryService.Client:RequestDrop(player: Player, reason: string?)

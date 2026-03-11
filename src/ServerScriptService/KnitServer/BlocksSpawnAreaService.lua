@@ -263,10 +263,32 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 	--// [IMPORTANT] Set player attribute
 	player:SetAttribute("IsInBlocksSpawnArea", false)
 	
+	print("========== PLAYER EXIT AREA ==========")
+	print("Player:", player.Name)
+	print("IsBrainrotEquipped:", player:GetAttribute("IsBrainrotEquipped"))
+
 	local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
 
+	print("BrainrotCarryService:", BrainrotCarryService)
+
 	if player:GetAttribute("IsBrainrotEquipped") then
-		BrainrotCarryService:GiveOwnership(player)
+		print("🚀 Scheduling GiveOwnership")
+
+		task.defer(function()
+
+			if not player or not player.Parent then
+				return
+			end
+
+			print("🚀 Executing GiveOwnership after zone exit")
+
+			local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
+			BrainrotCarryService:GiveOwnership(player)
+
+		end)
+
+	else
+		print("❌ Player not holding brainrot on exit")
 	end
 
 	--// [IMPORTANT] Update speed
