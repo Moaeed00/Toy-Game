@@ -99,7 +99,7 @@ local function OnPlayerAdded(player: Player)
 			print(`Profile loaded for {player.DisplayName}!`)
 
 			-- Fire any events you need to after the profile has been freshly loaded
-			DataHandlerService.Client.UpdateMoney:Fire(player, Profiles[player].Data.Money)
+			DataHandlerService.Client.UpdateMoney:Fire(player, Profiles[player].Data.Money, true)
 			-- For Leaderboard Initialization
 		else
 			-- The player has left before the profile session started
@@ -213,7 +213,9 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
-		PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
+		task.spawn(function()
+			PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
+		end)
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
@@ -254,7 +256,9 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
-		CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
+		task.spawn(function()
+			CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
+		end)
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end
