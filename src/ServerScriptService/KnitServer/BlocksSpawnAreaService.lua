@@ -262,6 +262,12 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 
 	--// [IMPORTANT] Set player attribute
 	player:SetAttribute("IsInBlocksSpawnArea", false)
+	
+	local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
+
+	if player:GetAttribute("IsBrainrotEquipped") then
+		BrainrotCarryService:GiveOwnership(player)
+	end
 
 	--// [IMPORTANT] Update speed
 	self:UpdatePlayerSpeed(player)
@@ -333,6 +339,12 @@ function BlocksSpawnAreaService:_setupPlayer(player: Player)
 		--// Reset state
 		playersInArea[player] = false
 		player:SetAttribute("IsInBlocksSpawnArea", false)
+		local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
+
+		if player:GetAttribute("IsBrainrotEquipped") then
+			BrainrotCarryService:GiveOwnership(player)
+		end
+		
 		player:SetAttribute("OwnsEquippedBrainrot", false)
 
 		--// Wait for HRP

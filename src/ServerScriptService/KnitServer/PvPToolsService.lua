@@ -42,6 +42,7 @@ local PvPToolsService = Knit.CreateService({
 })
 
 PvPToolsService.CombatMovementService = nil
+PvPToolsService.BrainrotCarryService = nil
 
 local lastPunchTime: { [Player]: number } = {}
 local ragdollData: { [Player]: any } = {}
@@ -345,6 +346,11 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 
 		local power, up, distance = self:_getPunchStats(player)
 
+		-- Drop brainrot if the target is carrying one
+		if self.BrainrotCarryService and otherPlayer:GetAttribute("IsBrainrotEquipped") then
+			self.BrainrotCarryService:DropBrainrot(otherPlayer, "PunchHitDrop")
+		end
+
 		if self.CombatMovementService then
 			self.CombatMovementService:_enableRealRagdoll(otherPlayer)
 		end
@@ -465,6 +471,17 @@ function PvPToolsService:KnitStart()
 	local ok, service = pcall(function()
 		return Knit.GetService("CombatMovementService")
 	end)
+
+	local ok2, carryService = pcall(function()
+		return Knit.GetService("BrainrotCarryService")
+	end)
+
+	if ok2 then
+		self.BrainrotCarryService = carryService
+		dprint("Got BrainrotCarryService reference ✅")
+	else
+		warn("[PvPToolsService] BrainrotCarryService not found")
+	end
 
 	if ok then
 		self.CombatMovementService = service
