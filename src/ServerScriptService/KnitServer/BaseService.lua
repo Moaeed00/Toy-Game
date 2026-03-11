@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
-local EntitiesConfiguration = require(ReplicatedStorage.Configuration.EntitiesConfiguration)
+local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local PlayerBase = require(ServerScriptService.Classes.Base.PlayerBase)
 local entityUtils = require(ServerScriptService.Utils.entityUtils)
@@ -13,7 +13,7 @@ local worldUtils = require(ServerScriptService.Utils.worldUtils)
 local Format = require(ReplicatedStorage.Libraries.Format)
 -- local Signal = require(ReplicatedStorage.Libraries.Signal)
 
-local SELL_FACTOR = EntitiesConfiguration.SELL_FACTOR
+local SELL_FACTOR = EntitiesConfiguration.Original.SELL_FACTOR
 
 local TimerService
 local DataHandlerService

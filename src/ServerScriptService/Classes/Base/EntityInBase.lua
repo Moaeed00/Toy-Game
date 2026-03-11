@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
-local EntitiesConfiguration = require(ReplicatedStorage.Configuration.EntitiesConfiguration)
+local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local NumberUtils = require(ReplicatedStorage.Shared.Modules.NumberUtils)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
