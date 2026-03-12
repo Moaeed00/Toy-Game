@@ -91,7 +91,7 @@ end
 
 local function create_entity_model(_biomeName: string, entityName: string, mutationName: string, slotPart: BasePart)
 	local biome = getBiomeByEntity(entityName)
-	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(biome):WaitForChild(entityName)
+	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(mutationName):WaitForChild(entityName)
 	if not entityModel then
 		return
 	end
@@ -100,14 +100,14 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
-	if mutationName then
-		local mutationInfo = MutationsConfiguration[mutationName]
-		if not mutationInfo then
-			return
-		end
+	-- if mutationName then
+	-- 	local mutationInfo = MutationsConfiguration[mutationName]
+	-- 	if not mutationInfo then
+	-- 		return
+	-- 	end
 
-		setModelColor(model, mutationInfo.Color, mutationName)
-	end
+	-- 	setModelColor(model, mutationInfo.Color, mutationName)
+	-- end
 
 	headerUtils.create(entityName, biome, mutationName, model)
 
