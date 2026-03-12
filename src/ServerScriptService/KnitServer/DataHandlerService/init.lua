@@ -63,8 +63,16 @@ DataHandlerService.LeaderboardCategory = { EnumDataValue.Coins }
 
 local function OnPlayerRemoving(player: Player)
 	local profile = Profiles[player]
-
 	if profile ~= nil then
+		local data = profile.Data
+		if data then
+			task.spawn(function()
+				CoinsDataStoreModule:SaveData(player, math.floor(data.Money))
+			end)
+			task.spawn(function()
+				PointsDataStoreModule:SaveData(player, math.floor(data.Points))
+			end)
+		end
 		profile:EndSession()
 	end
 end
@@ -213,9 +221,6 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
-		task.spawn(function()
-			PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
-		end)
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
@@ -256,9 +261,6 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
-		task.spawn(function()
-			CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
-		end)
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end

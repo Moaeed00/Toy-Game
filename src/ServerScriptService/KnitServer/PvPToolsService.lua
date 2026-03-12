@@ -328,18 +328,17 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 		local otherPlayer = Players:GetPlayerFromCharacter(otherChar)
 		if not otherPlayer or otherPlayer == player then continue end
 
-		-- prevent hitting already ragdolled players
-		if self.CombatMovementService and self.CombatMovementService.slideRagdollData then
-			if self.CombatMovementService.slideRagdollData[otherPlayer] then
-				continue
-			end
-		end
-
 		-- Prevent hitting already ragdolled players
-		if ragdollData[otherPlayer] then
-			dprint("Punch ignored, player already ragdolled:", otherPlayer.Name)
-			continue
-		end
+        -- prevent hitting ragdolled players
+        if ragdollData[otherPlayer] then
+	        continue
+        end
+
+        if self.CombatMovementService and self.CombatMovementService.slideRagdollData then
+	        if self.CombatMovementService.slideRagdollData[otherPlayer] then
+		        continue
+	        end
+        end
 
 		local targetHRP = otherChar:FindFirstChild("HumanoidRootPart")
 		if not targetHRP then continue end
@@ -352,7 +351,7 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 		end
 
 		if self.CombatMovementService then
-			self.CombatMovementService:_enableRealRagdoll(otherPlayer)
+			self:_enableRealRagdoll(otherPlayer)
 		end
 
 		--// Play punch hit sound
@@ -408,7 +407,7 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 					RunService.Heartbeat:Wait()
 				end
 
-				self.CombatMovementService:_disableRealRagdoll(otherPlayer)
+				self:_disableRealRagdoll(otherPlayer)
 
 			end)
 		end
@@ -417,6 +416,28 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 	end
 
 	return false
+end
+
+function PvPToolsService:_getPunchCooldown(player: Player)
+
+	local character = player.Character
+	if not character then
+		return Config.PUNCH_COOLDOWN
+	end
+
+	for _, tool in ipairs(character:GetChildren()) do
+		if tool:IsA("Tool") and tool:GetAttribute("GearType") == "Punch" then
+
+			local gearName = tool:GetAttribute("GearName")
+
+			if gearName and GearModule[gearName] then
+				local stats = GearModule[gearName].Stats
+				return stats.Cooldown or Config.PUNCH_COOLDOWN
+			end
+		end
+	end
+
+	return Config.PUNCH_COOLDOWN
 end
 
 --=====================================================
@@ -450,7 +471,9 @@ function PvPToolsService.Client:RequestPunch(player: Player)
 	local now = os.clock()
 	local last = lastPunchTime[player] or 0
 
-	if (now - last) < Config.PUNCH_COOLDOWN then
+	local cooldown = self.Server:_getPunchCooldown(player)
+
+    if (now - last) < cooldown then
 		self.ActionResult:Fire(player, "Punch", false, "Cooldown")
 		return
 	end
