@@ -5,7 +5,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
-local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local EntitiesConfiguration = require(Configuration:WaitForChild("Brainrots"):WaitForChild("EntitiesConfiguration"))
 
 local ActiveChallenges: {} = {}
 
@@ -228,7 +228,7 @@ function StealChallengeService:TryStartChallenge(player: Player, ChallengeData: 
 		OwnerPlayer:SetAttribute("InMiniGame", true)
 		StealingPlayer:SetAttribute("InMiniGame", true)
 
-		local EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		local EntityInfo = EntitiesConfiguration.Original[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		local StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 
 		ActiveChallenges[ChallengeId] = {

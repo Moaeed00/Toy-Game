@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
-local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local EntitiesConfiguration = require(Configuration:WaitForChild("Brainrots"):WaitForChild("EntitiesConfiguration"))
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local player: Player = Players.LocalPlayer
@@ -239,7 +239,7 @@ function StealChallengeController:HandleStates(
 )
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
-		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		EntityInfo = EntitiesConfiguration.Original[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end

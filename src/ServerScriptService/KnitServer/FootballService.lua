@@ -55,7 +55,7 @@ function FootballService:EquipBall(player: Player)
         return
     end
 
-    local footballTool = self.Footballs[player]
+    local footballTool: Tool = self.Footballs[player]
     if not footballTool then
         return
     end
@@ -63,6 +63,7 @@ function FootballService:EquipBall(player: Player)
     if not playerData then
         return
     end
+    player:SetAttribute("CurrentFootball", footballTool.Name)
 
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)

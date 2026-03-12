@@ -539,4 +539,13 @@ for index, brainrot in pairs(BRAINROTS_DATA) do
 	}
 end
 
+-- Common
+-- Uncommon
+-- Rare
+-- Epic
+-- Legendary
+-- Mythic
+-- Secret
+-- God
+
 return BrainrotsData

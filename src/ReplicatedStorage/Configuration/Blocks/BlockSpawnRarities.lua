@@ -7,5 +7,4 @@ return {
     ["Mythic"]    = { "Epic", "Legendary", "Mythic" },
     ["Secret"]    = { "Uncommon", "Rare", "Legendary", "Mythic" },
     ["God"]       = { "Rare", "Epic", "Mythic", "Secret", "God" },
-    ["OG"]        = { "Rare", "Epic", "Secret", "God", "OG" },
 }
