@@ -449,6 +449,7 @@ function LeaderboardService:KnitStart()
 			table.insert(SortedPlayerList, player)
 			SortTable()
 			self:UpdateServerLeaderboard()
+            self:UpdateGlobalLeaderboard()
 		end
 	end)
 
@@ -466,6 +467,7 @@ function LeaderboardService:KnitStart()
 			PlayerData[player] = profileData
 			SortTable()
 			self:UpdateServerLeaderboard()
+            self:UpdateGlobalLeaderboard()
 		end
 	end)
 
@@ -480,18 +482,7 @@ function LeaderboardService:KnitStart()
 		end
 		PlayerData[player] = nil
 		self:UpdateServerLeaderboard()
-	end)
-
-	--// ========================================
-	--// Start periodic update loop for global/world leaderboards
-	--// ========================================
-	task.spawn(function()
-		dprint("Starting periodic update loop (interval:", CONFIG.UPDATE_TICK, "seconds)")
-		
-		while true do
-			self:UpdateGlobalLeaderboard()
-			task.wait(CONFIG.UPDATE_TICK)
-		end
+        self:UpdateGlobalLeaderboard()
 	end)
 	
 	dprint("KnitStart() complete ✅")

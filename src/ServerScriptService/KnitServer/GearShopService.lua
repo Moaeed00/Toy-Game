@@ -161,7 +161,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		tool:SetAttribute("GearName",gearName)
 
 		-- find mesh inside model
-		local meshPart = model:FindFirstChildWhichIsA("MeshPart", true)
+		local meshPart = model:FindFirstChildWhichIsA("BasePart", true)
 		if not meshPart then
 			warn("Punch mesh missing:", gearName)
 			return
@@ -185,7 +185,6 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		return
 
 	elseif gearData.Type == "Coil" then
-		--// CREATE COIL TOOL FROM MODEL
 
 		local assetsFolder = ReplicatedStorage:WaitForChild("Assets")
 		local coilFolder = assetsFolder:WaitForChild("Coil")
@@ -198,42 +197,34 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 
 		local model = template:Clone()
 
+		local handle = model:FindFirstChildWhichIsA("BasePart", true)
+		if not handle then
+			warn("[GearShopService] ❌ BasePart missing in:", gearName)
+			return
+		end
+
 		tool = Instance.new("Tool")
 		tool.Name = gearName
 		tool.RequiresHandle = true
 		tool:SetAttribute("GearType", "Coil")
 		tool:SetAttribute("GearName", gearName)
 
-		-- Find the mesh part inside the model
-		local meshPart = model:FindFirstChildWhichIsA("MeshPart", true)
-		if not meshPart then
-			warn("[GearShopService] ❌ MeshPart missing in:", gearName)
-			return
-		end
+		handle.Name = "Handle"
+		handle.Anchored = false
+		handle.CanCollide = false
+		handle.Massless = true
 
-		-- Rename mesh to Handle (Roblox requirement)
-		meshPart.Name = "Handle"
+		handle.Parent = tool
 
-		meshPart.Anchored = false
-		meshPart.CanCollide = false
-		meshPart.Massless = true
-
-		meshPart.Parent = tool
-
-		-- Move SurfaceAppearance if exists
-		for _, child in ipairs(meshPart:GetChildren()) do
-			child.Parent = meshPart
+		for _, obj in ipairs(model:GetDescendants()) do
+			if obj ~= handle and obj.Parent ~= handle then
+				obj.Parent = handle
+			end
 		end
 
 		model:Destroy()
 
 		print("[GearShopService] ✅ Created Coil tool:", gearName)
-
-	end
-
-	if not tool then
-		warn("[GearShopService] ❌ Failed to create tool for:", gearName)
-		return
 	end
 
 	tool.Parent = backpack
@@ -267,11 +258,11 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	end
 
 	local price = gearData.Price or 0
-	local playerCoins = playerData.Coins or 0
+    local playerCoins = playerData.Money or 0
 
 	if playerCoins < price then
 		dprint("Not enough Coins:", playerCoins, "/", price)
-		return false, string.format("Need %d Coins (you have %d)", price, playerCoins)
+		return false, string.format("Need %d Money (you have %d)", price, playerCoins)
 	end
 
 	if price > 0 then
