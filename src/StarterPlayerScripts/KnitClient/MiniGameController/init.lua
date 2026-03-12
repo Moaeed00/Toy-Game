@@ -19,6 +19,7 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
 
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
+local MainGui: ScreenGui = PlayerGui:WaitForChild("MainGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
 local CountDownTextUIStroke: UIStroke = CountDownValue:WaitForChild("UIStroke")
@@ -44,7 +45,7 @@ local GameMode
 local CameraController
 local MiniGameService
 local SlotName: string
-local FootBall: MeshPart
+local FootBall: Model
 local BallSpawnReference: BasePart
 
 function TeleportPlayersToBase()
@@ -53,10 +54,11 @@ function TeleportPlayersToBase()
 end
 
 function HandleBallSpawn()
-	FootBall.CFrame = BallSpawnReference.CFrame
-	FootBall.AssemblyLinearVelocity = Vector3.zero
-	FootBall.AssemblyAngularVelocity = Vector3.zero
-	FootBall.Anchored = true
+	FootBall:PivotTo(BallSpawnReference.CFrame)
+	local root = FootBall.PrimaryPart
+	root.AssemblyLinearVelocity = Vector3.zero
+	root.AssemblyAngularVelocity = Vector3.zero
+	root.Anchored = true
 	CanKick = true
 end
 
@@ -70,7 +72,7 @@ function GetDirection(Pos: Vector2)
 
 	local direction
 	if result then
-		direction = result.Position - FootBall.Position
+		direction = result.Position - FootBall.PrimaryPart.Position
 	else
 		direction = unitRay.Direction
 	end
@@ -91,8 +93,10 @@ function Kick(Positions: Vector2)
 	local track = MiniGameController.FootballController:PlayKickBallAnimation(humanoid)
 	track:GetMarkerReachedSignal("KickMoment"):Once(function()
 		local Direction = GetDirection(Positions)
-		FootBall.Anchored = false
-		FootBall.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
+		local root = FootBall.PrimaryPart
+
+		root.Anchored = false
+		root.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
 	end)
 end
 
@@ -163,6 +167,7 @@ function StartTimer(Time: number)
 end
 
 function StartCountDown()
+	MainGui.Enabled = false
 	CountDownGui.Enabled = true
 	CountDownRunning = true
 
@@ -190,10 +195,12 @@ function StartCountDown()
 			shrinkTween:Play()
 			shrinkTween.Completed:Wait()
 
-			local fadeCountdownValueTween = TweenService:Create(CountDownValue, TweenInfo.new(0.2), { TextTransparency = 1 })
+			local fadeCountdownValueTween =
+				TweenService:Create(CountDownValue, TweenInfo.new(0.2), { TextTransparency = 1 })
 			fadeCountdownValueTween:Play()
 
-			local fadeCountDownTextUIStrokeTween = TweenService:Create(CountDownTextUIStroke, TweenInfo.new(0.2), { Transparency = 1 })
+			local fadeCountDownTextUIStrokeTween =
+				TweenService:Create(CountDownTextUIStroke, TweenInfo.new(0.2), { Transparency = 1 })
 			fadeCountDownTextUIStrokeTween:Play()
 
 			fadeCountdownValueTween.Completed:Wait()
@@ -285,6 +292,7 @@ function MiniGameController:EndMiniGame()
 	if CountDownGui then
 		CountDownGui.Enabled = false
 	end
+	MainGui.Enabled = true
 
 	CountDownTime = 3
 	IndicatorHelperClient:CleanUp()
@@ -312,7 +320,6 @@ function MiniGameController:KnitStart()
 	MiniGameService.EndMiniGame:Connect(function()
 		self:EndMiniGame()
 	end)
-
 end
 
 return MiniGameController
