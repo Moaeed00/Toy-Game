@@ -2,8 +2,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
-local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
-local Gradients: Folder = ReplicatedStorage.Assets.Gradients
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
+local Gradients = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Gradients")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -69,19 +69,20 @@ function MerchantController:RefreshUI()
     local sortable = {}
     local totalValue = 0
 
-    for name, amount in pairs(self.CurrentInventory) do
-        local data = BrainrotsData[name]
-        if not data then
+    for name, data: {} in pairs(self.CurrentInventory) do
+        local brainrotData = BrainrotsData.Processed[name]
+        if not brainrotData then
             continue
         end
 
-        totalValue += (data.SellPrice * amount)
+        totalValue += (brainrotData.SellPrice * data.Amount)
 
         table.insert(sortable, {
+            ID = data.Id,
             Name = name,
-            Amount = amount,
-            SellPrice = data.SellPrice,
-            RarityType = data.RarityType
+            Amount = data.Amount,
+            SellPrice = brainrotData.SellPrice,
+            RarityType = brainrotData.RarityType
         })
     end
 
