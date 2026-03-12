@@ -46,7 +46,7 @@ end
 
 function BrainrotSpawnService:GenerateBrainrotRarityPools()
     for brainrotName, data in pairs(self.BrainrotsData) do
-        if data.Rarity > 0 then
+        if data.RarityWeight > 0 then
             local rarity = data.RarityType
             if not self.BrainrotRaritiesPool[rarity] then
                 self.BrainrotRaritiesPool[rarity] = {
