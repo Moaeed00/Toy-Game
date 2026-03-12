@@ -183,6 +183,12 @@ function BrainrotCarryService:_attachBrainrotModel(player: Player, brainrotModel
 	-- parent to character
 	brainrotModel.Parent = character
 
+	-- FORCE UNEQUIP ANY TOOL WHEN BRAINROT MODEL IS CARRIED
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:UnequipTools()
+	end
+
 	-- anchor temporarily
 	rootPart.Anchored = true
 
@@ -343,11 +349,24 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 		return
 	end
 
-	local entityName = brainrotModel.Name
+	-- READ DATA FROM MODEL ATTRIBUTES
+	local biomeName = brainrotModel:GetAttribute("Biome")
+	local entityName = brainrotModel:GetAttribute("EntityName")
 	local mutationName = brainrotModel:GetAttribute("Mutation")
 
-	-- 🔥 determine biome automatically
-	local biomeName = player:GetAttribute("CarriedBrainrotBiome")
+	print("[BrainrotCarryService] biome:", biomeName)
+	print("[BrainrotCarryService] entity:", entityName)
+	print("[BrainrotCarryService] mutation:", mutationName)
+
+	if not entityName then
+		print("[BrainrotCarryService] ❌ Missing EntityName attribute")
+		return
+	end
+
+	if not biomeName then
+		print("[BrainrotCarryService] ❌ Missing Biome attribute")
+		return
+	end
 
 	if not biomeName then
 		local biomeData = getBiomeByEntity(entityName)
@@ -355,10 +374,6 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 			biomeName = biomeData
 		end
 	end
-
-	print("[BrainrotCarryService] biome:", biomeName)
-	print("[BrainrotCarryService] entity:", entityName)
-	print("[BrainrotCarryService] mutation:", mutationName)
 
 	if not biomeName then
 		print("[BrainrotCarryService] ❌ biome still missing")
@@ -378,12 +393,20 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 
 	print("[BrainrotCarryService] 🚀 Calling BaseService:GiveTool")
 
+	-- DESTROY MODEL FIRST
+	print("[BrainrotCarryService] Destroying carried model")
+
+	brainrotModel:Destroy()
+
+	-- NOW GIVE TOOL
 	BaseService:GiveTool(
 		player,
 		biomeName,
 		entityName,
 		mutationName
 	)
+
+	player:SetAttribute("IsBrainrotEquipped", false)
 
 	print("[BrainrotCarryService] Tool given to player")
 
@@ -416,13 +439,6 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 	------------------------------------------------
 	task.wait()
 
-	------------------------------------------------
-	-- NOW DESTROY MODEL
-	------------------------------------------------
-	print("[BrainrotCarryService] Destroying carried model AFTER tool creation")
-
-	brainrotModel:Destroy()
-
 	player:SetAttribute("IsCarryingBrainrot", false)
 	player:SetAttribute("IsBrainrotEquipped", false)
 
@@ -446,6 +462,7 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 	end)
 
 	player:SetAttribute("OwnsEquippedBrainrot", true)
+	player:SetAttribute("IsBrainrotEquipped", false)
 
 	print("[BrainrotCarryService] ✅ GiveTool executed")
 	print("========== GiveOwnership END ==========")
