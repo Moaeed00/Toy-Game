@@ -6,7 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Format = require(ReplicatedStorage.Libraries.Format)
 
 local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
-local EntitiesConfig = require(ReplicatedStorage.Configuration.EntitiesConfiguration)
+local EntitiesConfig = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 
 local RewardHandlerService = Knit.CreateService({
 	Name = "RewardHandlerService",
