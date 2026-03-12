@@ -2,8 +2,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
-local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
-local Gradients: Folder = ReplicatedStorage.Assets.Gradients
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
+local Gradients = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Gradients")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -25,10 +25,10 @@ end
 function MerchantController:KnitStart()
     MerchantController.CameraController = Knit.GetController("CameraController")
     MerchantController.MerchantService = Knit.GetService("MerchantService")
+    MerchantController.LobbyHud = Knit.GetController("Hud")
     MerchantController.CurrentInventory = {}
     MerchantController.ActiveFrames = {}
 
-    self:ConnectSellBrainrots()
     self:ConnectCloseButton()
 
     self.MerchantService.InventoryUpdateEvent:Connect(function(inventorySnapshot: {})
@@ -44,24 +44,14 @@ function MerchantController:KnitStart()
     end)
 end
 
-function MerchantController:ConnectSellBrainrots()
-    local proximityPrompt: ProximityPrompt = workspace.Environment:WaitForChild("SellShop"):WaitForChild("Prompt"):WaitForChild("ProximityPrompt")
-    if proximityPrompt then
-        proximityPrompt.Triggered:Connect(function()
-            self:ToggleSellShopUI(true)
-        end)
-    end
-end
-
 function MerchantController:ConnectCloseButton()
     CloseButton.Activated:Connect(function()
-        self:ToggleSellShopUI(false)
+        self.LobbyHud:CloseContainer("Merchant")
     end)
 end
 
-function MerchantController:ToggleSellShopUI(toggle: boolean)
-    self.CameraController:ToggleCameraBlurEffect(toggle)
-    MerchantGui.Enabled = toggle
+function MerchantController:SetEnabled(enabled: boolean)
+    MerchantGui.Enabled = enabled
 end
 
 function MerchantController:RefreshUI()
@@ -69,19 +59,20 @@ function MerchantController:RefreshUI()
     local sortable = {}
     local totalValue = 0
 
-    for name, amount in pairs(self.CurrentInventory) do
-        local data = BrainrotsData[name]
-        if not data then
+    for name, data: {} in pairs(self.CurrentInventory) do
+        local brainrotData = BrainrotsData.Processed[name]
+        if not brainrotData then
             continue
         end
 
-        totalValue += (data.SellPrice * amount)
+        totalValue += (brainrotData.SellPrice * data.Amount)
 
         table.insert(sortable, {
+            ID = data.Id,
             Name = name,
-            Amount = amount,
-            SellPrice = data.SellPrice,
-            RarityType = data.RarityType
+            Amount = data.Amount,
+            SellPrice = brainrotData.SellPrice,
+            RarityType = brainrotData.RarityType
         })
     end
 

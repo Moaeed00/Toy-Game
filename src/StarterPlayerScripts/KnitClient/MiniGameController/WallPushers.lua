@@ -48,7 +48,7 @@ local function HandleDirections(WallPushersFolder: Folder)
 	local Center = WallPushersFolder:WaitForChild("Center")
 
 	Trove:Connect(RightDetector.Touched, function(hit)
-		if hit.Name ~= player.Name .. "_FootBall" then
+		if hit.Parent.Name ~= player.Name .. "_FootBall" then
 			return
 		end
 
@@ -58,7 +58,7 @@ local function HandleDirections(WallPushersFolder: Folder)
 	end)
 
 	Trove:Connect(LeftDetector.Touched, function(hit)
-		if hit.Name ~= player.Name .. "_FootBall" then
+		if hit.Parent.Name ~= player.Name .. "_FootBall" then
 			return
 		end
 
@@ -80,14 +80,14 @@ function WallPushers:AddWallPushers(ToyName: string)
 					return
 				end
 
+				if hit.Parent.Name ~= player.Name .. "_FootBall" then
+					return
+				end
+
 				Cooldown = true
 				task.delay(CoolDownTime, function()
 					Cooldown = false
 				end)
-
-				if hit.Name ~= player.Name .. "_FootBall" then
-					return
-				end
 
 				if pad.Name == "Left" then
 					PUSH_DIRECTION = pad:GetAttribute("PushDirection") or PushDirections.Outward
@@ -109,9 +109,10 @@ function WallPushers:AddWallPushers(ToyName: string)
 					return
 				end
 
-				hit.AssemblyLinearVelocity = Vector3.zero
-				hit.AssemblyAngularVelocity = Vector3.zero
-				hit.AssemblyLinearVelocity = PUSH_DIRECTION.Unit * PUSH_POWER + Vector3.new(0, Lift, 0)
+				local root = hit.Parent.PrimaryPart
+				root.AssemblyLinearVelocity = Vector3.zero
+				root.AssemblyAngularVelocity = Vector3.zero
+				root.AssemblyLinearVelocity = PUSH_DIRECTION.Unit * PUSH_POWER + Vector3.new(0, Lift, 0)
 			end)
 		end
 	end

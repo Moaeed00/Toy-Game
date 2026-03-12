@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
-local EntitiesConfiguration = require(Configuration:WaitForChild("EntitiesConfiguration"))
+local EntitiesConfiguration = require(Configuration:WaitForChild("Brainrots"):WaitForChild("EntitiesConfiguration"))
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
 
 local player: Player = Players.LocalPlayer
@@ -92,7 +92,8 @@ function PlayConfetti(slotName: string)
 	end
 	local Confetti = ConfettiParticles:Clone()
 	Confetti.Parent = workspace
-	local ConfettiPositionReference: Part = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
+	local ConfettiPositionReference: Part =
+		workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("ConfettiPositionReference")
 	Confetti:PivotTo(ConfettiPositionReference.CFrame)
 
 	local duration = 5
@@ -210,7 +211,6 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 	end
 
 	OpponentPlayerName = StealerPlayerName
-	print("OpponentPlayerName", OpponentPlayerName)
 
 	player:SetAttribute("Owner", true)
 	ChallengePending = true
@@ -220,7 +220,8 @@ function ChallengeReceived(StealerPlayerName: string, Time: number)
 	MessageValue.Visible = true
 
 	MessageValue.Text = `{StealerPlayerName} has challenged you for {ChallengeData.EntityName} Brainrot`
-	PointsText.Text = `{EntityInfo.StealPoints} Points`
+
+	PointsText.Text = `{StealPoints} Points`
 
 	StartTimer(Time)
 end
@@ -229,10 +230,16 @@ function StealChallengeController:AcceptChallenge()
 	StealChallengeService.AcceptChallengeButtonEvent:Fire(ChallengeData)
 end
 
-function StealChallengeController:HandleStates(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+function StealChallengeController:HandleStates(
+	State: string,
+	Message: string,
+	Time: number,
+	CurrentChallengeData: {},
+	SlotName: string
+)
 	if CurrentChallengeData then
 		ChallengeData = CurrentChallengeData
-		EntityInfo = EntitiesConfiguration[ChallengeData.EntityRarity][ChallengeData.EntityName]
+		EntityInfo = EntitiesConfiguration.Original[ChallengeData.EntityRarity][ChallengeData.EntityName]
 		StealPoints = StealConfiguration[ChallengeData.EntityRarity].StealPoints
 		productId = StealConfiguration[ChallengeData.EntityRarity].SaveFromStellID
 	end
@@ -265,9 +272,11 @@ end
 function StealChallengeController:KnitStart()
 	-- print("StealChallengeController Started")
 
-	StealChallengeService.StealChallenge:Connect(function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
-		self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
-	end)
+	StealChallengeService.StealChallenge:Connect(
+		function(State: string, Message: string, Time: number, CurrentChallengeData: {}, SlotName: string)
+			self:HandleStates(State, Message, Time, CurrentChallengeData, SlotName)
+		end
+	)
 
 	AcceptButton.Activated:Connect(function()
 		self:AcceptChallenge()

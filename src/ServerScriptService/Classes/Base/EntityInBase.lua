@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
-local EntitiesConfiguration = require(ReplicatedStorage.Configuration.EntitiesConfiguration)
+local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local NumberUtils = require(ReplicatedStorage.Shared.Modules.NumberUtils)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
@@ -48,7 +48,7 @@ local function get_slot_label(slot: BasePart): TextLabel
 end
 
 local function moneyFormatter(v: number): string
-	return `${Format.abbreviate(math.floor(v))}`
+	return `${Format.commaNumber(math.floor(v))}`
 end
 
 local EntityBase: constructor = Class(
@@ -119,7 +119,7 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		})
 
 		if self._offlineMoney > 0 then
-			self._slotLabelOffline.Text = `Offline: ${Format.abbreviate(self._offlineMoney)}`
+			self._slotLabelOffline.Text = `Offline: ${Format.commaNumber(self._offlineMoney)}`
 			self._slotLabelOffline.Visible = true
 		else
 			self._slotLabelOffline.Text = "$0"
