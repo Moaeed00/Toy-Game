@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player: Player = Players.LocalPlayer
 
+local NotificationHandler = require(ReplicatedStorage.Utility.NotificationHandler)
+
 local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
 
@@ -19,6 +21,7 @@ local ScoringHelperClient = {}
 local function AddScore()
 	local UpdatedScore = player:GetAttribute("Score")
 	ScoreValue.Text = `{UpdatedScore}`
+	NotificationHandler:DisplayNotificationMessage("+1", "Gameplay")
 	ScoringHelperClient:PlayFireCrackers()
 end
 
@@ -36,6 +39,7 @@ local function AddCombo()
 
 	ComboValue.Text = `+{UpdatedCombo - 1}`
 	ComboValue.Visible = true
+	NotificationHandler:DisplayNotificationMessage(`Combo x{UpdatedCombo - 1}`, "Win")
 end
 
 local function ResetCombo()

@@ -6,6 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --[Modulles]
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
+local NotificationHandler = require(ReplicatedStorage.Utility:WaitForChild("NotificationHandler"))
 
 --[Player]
 local player: Player = Players.LocalPlayer
@@ -41,6 +42,8 @@ function StealController:getOwnerPlayer(userId)
 		return Player
 	else
 		print("Player with UserId " .. userId .. " is not currently in the game.")
+		NotificationHandler:DisplayNotificationMessage("Player is not currently in the game.", "Error")
+		return nil
 	end
 end
 
@@ -69,6 +72,7 @@ function StealController:EnableUI(
 	if player:GetAttribute("InMiniGame") then
 		--Prompt Notification
 		print("Player Already In A Challenge")
+		NotificationHandler:DisplayNotificationMessage("Player is already in a challenge.", "Error")
 		return
 	end
 
@@ -100,6 +104,7 @@ function StealController:HandleChallengeButton()
 	if ownerPlayer and ownerPlayer:GetAttribute("InMiniGame") then
 		--Prompt Notification
 		print("Player Already In A Challenge")
+		NotificationHandler:DisplayNotificationMessage("Player is already in a challenge.", "Error")
 		return
 	end
 
@@ -111,6 +116,7 @@ function StealController:HandleChallengeButton()
 	if PlayerPoints.Value < BiomeData.StealPoints then
 		--Prompt Notification
 		print("Points Not Enough")
+		NotificationHandler:DisplayNotificationMessage("Not enough points to challenge.", "Error")
 		return
 	end
 
@@ -139,12 +145,14 @@ function StealController:HandleRobuxButton()
 	if not ownerPlayer then
 		--Prompt Notification
 		print("Player Left")
+		NotificationHandler:DisplayNotificationMessage("Player has left the game.", "Error")
 		return
 	end
 
 	local Success, IsChallenged = StealService:IsEntityChallenged(StealData.entityId):await()
 	if not Success or IsChallenged then
 		print("This Brainrot is Challenged")
+		NotificationHandler:DisplayNotificationMessage("This Brainrot is currently challenged by another player.", "Error")
 		return
 	end
 
