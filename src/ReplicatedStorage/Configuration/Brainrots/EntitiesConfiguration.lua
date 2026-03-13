@@ -15,7 +15,14 @@ local BRAINROTS_DATA = {
 	Common = {
 		["Lirili Larila"] = {
 			DisplayName = "Lirili Larila",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://116635360396598",
+				Gold = "rbxassetid://84620482058256",
+				Diamond = "rbxassetid://116562371962648",
+				Lava = "rbxassetid://117396564710778",
+				Galaxy = "rbxassetid://138135692697818",
+				Rainbow = "rbxassetid://116635360396598"
+			},
 			MoneyPerSec = 1,
 			Timer = 30,
 			IdleAnimationID = "137113682765648",
@@ -23,7 +30,14 @@ local BRAINROTS_DATA = {
 		},
 		["Trippi Troppi"] = {
 			DisplayName = "Trippi Troppi",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://127173546179747",
+				Gold = "rbxassetid://125487518066668",
+				Diamond = "rbxassetid://131131504188426",
+				Lava = "rbxassetid://106461535232246",
+				Galaxy = "rbxassetid://124453709816319",
+				Rainbow = "rbxassetid://127173546179747"
+			},
 			MoneyPerSec = 2,
 			Timer = 30,
 			IdleAnimationID = "111161455172518",
@@ -31,7 +45,14 @@ local BRAINROTS_DATA = {
 		},
 		["Fluri Flura"] = {
 			DisplayName = "Fluri Flura",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://130660766685477",
+				Gold = "rbxassetid://86802586787798",
+				Diamond = "rbxassetid://139112317205323",
+				Lava = "rbxassetid://77551865309679",
+				Galaxy = "rbxassetid://74356405027808",
+				Rainbow = "rbxassetid://130660766685477"
+			},
 			MoneyPerSec = 3,
 			Timer = 30,
 			IdleAnimationID = "87049863001649",
@@ -39,7 +60,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pipi Kiwi"] = {
 			DisplayName = "Pipi Kiwi",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://113576417314431",
+				Gold = "rbxassetid://76880863633792",
+				Diamond = "rbxassetid://137008285154216",
+				Lava = "rbxassetid://108328652366014",
+				Galaxy = "rbxassetid://125363367699411",
+				Rainbow = "rbxassetid://113576417314431"
+			},
 			MoneyPerSec = 4,
 			Timer = 30,
 			IdleAnimationID = "84837446689156",
@@ -47,7 +75,14 @@ local BRAINROTS_DATA = {
 		},
 		["Svinina Bombardino"] = {
 			DisplayName = "Svinina Bombardino",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://111913598484576",
+				Gold = "rbxassetid://73717677853801",
+				Diamond = "rbxassetid://130342904445997",
+				Lava = "rbxassetid://121158286710978",
+				Galaxy = "rbxassetid://72684171755787",
+				Rainbow = "rbxassetid://111913598484576"
+			},
 			MoneyPerSec = 6,
 			Timer = 30,
 			IdleAnimationID = "128225293813400",
@@ -55,7 +90,14 @@ local BRAINROTS_DATA = {
 		},
 		["Brr Brr Patapim"] = {
 			DisplayName = "Brr Brr Patapim",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://104998491639612",
+				Gold = "rbxassetid://87052425618002",
+				Diamond = "rbxassetid://137504642005635",
+				Lava = "rbxassetid://112889650466728",
+				Galaxy = "rbxassetid://110724309414268",
+				Rainbow = "rbxassetid://104998491639612"
+			},
 			MoneyPerSec = 8,
 			Timer = 30,
 			IdleAnimationID = "122559066664500",
@@ -65,7 +107,14 @@ local BRAINROTS_DATA = {
 	Uncommon = {
 		["Boneca Ambalabu"] = {
 			DisplayName = "Boneca Ambalabu",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://103793961302805",
+				Gold = "rbxassetid://112962484319483",
+				Diamond = "rbxassetid://115947321678658",
+				Lava = "rbxassetid://104650062744524",
+				Galaxy = "rbxassetid://126949882691722",
+				Rainbow = "rbxassetid://103793961302805"
+			},
 			MoneyPerSec = 10,
 			Timer = 30,
 			IdleAnimationID = "78416943019031",
@@ -73,7 +122,14 @@ local BRAINROTS_DATA = {
 		},
 		["Cacto Hipopotamo"] = {
 			DisplayName = "Cacto Hipopotamo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://120058286603377",
+				Gold = "rbxassetid://94353090437904",
+				Diamond = "rbxassetid://81064154958313",
+				Lava = "rbxassetid://129881666565469",
+				Galaxy = "rbxassetid://112453891334795",
+				Rainbow = "rbxassetid://120058286603377"
+			},
 			MoneyPerSec = 12,
 			Timer = 30,
 			IdleAnimationID = "129198004804550",
@@ -81,7 +137,14 @@ local BRAINROTS_DATA = {
 		},
 		["Gangster Footera"] = {
 			DisplayName = "Gangster Footera",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://129856060896786",
+				Gold = "rbxassetid://138298733611269",
+				Diamond = "rbxassetid://130008034751631",
+				Lava = "rbxassetid://92261527018490",
+				Galaxy = "rbxassetid://82852692966969",
+				Rainbow = "rbxassetid://129856060896786"
+			},
 			MoneyPerSec = 14,
 			Timer = 30,
 			IdleAnimationID = "135876601596450",
@@ -89,7 +152,14 @@ local BRAINROTS_DATA = {
 		},
 		["Chimpanzini Bananini"] = {
 			DisplayName = "Chimpanzini Bananini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://119281588976050",
+				Gold = "rbxassetid://126748362479245",
+				Diamond = "rbxassetid://87577157000484",
+				Lava = "rbxassetid://102306324753444",
+				Galaxy = "rbxassetid://83856090381903",
+				Rainbow = "rbxassetid://119281588976050"
+			},
 			MoneyPerSec = 18,
 			Timer = 30,
 			IdleAnimationID = "119152648186721",
@@ -97,7 +167,14 @@ local BRAINROTS_DATA = {
 		},
 		["Frigo Camelo"] = {
 			DisplayName = "Frigo Camelo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://121050692373498",
+				Gold = "rbxassetid://137066495580200",
+				Diamond = "rbxassetid://72967142968638",
+				Lava = "rbxassetid://101640473626547",
+				Galaxy = "rbxassetid://83049260994829",
+				Rainbow = "rbxassetid://121050692373498"
+			},
 			MoneyPerSec = 20,
 			Timer = 30,
 			IdleAnimationID = "90583968473819",
@@ -105,7 +182,14 @@ local BRAINROTS_DATA = {
 		},
 		["Garamararam"] = {
 			DisplayName = "Garamararam",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://116599844910742",
+				Gold = "rbxassetid://88935848964543",
+				Diamond = "rbxassetid://111942567563944",
+				Lava = "rbxassetid://98453685613091",
+				Galaxy = "rbxassetid://86675541286475",
+				Rainbow = "rbxassetid://116599844910742"
+			},
 			MoneyPerSec = 24,
 			Timer = 30,
 			IdleAnimationID = "119071723858641",
@@ -113,7 +197,14 @@ local BRAINROTS_DATA = {
 		},
 		["Talpa Di Fero"] = {
 			DisplayName = "Talpa Di Fero",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://128392721493796",
+				Gold = "rbxassetid://96904161462772",
+				Diamond = "rbxassetid://75557184870940",
+				Lava = "rbxassetid://97848590758126",
+				Galaxy = "rbxassetid://110509467742420",
+				Rainbow = "rbxassetid://128392721493796"
+			},
 			MoneyPerSec = 26,
 			Timer = 30,
 			IdleAnimationID = "82230121002174",
@@ -123,7 +214,14 @@ local BRAINROTS_DATA = {
 	Rare = {
 		["Tatatata Sahur"] = {
 			DisplayName = "Tatatata Sahur",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://102773643682352",
+				Gold = "rbxassetid://131341643457475",
+				Diamond = "rbxassetid://75983582614184",
+				Lava = "rbxassetid://119056571234165",
+				Galaxy = "rbxassetid://115516140306504",
+				Rainbow = "rbxassetid://102773643682352"
+			},
 			MoneyPerSec = 28,
 			Timer = 30,
 			IdleAnimationID = "70467163409213",
@@ -131,7 +229,14 @@ local BRAINROTS_DATA = {
 		},
 		["Tung Tung Sahur"] = {
 			DisplayName = "Tung Tung Sahur",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://122958689320298",
+				Gold = "rbxassetid://89629125427306",
+				Diamond = "rbxassetid://77667051241036",
+				Lava = "rbxassetid://139059094217301",
+				Galaxy = "rbxassetid://102368351239258",
+				Rainbow = "rbxassetid://122958689320298"
+			},
 			MoneyPerSec = 32,
 			Timer = 30,
 			IdleAnimationID = "134662929935334",
@@ -139,7 +244,14 @@ local BRAINROTS_DATA = {
 		},
 		["Trippi Troppi Troppa Trippa"] = {
 			DisplayName = "Trippi Troppi Troppa Trippa",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://127173546179747",
+				Gold = "rbxassetid://125487518066668",
+				Diamond = "rbxassetid://131131504188426",
+				Lava = "rbxassetid://106461535232246",
+				Galaxy = "rbxassetid://124453709816319",
+				Rainbow = "rbxassetid://127173546179747"
+			},
 			MoneyPerSec = 44,
 			Timer = 30,
 			IdleAnimationID = "79287457248711",
@@ -147,7 +259,14 @@ local BRAINROTS_DATA = {
 		},
 		["Bobrito Bandito"] = {
 			DisplayName = "Bobrito Bandito",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://72027704673010",
+				Gold = "rbxassetid://99707921129788",
+				Diamond = "rbxassetid://115365130916129",
+				Lava = "rbxassetid://128386163946950",
+				Galaxy = "rbxassetid://99840432446525",
+				Rainbow = "rbxassetid://72027704673010"
+			},
 			MoneyPerSec = 56,
 			Timer = 30,
 			IdleAnimationID = "74690734135693",
@@ -155,7 +274,14 @@ local BRAINROTS_DATA = {
 		},
 		["Trulimero Trulicina"] = {
 			DisplayName = "Trulimero Trulicina",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://95224970333558",
+				Gold = "rbxassetid://83904068750165",
+				Diamond = "rbxassetid://82975559835384",
+				Lava = "rbxassetid://105655596259889",
+				Galaxy = "rbxassetid://87258434880136",
+				Rainbow = "rbxassetid://95224970333558"
+			},
 			MoneyPerSec = 68,
 			Timer = 30,
 			IdleAnimationID = "109196834334122",
@@ -163,7 +289,14 @@ local BRAINROTS_DATA = {
 		},
 		["Madung"] = {
 			DisplayName = "Madung",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://81571508095321",
+				Gold = "rbxassetid://105478607790505",
+				Diamond = "rbxassetid://75962056038593",
+				Lava = "rbxassetid://81610257446397",
+				Galaxy = "rbxassetid://122921169661671",
+				Rainbow = "rbxassetid://81571508095321"
+			},
 			MoneyPerSec = 76,
 			Timer = 30,
 			IdleAnimationID = "123473669513490",
@@ -171,7 +304,14 @@ local BRAINROTS_DATA = {
 		},
 		["Bananito Delfinito"] = {
 			DisplayName = "Bananito Delfinito",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://104462589038482",
+				Gold = "rbxassetid://76591752768596",
+				Diamond = "rbxassetid://99662573055588",
+				Lava = "rbxassetid://83475131403241",
+				Galaxy = "rbxassetid://71537889089617",
+				Rainbow = "rbxassetid://104462589038482"
+			},
 			MoneyPerSec = 84,
 			Timer = 30,
 			IdleAnimationID = "128779613199778",
@@ -181,7 +321,14 @@ local BRAINROTS_DATA = {
 	Epic = {
 		["Rhino Toasterino"] = {
 			DisplayName = "Rhino Toasterino",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://86800311408500",
+				Gold = "rbxassetid://125652198701697",
+				Diamond = "rbxassetid://82328581470151",
+				Lava = "rbxassetid://125902676198288",
+				Galaxy = "rbxassetid://106681912285343",
+				Rainbow = "rbxassetid://86800311408500"
+			},
 			MoneyPerSec = 96,
 			Timer = 30,
 			IdleAnimationID = "110538082510571",
@@ -189,7 +336,14 @@ local BRAINROTS_DATA = {
 		},
 		["Orangutini Ananassini"] = {
 			DisplayName = "Orangutini Ananassini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://86647897225625",
+				Gold = "rbxassetid://90082286294290",
+				Diamond = "rbxassetid://75770569381261",
+				Lava = "rbxassetid://110329491083352",
+				Galaxy = "rbxassetid://120803268243054",
+				Rainbow = "rbxassetid://86647897225625"
+			},
 			MoneyPerSec = 108,
 			Timer = 30,
 			IdleAnimationID = "97128951022077",
@@ -197,7 +351,14 @@ local BRAINROTS_DATA = {
 		},
 		["Odin Din Din Dun"] = {
 			DisplayName = "Odin Din Din Dun",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://83075430231800",
+				Gold = "rbxassetid://123353526424201",
+				Diamond = "rbxassetid://123347608512450",
+				Lava = "rbxassetid://101792837372323",
+				Galaxy = "rbxassetid://98898685549411",
+				Rainbow = "rbxassetid://83075430231800"
+			},
 			MoneyPerSec = 120,
 			Timer = 30,
 			IdleAnimationID = "113250326274067",
@@ -205,7 +366,14 @@ local BRAINROTS_DATA = {
 		},
 		["Cappuccino Assassino"] = {
 			DisplayName = "Cappuccino Assassino",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://82894783349739",
+				Gold = "rbxassetid://124047143175350",
+				Diamond = "rbxassetid://82347520180417",
+				Lava = "rbxassetid://83154145864959",
+				Galaxy = "rbxassetid://76002501684257",
+				Rainbow = "rbxassetid://82894783349739"
+			},
 			MoneyPerSec = 132,
 			Timer = 30,
 			IdleAnimationID = "91508657190285",
@@ -213,7 +381,14 @@ local BRAINROTS_DATA = {
 		},
 		["Brr Bicus Dicus"] = {
 			DisplayName = "Brr Bicus Dicus",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://106732941706535",
+				Gold = "rbxassetid://76158322582633",
+				Diamond = "rbxassetid://111356539155860",
+				Lava = "rbxassetid://115536164539528",
+				Galaxy = "rbxassetid://93539599313873",
+				Rainbow = "rbxassetid://106732941706535"
+			},
 			MoneyPerSec = 144,
 			Timer = 30,
 			IdleAnimationID = "114157964762947",
@@ -221,7 +396,14 @@ local BRAINROTS_DATA = {
 		},
 		["Glorbo Fruttodrillo"] = {
 			DisplayName = "Glorbo Fruttodrillo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://74079727238888",
+				Gold = "rbxassetid://108147233705615",
+				Diamond = "rbxassetid://85490198201459",
+				Lava = "rbxassetid://79113744000819",
+				Galaxy = "rbxassetid://126364254958252",
+				Rainbow = "rbxassetid://74079727238888"
+			},
 			MoneyPerSec = 160,
 			Timer = 30,
 			IdleAnimationID = "97656649303430",
@@ -229,7 +411,14 @@ local BRAINROTS_DATA = {
 		},
 		["Bambini Crostini"] = {
 			DisplayName = "Bambini Crostini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://102500613175813",
+				Gold = "rbxassetid://113414130068035",
+				Diamond = "rbxassetid://91384515799538",
+				Lava = "rbxassetid://111903782406196",
+				Galaxy = "rbxassetid://74023417774255",
+				Rainbow = "rbxassetid://102500613175813"
+			},
 			MoneyPerSec = 180,
 			Timer = 30,
 			IdleAnimationID = "75325003538555",
@@ -237,7 +426,14 @@ local BRAINROTS_DATA = {
 		},
 		["Avocadini Guffo"] = {
 			DisplayName = "Avocadini Guffo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://85169822405034",
+				Gold = "rbxassetid://84842431793918",
+				Diamond = "rbxassetid://80108352829242",
+				Lava = "rbxassetid://134440774327594",
+				Galaxy = "rbxassetid://134134173051065",
+				Rainbow = "rbxassetid://85169822405034"
+			},
 			MoneyPerSec = 200,
 			Timer = 30,
 			IdleAnimationID = "109172282813062",
@@ -247,7 +443,14 @@ local BRAINROTS_DATA = {
 	Legendary = {
 		["Six Seven"] = {
 			DisplayName = "Six Seven",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://95912001117631",
+				Gold = "rbxassetid://124205229754198",
+				Diamond = "rbxassetid://78316732346745",
+				Lava = "rbxassetid://80975065668282",
+				Galaxy = "rbxassetid://121072444446286",
+				Rainbow = "rbxassetid://95912001117631"
+			},
 			MoneyPerSec = 250,
 			Timer = 30,
 			IdleAnimationID = "128440259644370",
@@ -255,7 +458,14 @@ local BRAINROTS_DATA = {
 		},
 		["Balerina Capucina"] = {
 			DisplayName = "Balerina Capucina",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://126931050405330",
+				Gold = "rbxassetid://84439866661383",
+				Diamond = "rbxassetid://103846415218460",
+				Lava = "rbxassetid://106404083824709",
+				Galaxy = "rbxassetid://128733679524518",
+				Rainbow = "rbxassetid://126931050405330"
+			},
 			MoneyPerSec = 320,
 			Timer = 30,
 			IdleAnimationID = "98084990037952",
@@ -263,7 +473,14 @@ local BRAINROTS_DATA = {
 		},
 		["Chef Crabracadabra"] = {
 			DisplayName = "Chef Crabracadabra",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://108885775186965",
+				Gold = "rbxassetid://95708413693495",
+				Diamond = "rbxassetid://92894570179763",
+				Lava = "rbxassetid://76575494519917",
+				Galaxy = "rbxassetid://96390646799295",
+				Rainbow = "rbxassetid://108885775186965"
+			},
 			MoneyPerSec = 480,
 			Timer = 30,
 			IdleAnimationID = "134525017294235",
@@ -271,7 +488,14 @@ local BRAINROTS_DATA = {
 		},
 		["Strawberrelli Flamingelli"] = {
 			DisplayName = "Strawberrelli Flamingelli",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://75136951117889",
+				Gold = "rbxassetid://98032489875844",
+				Diamond = "rbxassetid://89386923560765",
+				Lava = "rbxassetid://119046763186776",
+				Galaxy = "rbxassetid://121479681136754",
+				Rainbow = "rbxassetid://75136951117889"
+			},
 			MoneyPerSec = 640,
 			Timer = 30,
 			IdleAnimationID = "91960180162946",
@@ -279,7 +503,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pandaccini Bananini"] = {
 			DisplayName = "Pandaccini Bananini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://85661364225147",
+				Gold = "rbxassetid://101590040617892",
+				Diamond = "rbxassetid://75465748760996",
+				Lava = "rbxassetid://93877162868924",
+				Galaxy = "rbxassetid://120525026133415",
+				Rainbow = "rbxassetid://85661364225147"
+			},
 			MoneyPerSec = 820,
 			Timer = 30,
 			IdleAnimationID = "83720431126601",
@@ -287,7 +518,14 @@ local BRAINROTS_DATA = {
 		},
 		["Mateo"] = {
 			DisplayName = "Mateo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://116132174687182",
+				Gold = "rbxassetid://122998801008696",
+				Diamond = "rbxassetid://121037830984110",
+				Lava = "rbxassetid://101501766332148",
+				Galaxy = "rbxassetid://122878577610068",
+				Rainbow = "rbxassetid://116132174687182"
+			},
 			MoneyPerSec = 950,
 			Timer = 30,
 			IdleAnimationID = "87854282484561",
@@ -295,7 +533,14 @@ local BRAINROTS_DATA = {
 		},
 		["Burbaloni Loliloli"] = {
 			DisplayName = "Burbaloni Loliloli",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://119731014703638",
+				Gold = "rbxassetid://105911830483550",
+				Diamond = "rbxassetid://77577458513929",
+				Lava = "rbxassetid://75857771561012",
+				Galaxy = "rbxassetid://120158715623525",
+				Rainbow = "rbxassetid://119731014703638"
+			},
 			MoneyPerSec = 1040,
 			Timer = 30,
 			IdleAnimationID = "84457584090186",
@@ -303,7 +548,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pipi Potato"] = {
 			DisplayName = "Pipi Potato",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://115886778257759",
+				Gold = "rbxassetid://84849073244736",
+				Diamond = "rbxassetid://79290428120755",
+				Lava = "rbxassetid://103155523851043",
+				Galaxy = "rbxassetid://80854691777061",
+				Rainbow = "rbxassetid://115886778257759"
+			},
 			MoneyPerSec = 1100,
 			Timer = 30,
 			IdleAnimationID = "103215349100772",
@@ -311,7 +563,14 @@ local BRAINROTS_DATA = {
 		},
 		["Blueberrinni Octopusini"] = {
 			DisplayName = "Blueberrinni Octopusini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://95459709947476",
+				Gold = "rbxassetid://105227688145487",
+				Diamond = "rbxassetid://105121812149001",
+				Lava = "rbxassetid://124950660910561",
+				Galaxy = "rbxassetid://108485947987978",
+				Rainbow = "rbxassetid://95459709947476"
+			},
 			MoneyPerSec = 1160,
 			Timer = 30,
 			IdleAnimationID = "86470565237388",
@@ -321,7 +580,14 @@ local BRAINROTS_DATA = {
 	Mythic = {
 		["Bombombini Gusini"] = {
 			DisplayName = "Bombombini Gusini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://128342611680087",
+				Gold = "rbxassetid://119131458609026",
+				Diamond = "rbxassetid://87803921857060",
+				Lava = "rbxassetid://71267627542180",
+				Galaxy = "rbxassetid://99671256972550",
+				Rainbow = "rbxassetid://128342611680087"
+			},
 			MoneyPerSec = 1300,
 			Timer = 30,
 			IdleAnimationID = "74132471582266",
@@ -329,7 +595,14 @@ local BRAINROTS_DATA = {
 		},
 		["Bombardiro Crocodilo"] = {
 			DisplayName = "Bombardiro Crocodilo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://102673385962764",
+				Gold = "rbxassetid://86522967456919",
+				Diamond = "rbxassetid://96185240941561",
+				Lava = "rbxassetid://115075474925185",
+				Galaxy = "rbxassetid://115868071548117",
+				Rainbow = "rbxassetid://102673385962764"
+			},
 			MoneyPerSec = 1360,
 			Timer = 30,
 			IdleAnimationID = "110808175306449",
@@ -337,7 +610,14 @@ local BRAINROTS_DATA = {
 		},
 		["Elefanto Cocofanto"] = {
 			DisplayName = "Elefanto Cocofanto",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://92837452859684",
+				Gold = "rbxassetid://97566868262336",
+				Diamond = "rbxassetid://83754002285869",
+				Lava = "rbxassetid://80590049158189",
+				Galaxy = "rbxassetid://95297327482184",
+				Rainbow = "rbxassetid://92837452859684"
+			},
 			MoneyPerSec = 1520,
 			Timer = 30,
 			IdleAnimationID = "94263383103588",
@@ -345,7 +625,14 @@ local BRAINROTS_DATA = {
 		},
 		["Girafa Celestre"] = {
 			DisplayName = "Girafa Celestre",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://91537440839959",
+				Gold = "rbxassetid://93727209954709",
+				Diamond = "rbxassetid://83602528924385",
+				Lava = "rbxassetid://121943571936967",
+				Galaxy = "rbxassetid://101279535048070",
+				Rainbow = "rbxassetid://91537440839959"
+			},
 			MoneyPerSec = 1760,
 			Timer = 30,
 			IdleAnimationID = "82967378573130",
@@ -353,7 +640,14 @@ local BRAINROTS_DATA = {
 		},
 		["Tralalero Tralala"] = {
 			DisplayName = "Tralalero Tralala",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://127217667973248",
+				Gold = "rbxassetid://139035683166622",
+				Diamond = "rbxassetid://119420911636830",
+				Lava = "rbxassetid://125772324613398",
+				Galaxy = "rbxassetid://125026004292009",
+				Rainbow = "rbxassetid://127217667973248"
+			},
 			MoneyPerSec = 2000,
 			Timer = 30,
 			IdleAnimationID = "134208416607994",
@@ -361,7 +655,14 @@ local BRAINROTS_DATA = {
 		},
 		["Orcalero Orcala"] = {
 			DisplayName = "Orcalero Orcala",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://115390390187894",
+				Gold = "rbxassetid://88064882812132",
+				Diamond = "rbxassetid://72716655607152",
+				Lava = "rbxassetid://128928813075950",
+				Galaxy = "rbxassetid://74117601497719",
+				Rainbow = "rbxassetid://115390390187894"
+			},
 			MoneyPerSec = 2240,
 			Timer = 30,
 			IdleAnimationID = "85470681735904",
@@ -369,7 +670,14 @@ local BRAINROTS_DATA = {
 		},
 		["Cavallo Virtuoso"] = {
 			DisplayName = "Cavallo Virtuoso",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://133734930642218",
+				Gold = "rbxassetid://109577877158388",
+				Diamond = "rbxassetid://76998866145374",
+				Lava = "rbxassetid://131079416164701",
+				Galaxy = "rbxassetid://104048417797964",
+				Rainbow = "rbxassetid://133734930642218"
+			},
 			MoneyPerSec = 2480,
 			Timer = 30,
 			IdleAnimationID = "85514514688528",
@@ -377,7 +685,14 @@ local BRAINROTS_DATA = {
 		},
 		["Zibra Zubra Zibralini"] = {
 			DisplayName = "Zibra Zubra Zibralini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://133106403969320",
+				Gold = "rbxassetid://75454450805022",
+				Diamond = "rbxassetid://116485284879241",
+				Lava = "rbxassetid://137718275271845",
+				Galaxy = "rbxassetid://105749483571143",
+				Rainbow = "rbxassetid://133106403969320"
+			},
 			MoneyPerSec = 2720,
 			Timer = 30,
 			IdleAnimationID = "125708577359364",
@@ -385,7 +700,14 @@ local BRAINROTS_DATA = {
 		},
 		["Balerino Lololo"] = {
 			DisplayName = "Balerino Lololo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://84609148436054",
+				Gold = "rbxassetid://137108633909784",
+				Diamond = "rbxassetid://97031103836926",
+				Lava = "rbxassetid://76180679355863",
+				Galaxy = "rbxassetid://86175021052866",
+				Rainbow = "rbxassetid://84609148436054"
+			},
 			MoneyPerSec = 3040,
 			Timer = 30,
 			IdleAnimationID = "100736583618239",
@@ -393,7 +715,14 @@ local BRAINROTS_DATA = {
 		},
 		["Gorillo Watermelondrillo"] = {
 			DisplayName = "Gorillo Watermelondrillo",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://121641808960778",
+				Gold = "rbxassetid://109943515912684",
+				Diamond = "rbxassetid://84680179851984",
+				Lava = "rbxassetid://103449874664045",
+				Galaxy = "rbxassetid://116305850033664",
+				Rainbow = "rbxassetid://121641808960778"
+			},
 			MoneyPerSec = 3200,
 			Timer = 30,
 			IdleAnimationID = "121669309389326",
@@ -401,7 +730,14 @@ local BRAINROTS_DATA = {
 		},
 		["Lerulerulerule"] = {
 			DisplayName = "Lerulerulerule",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://91894082417333",
+				Gold = "rbxassetid://110131115466809",
+				Diamond = "rbxassetid://110217620902999",
+				Lava = "rbxassetid://99780429988428",
+				Galaxy = "rbxassetid://85506772476284",
+				Rainbow = "rbxassetid://91894082417333"
+			},
 			MoneyPerSec = 3340,
 			Timer = 30,
 			IdleAnimationID = "113944673008104",
@@ -411,7 +747,14 @@ local BRAINROTS_DATA = {
 	Secret = {
 		["La Vacca Saturno Saturnita"] = {
 			DisplayName = "La Vacca Saturno Saturnita",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://136151686749472",
+				Gold = "rbxassetid://92717607031249",
+				Diamond = "rbxassetid://95012253587024",
+				Lava = "rbxassetid://132716272242127",
+				Galaxy = "rbxassetid://125776435573365",
+				Rainbow = "rbxassetid://136151686749472"
+			},
 			MoneyPerSec = 3700,
 			Timer = 30,
 			IdleAnimationID = "74251053903533",
@@ -419,7 +762,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pot Hotspot"] = {
 			DisplayName = "Pot Hotspot",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://83059110831053",
+				Gold = "rbxassetid://71828731317426",
+				Diamond = "rbxassetid://83663840799404",
+				Lava = "rbxassetid://123631152301995",
+				Galaxy = "rbxassetid://110066597035285",
+				Rainbow = "rbxassetid://83059110831053"
+			},
 			MoneyPerSec = 3850,
 			Timer = 30,
 			IdleAnimationID = "108674086019292",
@@ -427,7 +777,14 @@ local BRAINROTS_DATA = {
 		},
 		["Los Tralaleritos"] = {
 			DisplayName = "Los Tralaleritos",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://132256262134576",
+				Gold = "rbxassetid://99896375770612",
+				Diamond = "rbxassetid://139279807211015",
+				Lava = "rbxassetid://117998337052795",
+				Galaxy = "rbxassetid://104532021863302",
+				Rainbow = "rbxassetid://132256262134576"
+			},
 			MoneyPerSec = 4160,
 			Timer = 30,
 			IdleAnimationID = "119212925111511",
@@ -435,7 +792,14 @@ local BRAINROTS_DATA = {
 		},
 		["Dragon Cannelloni"] = {
 			DisplayName = "Dragon Cannelloni",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://133379779406961",
+				Gold = "rbxassetid://129115551088366",
+				Diamond = "rbxassetid://120262126059646",
+				Lava = "rbxassetid://99871919208294",
+				Galaxy = "rbxassetid://91608162964544",
+				Rainbow = "rbxassetid://133379779406961"
+			},
 			MoneyPerSec = 4640,
 			Timer = 30,
 			IdleAnimationID = "127778181093662",
@@ -443,7 +807,14 @@ local BRAINROTS_DATA = {
 		},
 		["Esok Sekolah"] = {
 			DisplayName = "Esok Sekolah",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://128435344011147",
+				Gold = "rbxassetid://70617975469992",
+				Diamond = "rbxassetid://77458897449378",
+				Lava = "rbxassetid://89716165650313",
+				Galaxy = "rbxassetid://88152858399491",
+				Rainbow = "rbxassetid://128435344011147"
+			},
 			MoneyPerSec = 5040,
 			Timer = 30,
 			IdleAnimationID = "134795063690692",
@@ -451,7 +822,14 @@ local BRAINROTS_DATA = {
 		},
 		["Job Job Job Sahur"] = {
 			DisplayName = "Job Job Job Sahur",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://125311045187550",
+				Gold = "rbxassetid://97996745708133",
+				Diamond = "rbxassetid://77895562315738",
+				Lava = "rbxassetid://97373088286042",
+				Galaxy = "rbxassetid://107409212678399",
+				Rainbow = "rbxassetid://125311045187550"
+			},
 			MoneyPerSec = 5520,
 			Timer = 30,
 			IdleAnimationID = "115738251148992",
@@ -459,7 +837,14 @@ local BRAINROTS_DATA = {
 		},
 		["Strawberry Elephant"] = {
 			DisplayName = "Strawberry Elephant",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://85634570696406",
+				Gold = "rbxassetid://76465371385906",
+				Diamond = "rbxassetid://99546725295289",
+				Lava = "rbxassetid://70990874501252",
+				Galaxy = "rbxassetid://90239487996918",
+				Rainbow = "rbxassetid://85634570696406"
+			},
 			MoneyPerSec = 5920,
 			Timer = 30,
 			IdleAnimationID = "79871916866333",
@@ -467,7 +852,14 @@ local BRAINROTS_DATA = {
 		},
 		["Agarrini La Pallini"] = {
 			DisplayName = "Agarrini La Pallini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://121636044853937",
+				Gold = "rbxassetid://88348710551810",
+				Diamond = "rbxassetid://79503226763727",
+				Lava = "rbxassetid://79991994778926",
+				Galaxy = "rbxassetid://138848050292584",
+				Rainbow = "rbxassetid://121636044853937"
+			},
 			MoneyPerSec = 6400,
 			Timer = 30,
 			IdleAnimationID = "127843445745919",
@@ -475,7 +867,14 @@ local BRAINROTS_DATA = {
 		},
 		["Karkerkar Kurkur"] = {
 			DisplayName = "Karkerkar Kurkur",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://106984240877160",
+				Gold = "rbxassetid://92632671557553",
+				Diamond = "rbxassetid://92962695704451",
+				Lava = "rbxassetid://73917661840606",
+				Galaxy = "rbxassetid://127552465714828",
+				Rainbow = "rbxassetid://106984240877160"
+			},
 			MoneyPerSec = 6800,
 			Timer = 30,
 			IdleAnimationID = "90520952784864",
@@ -483,7 +882,14 @@ local BRAINROTS_DATA = {
 		},
 		["Tralalita Tralala"] = {
 			DisplayName = "Tralalita Tralala",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://135428541040527",
+				Gold = "rbxassetid://129266278201071",
+				Diamond = "rbxassetid://132774065565645",
+				Lava = "rbxassetid://110688985381755",
+				Galaxy = "rbxassetid://135022432394818",
+				Rainbow = "rbxassetid://135428541040527"
+			},
 			MoneyPerSec = 7200,
 			Timer = 30,
 			IdleAnimationID = "82309982591316",
@@ -491,7 +897,14 @@ local BRAINROTS_DATA = {
 		},
 		["Torrtuginni Dragonfrutini"] = {
 			DisplayName = "Torrtuginni Dragonfrutini",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://126265190196718",
+				Gold = "rbxassetid://122251597766509",
+				Diamond = "rbxassetid://75006730085035",
+				Lava = "rbxassetid://89210408505710",
+				Galaxy = "rbxassetid://123896706221147",
+				Rainbow = "rbxassetid://126265190196718"
+			},
 			MoneyPerSec = 8500,
 			Timer = 30,
 			IdleAnimationID = "90443757660334",
@@ -499,7 +912,14 @@ local BRAINROTS_DATA = {
 		},
 		["Espresso Signora"] = {
 			DisplayName = "Espresso Signora",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://77854321896829",
+				Gold = "rbxassetid://111165386739709",
+				Diamond = "rbxassetid://131174141039436",
+				Lava = "rbxassetid://107342955929277",
+				Galaxy = "rbxassetid://115866720797446",
+				Rainbow = "rbxassetid://77854321896829"
+			},
 			MoneyPerSec = 8880,
 			Timer = 30,
 			IdleAnimationID = "80435230744346",
@@ -509,7 +929,14 @@ local BRAINROTS_DATA = {
 	God = {
 		["Tigroligre Frutonni"] = {
 			DisplayName = "Tigroligre Frutonni",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://138396382724277",
+				Gold = "rbxassetid://119196244320400",
+				Diamond = "rbxassetid://107444471256261",
+				Lava = "rbxassetid://83371659389879",
+				Galaxy = "rbxassetid://72521740005134",
+				Rainbow = "rbxassetid://138396382724277"
+			},
 			MoneyPerSec = 10000,
 			Timer = 30,
 			IdleAnimationID = "86994308079290",
@@ -517,7 +944,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pakrahmatmamat"] = {
 			DisplayName = "Pakrahmatmamat",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://99205566153121",
+				Gold = "rbxassetid://106504224116177",
+				Diamond = "rbxassetid://96439866655686",
+				Lava = "rbxassetid://70867052016360",
+				Galaxy = "rbxassetid://71162065969401",
+				Rainbow = "rbxassetid://99205566153121"
+			},
 			MoneyPerSec = 12000,
 			Timer = 30,
 			IdleAnimationID = "82634170798863",
@@ -525,7 +959,14 @@ local BRAINROTS_DATA = {
 		},
 		["Pakrahmatmatina"] = {
 			DisplayName = "Pakrahmatmatina",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+				Normal = "rbxassetid://117312177926513",
+				Gold = "rbxassetid://131166889488610",
+				Diamond = "rbxassetid://114769375392777",
+				Lava = "rbxassetid://114556943644638",
+				Galaxy = "rbxassetid://117226189252126",
+				Rainbow = "rbxassetid://117312177926513"
+			},
 			MoneyPerSec = 15000,
 			Timer = 30,
 			IdleAnimationID = "86986835818770",
@@ -533,7 +974,14 @@ local BRAINROTS_DATA = {
 		},
 		["Chicleteira Bicicleteira"] = {
 			DisplayName = "Chicleteira Bicicleteira",
-			Icon = "rbxassetid://126841142944996",
+			Icon = {
+			Normal = "rbxassetid://129711994548893",
+			Gold = "rbxassetid://126049077419425",
+			Diamond = "rbxassetid://74036170730953",
+			Lava = "rbxassetid://107986403705503",
+			Galaxy = "rbxassetid://135492082653650",
+			Rainbow = "rbxassetid://129711994548893"
+		},
 			MoneyPerSec = 20000,
 			Timer = 30,
 			IdleAnimationID = "103037349728309",
