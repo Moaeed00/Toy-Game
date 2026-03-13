@@ -68,11 +68,13 @@ function MerchantController:RefreshUI()
         totalValue += (brainrotData.SellPrice * data.Amount)
 
         table.insert(sortable, {
-            ID = data.Id,
+            ID = data.ID,
             Name = name,
+            Image = brainrotData.Icon,
             Amount = data.Amount,
             SellPrice = brainrotData.SellPrice,
-            RarityType = brainrotData.RarityType
+            Variant = data.Variant,
+            RarityType = brainrotData.RarityType,
         })
     end
 
@@ -88,6 +90,7 @@ function MerchantController:RefreshUI()
 		clone.LayoutOrder = index
 
         clone.BrainrotName.Text = item.Name
+        clone.BrainrotImage:WaitForChild("ImageLabel").Image = item.Image[item.Variant]
 		clone.OwnedAmount.Text = "Owned: x" .. item.Amount
 		clone.SellPrice.Text = "$" .. self:FormatNumber(item.SellPrice)
         clone.BrainrotRarity.Text = item.RarityType
@@ -101,7 +104,7 @@ function MerchantController:RefreshUI()
             end
         end
         clone.SellButton.Activated:Connect(function()
-            self.MerchantService:Sell(item.Name):andThen(function(reward: number)
+            self.MerchantService:Sell(item.ID):andThen(function(reward: number)
                 local message = `Sold {item.Name} for ${self:FormatNumber(tostring(reward))}`
                 NotificationHandler:DisplayNotificationMessage(message, "Success")
             end)

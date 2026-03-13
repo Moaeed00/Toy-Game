@@ -131,10 +131,7 @@ function BrainrotSpawnService:PickBrainrotVariant()
     for i = #BrainrotVariantsConfig.VARIANTS, 1, -1 do
         local variant = BrainrotVariantsConfig.VARIANTS[i]
         if math.random() <= variant.Chance then
-            return {
-                Prefix = variant.Prefix,
-                Color = variant.Color,
-            }
+            return variant.Prefix
         end
     end
 

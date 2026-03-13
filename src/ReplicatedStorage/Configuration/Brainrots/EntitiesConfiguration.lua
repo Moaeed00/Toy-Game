@@ -975,13 +975,13 @@ local BRAINROTS_DATA = {
 		["Chicleteira Bicicleteira"] = {
 			DisplayName = "Chicleteira Bicicleteira",
 			Icon = {
-			Normal = "rbxassetid://129711994548893",
-			Gold = "rbxassetid://126049077419425",
-			Diamond = "rbxassetid://74036170730953",
-			Lava = "rbxassetid://107986403705503",
-			Galaxy = "rbxassetid://135492082653650",
-			Rainbow = "rbxassetid://129711994548893"
-		},
+				Normal = "rbxassetid://129711994548893",
+				Gold = "rbxassetid://126049077419425",
+				Diamond = "rbxassetid://74036170730953",
+				Lava = "rbxassetid://107986403705503",
+				Galaxy = "rbxassetid://135492082653650",
+				Rainbow = "rbxassetid://129711994548893"
+			},
 			MoneyPerSec = 20000,
 			Timer = 30,
 			IdleAnimationID = "103037349728309",

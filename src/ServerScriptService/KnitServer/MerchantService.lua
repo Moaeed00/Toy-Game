@@ -44,12 +44,14 @@ function MerchantService:BuildBackpackSnapshot(player: Player)
     local function scan(container)
         for _, tool: Tool in ipairs(container:GetChildren()) do
             if tool:IsA("Tool") then
+                print("Tool name:", tool.Name)
                 local data = BrainrotsData.Processed[tool.Name]
                 if data then
                     local id = tool:GetAttribute("Id")
                     snapshot[tool.Name] = {
                         ID = id,
-                        Amount = (snapshot[tool.Name] or 0) + 1,
+                        Amount = (snapshot[tool.Name].Amount or 0) + 1,
+                        Variant = tool:GetAttribute("Mutation")
                     }
                 end
             end
