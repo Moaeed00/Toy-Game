@@ -171,12 +171,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
         return
     end
 
-    local selectedBrainrotToSpawn: Model
-    if brainrotVariant == BASE_VARIANT_FOLDER then
-        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
-    else
-        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotVariant.Prefix .. brainrotName)
-    end
+    local selectedBrainrotToSpawn: Model = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
     spawnedBrainrot.Parent = BrainrotsFolder
 
@@ -204,11 +199,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrot:SetAttribute("SellPrice", brainrotData.SellPrice)
     spawnedBrainrot:SetAttribute("FractionChance", brainrotData.FractionChance)
     spawnedBrainrot:SetAttribute("Timer", brainrotData.Timer)
-    if brainrotVariant == BASE_VARIANT_FOLDER then
-        spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
-    else
-        spawnedBrainrot:SetAttribute("Variant", brainrotVariant.Prefix:gsub("%s+$", ""))
-    end
+    spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
 
     self:SetupInfoGUI(spawnedBrainrot)
 

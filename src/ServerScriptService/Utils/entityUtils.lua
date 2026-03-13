@@ -125,7 +125,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	end
 
 	local _, entityData = getBiomeByEntity(entityName)
-	local model = Assets:WaitForChild("Entities"):WaitForChild(biomeName):WaitForChild(entityName)
+	local model = Assets:WaitForChild("Entities"):WaitForChild(mutationName):WaitForChild(entityName)
 	if not model then
 		return
 	end
@@ -159,14 +159,14 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	tool.Name = entityName
 	tool.PrimaryPart = handle
 
-	if mutationName then
-		local mutationInfo = MutationsConfiguration[mutationName]
-		if not mutationInfo then
-			return
-		end
+	-- if mutationName then
+	-- 	local mutationInfo = MutationsConfiguration[mutationName]
+	-- 	if not mutationInfo then
+	-- 		return
+	-- 	end
 
-		setModelColor(tool, mutationInfo.Color, mutationName)
-	end
+	-- 	setModelColor(tool, mutationInfo.Color, mutationName)
+	-- end
 
 	headerUtils.create(entityName, biomeName, mutationName, model, false, handle)
 

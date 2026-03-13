@@ -52,13 +52,13 @@ local function create_sell_proximity(entityModel: Model)
 	return sellProximityPrompt
 end
 
-local function create_steal_proximity(entityModel: Model, _biomeName: string, entityName: string)
+local function create_steal_proximity(entityModel: Model, biomeName: string, entityName: string)
 	local _, entityInfo = getBiomeByEntity(entityName)
 	if not entityInfo then
 		return
 	end
 
-	local productId = StealConfiguration[entityInfo.Rarity.DisplayName].UnlockID
+	local productId = StealConfiguration[biomeName].UnlockID
 	if not productId then
 		return
 	end
@@ -70,7 +70,7 @@ local function create_steal_proximity(entityModel: Model, _biomeName: string, en
 		MaxActivationDistance = 15,
 		HoldDuration = 1,
 		Enabled = false,
-		ActionText = `Steal ({entityInfo.Rarity.DisplayName})`,
+		ActionText = `Steal ({biomeName})`,
 	})
 
 	return stealProxmityPrompt
@@ -91,7 +91,7 @@ end
 
 local function create_entity_model(_biomeName: string, entityName: string, mutationName: string, slotPart: BasePart)
 	local biome = getBiomeByEntity(entityName)
-	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(biome):WaitForChild(entityName)
+	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(mutationName):WaitForChild(entityName)
 	if not entityModel then
 		return
 	end
@@ -100,14 +100,14 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
-	if mutationName then
-		local mutationInfo = MutationsConfiguration[mutationName]
-		if not mutationInfo then
-			return
-		end
+	-- if mutationName then
+	-- 	local mutationInfo = MutationsConfiguration[mutationName]
+	-- 	if not mutationInfo then
+	-- 		return
+	-- 	end
 
-		setModelColor(model, mutationInfo.Color, mutationName)
-	end
+	-- 	setModelColor(model, mutationInfo.Color, mutationName)
+	-- end
 
 	headerUtils.create(entityName, biome, mutationName, model)
 
@@ -159,7 +159,7 @@ local EntityInBase: constructor = Class(
 				return
 			end
 
-			local productId = StealConfiguration[entityData.Rarity.DisplayName].UnlockID
+			local productId = StealConfiguration[biomeName].UnlockID
 			if not productId then
 				return
 			end
