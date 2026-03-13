@@ -344,10 +344,10 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 	end
 
 	local entityName = brainrotModel.Name
-	local mutationName = brainrotModel:GetAttribute("Mutation")
+	local mutationName = brainrotModel:GetAttribute("Variant")
 
 	-- 🔥 determine biome automatically
-	local biomeName = player:GetAttribute("CarriedBrainrotBiome")
+	local biomeName = brainrotModel:GetAttribute("RarityType")
 
 	if not biomeName then
 		local biomeData = getBiomeByEntity(entityName)
