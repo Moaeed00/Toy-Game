@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
-local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
+local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Entities")
 local BrainrotsFolder: Folder = workspace:WaitForChild("Brainrots")
 local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
