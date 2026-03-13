@@ -52,13 +52,13 @@ local function create_sell_proximity(entityModel: Model)
 	return sellProximityPrompt
 end
 
-local function create_steal_proximity(entityModel: Model, _biomeName: string, entityName: string)
+local function create_steal_proximity(entityModel: Model, biomeName: string, entityName: string)
 	local _, entityInfo = getBiomeByEntity(entityName)
 	if not entityInfo then
 		return
 	end
 
-	local productId = StealConfiguration[entityInfo.Rarity.DisplayName].UnlockID
+	local productId = StealConfiguration[biomeName].UnlockID
 	if not productId then
 		return
 	end
@@ -70,7 +70,7 @@ local function create_steal_proximity(entityModel: Model, _biomeName: string, en
 		MaxActivationDistance = 15,
 		HoldDuration = 1,
 		Enabled = false,
-		ActionText = `Steal ({entityInfo.Rarity.DisplayName})`,
+		ActionText = `Steal ({biomeName})`,
 	})
 
 	return stealProxmityPrompt
@@ -159,7 +159,7 @@ local EntityInBase: constructor = Class(
 				return
 			end
 
-			local productId = StealConfiguration[entityData.Rarity.DisplayName].UnlockID
+			local productId = StealConfiguration[biomeName].UnlockID
 			if not productId then
 				return
 			end
