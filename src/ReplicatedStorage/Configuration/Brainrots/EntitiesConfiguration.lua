@@ -560,6 +560,7 @@ for rarityCategory, brainrots in pairs(BRAINROTS_DATA) do
     for name, brainrot in pairs(brainrots) do
         BrainrotsData[name] = {
             RarityWeight = brainrot.RarityWeight,
+			Icon = brainrot.Icon,
             RarityType = tostring(rarityCategory),
             IdleAnimationID = brainrot.IdleAnimationID,
             CashPerSecond = FormatCommas(tostring(brainrot.MoneyPerSec)),
