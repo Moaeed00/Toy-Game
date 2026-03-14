@@ -209,6 +209,12 @@ function BrainrotCarryService:_attachBrainrotModel(player: Player, brainrotModel
 		end
 	end
 
+	--// Reset then set to force AttributeChanged signal
+	player:SetAttribute("IsBrainrotEquipped", false)
+	task.wait()
+	-- player is now holding a fresh brainrot model (not owned)
+	player:SetAttribute("OwnsEquippedBrainrot", false)
+
 	player:SetAttribute("IsBrainrotEquipped", true)
 
 	self:_playHoldAnimation(player)
@@ -225,7 +231,7 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 		return
 	end
 
-	-- 🔴 PLAYER ALREADY CARRYING CHECK
+	-- PLAYER ALREADY CARRYING CHECK
 	if player:GetAttribute("IsCarryingBrainrot") then
 		print("[BrainrotCarryService] Player already carrying brainrot:", player.Name)
 		return
@@ -240,7 +246,7 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 		return
 	end
 
-	-- 🔴 BRAINROT ALREADY CARRIED
+	-- BRAINROT ALREADY CARRIED
 	if brainrotModel:GetAttribute("IsCarried") then
 		print("[BrainrotCarryService] Brainrot already carried by another player:", brainrotModel.Name)
 		return
@@ -278,7 +284,20 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 		promptConnections[rootPart] = nil
 	end
 
-	-- 🔴 LOCK MODEL BEFORE ATTACH
+	-- ensure no brainrot tool is equipped before picking new model
+	local character = player.Character
+	if character then
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			local equippedTool = character:FindFirstChildOfClass("Tool")
+			if equippedTool and equippedTool:GetAttribute("IsBrainrotTool") then
+				print("[BrainrotCarryService] Unequipping previous brainrot tool before pickup")
+				humanoid:UnequipTools()
+			end
+		end
+	end
+
+	-- LOCK MODEL BEFORE ATTACH
 	brainrotModel:SetAttribute("IsCarried", true)
 
 	local tool = self:_attachBrainrotModel(player, brainrotModel)
@@ -293,6 +312,9 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 
 	player:SetAttribute("IsCarryingBrainrot", true)
 
+	-- ensure new pickup is treated as NOT owned
+	player:SetAttribute("OwnsEquippedBrainrot", false)
+
 	-- Store brainrot info for ownership later
 	player:SetAttribute("CarriedBrainrotBiome", brainrotModel:GetAttribute("Biome"))
 	player:SetAttribute("CarriedBrainrotName", brainrotModel.Name)
@@ -300,7 +322,9 @@ function BrainrotCarryService:TryPickup(player: Player, brainrotModel: Model)
 
 	self.Client.CarryStateChanged:Fire(player, true, rootPart)
 
+	-- Ensure zone service recalculates state
 	if self.BlocksSpawnAreaService then
+		player:SetAttribute("OwnsEquippedBrainrot", false)
 		self.BlocksSpawnAreaService:UpdatePlayerSpeed(player)
 	end
 
@@ -393,19 +417,22 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 	local backpack = player:FindFirstChildOfClass("Backpack")
 
 	if backpack then
+		local newTool: Tool? = nil
+
 		for _, tool in ipairs(backpack:GetChildren()) do
 			if tool:IsA("Tool") and tool.Name == entityName then
-
-				print("[BrainrotCarryService] Found new tool:", tool.Name)
-
-				tool:SetAttribute("IsBrainrotTool", true)
-
-				-- also mark ownership so BlocksSpawnArea works
-				tool:SetAttribute("OwnedByUserId", player.UserId)
-
-				print("[BrainrotCarryService] Brainrot attributes applied")
-
+				newTool = tool
+				break
 			end
+		end
+
+		if newTool then
+			print("[BrainrotCarryService] Found new tool:", newTool.Name)
+
+			newTool:SetAttribute("IsBrainrotTool", true)
+			newTool:SetAttribute("OwnedByUserId", player.UserId)
+
+			print("[BrainrotCarryService] Brainrot attributes applied")
 		end
 	end
 
@@ -435,10 +462,22 @@ function BrainrotCarryService:GiveOwnership(player: Player)
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		if not humanoid then return end
 
-		for _, tool in ipairs(player.Backpack:GetChildren()) do
+		local backpack = player:FindFirstChildOfClass("Backpack")
+		if not backpack then return end
+
+		for _, tool in ipairs(backpack:GetChildren()) do
 			if tool:IsA("Tool") and tool.Name == entityName then
+
+				-- ensure attributes exist BEFORE equip
+				tool:SetAttribute("IsBrainrotTool", true)
+				tool:SetAttribute("OwnedByUserId", player.UserId)
+
+				task.wait()
+
 				humanoid:EquipTool(tool)
+
 				print("[BrainrotCarryService] Equipped new brainrot tool:", tool.Name)
+
 				break
 			end
 		end

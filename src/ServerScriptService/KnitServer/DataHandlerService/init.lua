@@ -59,15 +59,17 @@ DataHandlerService.OnPlayerSessionEnded = Signal.new()
 DataHandlerService.OnPlayerDataChanged = Signal.new()
 
 -- the data that will be used to update to rank players
-DataHandlerService.LeaderboardCategory = { EnumDataValue.Coins }
+DataHandlerService.LeaderboardCategory = { "MoneyPerSec" }
 
 local function OnPlayerRemoving(player: Player)
 	local profile = Profiles[player]
 	if profile ~= nil then
 		local data = profile.Data
 		if data then
+			local mps = player:GetAttribute("MoneyPerSec") or 0
+
 			task.spawn(function()
-				CoinsDataStoreModule:SaveData(player, math.floor(data.Money))
+				CoinsDataStoreModule:SaveData(player, math.floor(mps))
 			end)
 			task.spawn(function()
 				PointsDataStoreModule:SaveData(player, math.floor(data.Points))

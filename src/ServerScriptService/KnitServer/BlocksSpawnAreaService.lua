@@ -130,19 +130,6 @@ local function doesPlayerOwnEquippedBrainrot(player: Player): boolean
 		end
 	end
 
-	-- 🔥 NEW: Also check backpack tools
-	local backpack = player:FindFirstChildOfClass("Backpack")
-	if backpack then
-		for _, child in ipairs(backpack:GetChildren()) do
-			if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") == true then
-				local ownerId = child:GetAttribute("OwnedByUserId")
-				if ownerId == player.UserId then
-					return true
-				end
-			end
-		end
-	end
-
 	return false
 end
 
@@ -171,6 +158,7 @@ function BlocksSpawnAreaService:UpdatePlayerSpeed(player: Player)
 
 	local isInside = playersInArea[player] == true
 	local isEquipped = (player:GetAttribute("IsBrainrotEquipped") == true)
+		or (player:GetAttribute("IsCarryingBrainrot") == true)
 	local isOwned = doesPlayerOwnEquippedBrainrot(player)
 
 	local newSpeed: number
@@ -210,8 +198,13 @@ function BlocksSpawnAreaService:_onPlayerEnterArea(player: Player)
 	player:SetAttribute("IsInBlocksSpawnArea", true)
 
 	--// [IMPORTANT] Check if they own the equipped brainrot
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
-	player:SetAttribute("OwnsEquippedBrainrot", isOwned)
+	-- only recompute ownership if player actually has a brainrot tool
+	local isEquipped = player:GetAttribute("IsBrainrotEquipped")
+
+	if isEquipped then
+		local isOwned = doesPlayerOwnEquippedBrainrot(player)
+		player:SetAttribute("OwnsEquippedBrainrot", isOwned)
+	end
 
 	--// [IMPORTANT] Update speed
 	self:UpdatePlayerSpeed(player)
@@ -244,14 +237,23 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 		--// [IMPORTANT] Update ownership attribute
 		player:SetAttribute("OwnsEquippedBrainrot", true)
 
-		brainrotTool:FindFirstChildOfClass("Model"):SetAttribute("TimerPaused", true)
+		local brainrotModel = brainrotTool:FindFirstChildOfClass("Model")
 
-		local meshPart: MeshPart = brainrotTool:FindFirstChildOfClass("Model"):FindFirstChildOfClass("MeshPart")
-		if meshPart then
-			local infoGUI: BillboardGui = meshPart:FindFirstChild("InfoGUI")
-			if infoGUI then
-				infoGUI.Enabled = false
+		--// SAFE: only run if model exists
+		if brainrotModel then
+
+			brainrotModel:SetAttribute("TimerPaused", true)
+
+			local meshPart: MeshPart? = brainrotModel:FindFirstChildOfClass("MeshPart")
+
+			if meshPart then
+				local infoGUI: BillboardGui? = meshPart:FindFirstChild("InfoGUI")
+
+				if infoGUI then
+					infoGUI.Enabled = false
+				end
 			end
+
 		end
 
 		dprint("Player exited with brainrot -> NOW OWNS IT:", player.Name)
@@ -274,7 +276,7 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 	if player:GetAttribute("IsBrainrotEquipped") then
 		print("🚀 Scheduling GiveOwnership")
 
-		task.defer(function()
+		task.delay(0.05, function()
 
 			if not player or not player.Parent then
 				return
@@ -371,6 +373,33 @@ function BlocksSpawnAreaService:_setupPlayer(player: Player)
 
 		--// Wait for HRP
 		local hrp = character:WaitForChild("HumanoidRootPart", 10)
+		--// Detect brainrot tool equip
+		character.ChildAdded:Connect(function(child)
+
+			if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") then
+				dprint("Brainrot tool equipped:", player.Name)
+
+				player:SetAttribute("IsBrainrotEquipped", true)
+
+				local isOwned = doesPlayerOwnEquippedBrainrot(player)
+				player:SetAttribute("OwnsEquippedBrainrot", isOwned)
+
+				self:UpdatePlayerSpeed(player)
+			end
+
+		end)
+
+		character.ChildRemoved:Connect(function(child)
+
+			if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") then
+				dprint("Brainrot tool unequipped:", player.Name)
+
+				player:SetAttribute("IsBrainrotEquipped", false)
+
+				self:UpdatePlayerSpeed(player)
+			end
+
+		end)
 		--// IF: no HRP
 		if not hrp then
 			return

@@ -9,12 +9,13 @@
 
 local Players: Players = game:GetService("Players")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
-local CollectionService: CollectionService = game:GetService("CollectionService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local GiftingConfig = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("GiftingConfig"))
 local BrainrotConfig = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("BrainrotConfig"))
+local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
+local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 
 local GiftingService = Knit.CreateService({
 	Name = "GiftingService",
@@ -40,7 +41,7 @@ local GiftingService = Knit.CreateService({
 local activeGiftRequests: { [number]: { receiver: Player, brainrotTool: Tool, timestamp: number } } = {}
 
 --// Reference to BrainrotCarryService
-GiftingService.BrainrotCarryService = nil
+local BaseService = nil
 
 --// ------------------------------
 --// Debug print helper
@@ -102,21 +103,6 @@ end
 --// ------------------------------
 local function isHoldingBrainrot(player: Player): boolean
 	return getEquippedBrainrotTool(player) ~= nil
-end
-
---// ------------------------------
---// Helper: Get or create brainrot folder
---// ------------------------------
-local function getOrCreateBrainrotFolder(): Folder
-	local existing = workspace:FindFirstChild(BrainrotConfig.WORKSPACE_BRAINROT_FOLDER_NAME)
-	if existing and existing:IsA("Folder") then
-		return existing
-	end
-
-	local folder = Instance.new("Folder")
-	folder.Name = BrainrotConfig.WORKSPACE_BRAINROT_FOLDER_NAME
-	folder.Parent = workspace
-	return folder
 end
 
 --// ------------------------------
@@ -251,162 +237,56 @@ function GiftingService:_handleGiftResponse(receiver: Player, accepted: boolean)
 		return
 	end
 
-	local handle = brainrotTool:FindFirstChild("Handle")
-	if not handle or not handle:IsA("BasePart") then
-		dprint("_handleGiftResponse() FAIL -> brainrot tool missing Handle")
-		self.Client.HideGiftUI:Fire(receiver)
-		self.Client.HideWaitingUI:Fire(gifter)
-		activeGiftRequests[gifterUserId] = nil
-		return
-	end
-
-	--// [IMPORTANT] Store original attributes from handle for recreation
-	local brainrotId = handle:GetAttribute("BrainrotId")
-	local brainrotWorldName = handle:GetAttribute("BrainrotWorldName") or "Brainrot"
-
-	dprint("Transferring brainrot - ID:", brainrotId, "WorldName:", brainrotWorldName)
-
 	--// ============================================================
-	--// CRITICAL FIX: Instead of just moving the tool, we need to:
-	--// 1. Drop the brainrot as a world part
-	--// 2. Have receiver pick it up (which creates proper connections)
+	--// CORRECT TRANSFER USING BASESERVICE
 	--// ============================================================
 
-	--// [STEP 1] Force drop the brainrot from gifter using BrainrotCarryService
-	if self.BrainrotCarryService then
-		dprint("Using BrainrotCarryService to drop brainrot from gifter")
-		
-		--// Call DropBrainrot to properly release the tool
-		self.BrainrotCarryService:DropBrainrot(gifter, "GiftTransfer", nil)
-		
-		--// Wait for drop to complete
-		task.wait(0.1)
-		
-		--// [STEP 2] Find the dropped brainrot part in workspace
-		local brainrotFolder = getOrCreateBrainrotFolder()
-		local droppedPart: BasePart? = nil
-		
-		--// Search by BrainrotId
-		for _, child in ipairs(brainrotFolder:GetChildren()) do
-			if child:IsA("BasePart") and child:GetAttribute("BrainrotId") == brainrotId then
-				droppedPart = child
-				dprint("Found dropped brainrot part:", child:GetFullName())
+	local entity = brainrotTool:GetAttribute(AttributesConfiguration.ENTITY_NAME) or brainrotTool.Name
+	local biome = getBiomeByEntity(entity)
+	local mutation = brainrotTool:GetAttribute(AttributesConfiguration.MUTATION)
+	local entityId = brainrotTool:GetAttribute(AttributesConfiguration.ID)
+
+	print("Gift transfer data:")
+	print("entityId:", entityId)
+	print("biome:", biome)
+	print("entity:", entity)
+	print("mutation:", mutation)
+
+	dprint("Gift transfer via BaseService:", gifter.Name, "->", receiver.Name)
+
+	-- release tool from gifter base
+	BaseService:ReleaseTool(gifter, entityId)
+
+	-- destroy tool instance
+	brainrotTool:Destroy()
+
+	-- give new tool to receiver
+	BaseService:GiveTool(receiver, biome, entity, mutation)
+
+	task.wait()
+
+	local backpack = receiver:FindFirstChildOfClass("Backpack")
+
+	if backpack then
+		for _, tool in ipairs(backpack:GetChildren()) do
+			if tool:IsA("Tool") and tool.Name == entity then
+				tool:SetAttribute("IsBrainrotTool", true)
+				tool:SetAttribute("OwnedByUserId", receiver.UserId)
 				break
 			end
 		end
-		
-		--// [STEP 3] Have receiver pick it up
-		if droppedPart then
-			dprint("Calling TryPickup for receiver:", receiver.Name)
-			self.BrainrotCarryService:TryPickup(receiver, droppedPart)
-			
-			--// Update gifter attributes
-			gifter:SetAttribute("IsBrainrotEquipped", false)
-			local gifterRemaining = getBrainrotToolCount(gifter)
-			gifter:SetAttribute("IsCarryingBrainrot", gifterRemaining > 0)
-			
-			dprint("Gift transfer SUCCESS via BrainrotCarryService:", gifter.Name, "->", receiver.Name)
-		else
-			--// Fallback: if we couldn't find the dropped part, try direct transfer
-			dprint("WARNING: Could not find dropped brainrot, attempting direct transfer")
-			self:_directTransferFallback(gifter, receiver, brainrotTool, handle, brainrotId, brainrotWorldName)
-		end
-	else
-		--// No BrainrotCarryService, use direct transfer
-		dprint("WARNING: BrainrotCarryService not available, using direct transfer")
-		self:_directTransferFallback(gifter, receiver, brainrotTool, handle, brainrotId, brainrotWorldName)
 	end
+
+	gifter:SetAttribute("IsBrainrotEquipped", false)
+	receiver:SetAttribute("IsCarryingBrainrot", true)
+
+	dprint("Gift transfer SUCCESS via BaseService")
 
 	--// Notify both players
 	self.Client.GiftAccepted:Fire(gifter, receiver.Name)
 	self.Client.HideGiftUI:Fire(receiver)
 
 	activeGiftRequests[gifterUserId] = nil
-end
-
---// ------------------------------
---// Direct transfer fallback (less ideal but works)
---// ------------------------------
-function GiftingService:_directTransferFallback(gifter: Player, receiver: Player, brainrotTool: Tool, handle: BasePart, brainrotId: string?, brainrotWorldName: string)
-	dprint("_directTransferFallback() starting")
-	
-	--// Unequip from gifter first
-	local gifterChar = gifter.Character
-	if gifterChar then
-		local hum = gifterChar:FindFirstChildOfClass("Humanoid")
-		if hum then
-			dprint("Unequipping tool from gifter:", gifter.Name)
-			hum:UnequipTools()
-		end
-	end
-
-	task.wait()
-
-	--// [CRITICAL] Destroy the old tool completely to disconnect old events
-	--// Then create a fresh tool for the receiver
-	
-	--// Store handle properties before destroying
-	local handleClone = handle:Clone()
-	handleClone.Name = "Handle"
-	handleClone:SetAttribute("IsCarried", true)
-	handleClone:SetAttribute("CarriedByUserId", receiver.UserId)
-	handleClone:SetAttribute("BrainrotId", brainrotId)
-	handleClone:SetAttribute("BrainrotWorldName", brainrotWorldName)
-	handleClone.Anchored = false
-	handleClone.Massless = true
-	handleClone.CanCollide = false
-	
-	--// Remove CollectionService tag from clone temporarily
-	pcall(function()
-		CollectionService:RemoveTag(handleClone, BrainrotConfig.BRAINROT_TAG_NAME)
-	end)
-	
-	--// Destroy the OLD tool (this disconnects all old Equipped/Unequipped events)
-	dprint("Destroying old tool to disconnect events")
-	brainrotTool:Destroy()
-	
-	task.wait()
-	
-	--// Create a NEW tool for the receiver
-	local newTool = Instance.new("Tool")
-	newTool.Name = "Brainrot_" .. string.sub(brainrotId or "gift", 1, 6)
-	newTool.RequiresHandle = true
-	newTool:SetAttribute("IsBrainrotTool", true)
-	newTool:SetAttribute("BrainrotId", brainrotId)
-	
-	--// Parent the cloned handle to new tool
-	handleClone.Parent = newTool
-	
-	--// Move tool to receiver's backpack
-	local receiverBackpack = receiver:FindFirstChildOfClass("Backpack")
-	if receiverBackpack then
-		dprint("Moving new tool to receiver backpack:", receiver.Name)
-		newTool.Parent = receiverBackpack
-		
-		--// [CRITICAL] Connect Equipped/Unequipped for the RECEIVER
-		newTool.Equipped:Connect(function()
-			dprint("Gifted Brainrot EQUIPPED by:", receiver.Name, newTool.Name)
-			receiver:SetAttribute("IsBrainrotEquipped", true)
-		end)
-		
-		newTool.Unequipped:Connect(function()
-			dprint("Gifted Brainrot UNEQUIPPED by:", receiver.Name, newTool.Name)
-			receiver:SetAttribute("IsBrainrotEquipped", false)
-		end)
-		
-		--// Update gifter attributes
-		gifter:SetAttribute("IsBrainrotEquipped", false)
-		local gifterRemaining = getBrainrotToolCount(gifter)
-		gifter:SetAttribute("IsCarryingBrainrot", gifterRemaining > 0)
-		
-		--// Update receiver attributes
-		receiver:SetAttribute("IsCarryingBrainrot", true)
-		
-		dprint("Direct transfer complete:", gifter.Name, "->", receiver.Name)
-	else
-		dprint("_directTransferFallback() FAIL -> receiver has no backpack")
-		newTool:Destroy()
-	end
 end
 
 --// ------------------------------
@@ -430,10 +310,60 @@ function GiftingService.Client:CancelGiftRequest(player: Player)
 end
 
 --// ------------------------------
+--// Ensure brainrot attributes exist after join
+--// ------------------------------
+function GiftingService:_setupPlayerTools(player: Player)
+
+	local function patchTool(tool: Tool)
+		if not tool:IsA("Tool") then return end
+
+		if tool:GetAttribute("IsBrainrotTool") ~= true then
+			tool:SetAttribute("IsBrainrotTool", true)
+		end
+	end
+
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	if backpack then
+		for _, tool in ipairs(backpack:GetChildren()) do
+			patchTool(tool)
+		end
+
+		backpack.ChildAdded:Connect(function(tool)
+			patchTool(tool)
+		end)
+	end
+
+	local function onCharacter(character: Model)
+		for _, tool in ipairs(character:GetChildren()) do
+			patchTool(tool)
+		end
+
+		character.ChildAdded:Connect(function(tool)
+			patchTool(tool)
+		end)
+	end
+
+	if player.Character then
+		onCharacter(player.Character)
+	end
+
+	player.CharacterAdded:Connect(onCharacter)
+
+end
+
+--// ------------------------------
 --// Knit Lifecycle
 --// ------------------------------
 function GiftingService:KnitInit()
 	dprint("KnitInit() start")
+
+	Players.PlayerAdded:Connect(function(player)
+		self:_setupPlayerTools(player)
+	end)
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		self:_setupPlayerTools(player)
+	end
 
 	Players.PlayerRemoving:Connect(function(player: Player)
 		dprint("PlayerRemoving:", player.Name)
@@ -459,6 +389,17 @@ end
 
 function GiftingService:KnitStart()
 	dprint("KnitStart() start")
+
+	local ok2, baseOrErr = pcall(function()
+		return Knit.GetService("BaseService")
+	end)
+
+	if ok2 then
+		BaseService = baseOrErr
+		dprint("Got BaseService ✅")
+	else
+		warn("[GiftingService] BaseService not found:", baseOrErr)
+	end
 
 	local ok, serviceOrErr = pcall(function()
 		return Knit.GetService("BrainrotCarryService")
