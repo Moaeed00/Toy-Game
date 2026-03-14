@@ -139,19 +139,7 @@ local function updateDropButtonFrame()
 	end
 
 	--// [IMPORTANT] Show ONLY when inside + equipped + NOT owned
-	local character = localPlayer.Character
-	local carryingBrainrotModel = false
-
-	if character then
-		for _, child in ipairs(character:GetChildren()) do
-			if child:IsA("Model") and child:GetAttribute("IsCarried") == true then
-				carryingBrainrotModel = true
-				break
-			end
-		end
-	end
-
-	local shouldShow = (isInArea and carryingBrainrotModel)
+	local shouldShow = (isInArea and isBrainrotEquipped and not ownsEquippedBrainrot)
 
 	dprint("updateDropButtonFrame() -> shouldShow:", shouldShow)
 	dprint("  isInArea:", isInArea, "equipped:", isBrainrotEquipped, "owned:", ownsEquippedBrainrot)
@@ -188,19 +176,7 @@ local function updateBackpackVisibility()
 	--// Hides Backpack ONLY when inside area AND equipped AND NOT owned.
 
 	--// [IMPORTANT] Hide ONLY when inside + equipped + NOT owned
-	local character = localPlayer.Character
-	local carryingBrainrotModel = false
-
-	if character then
-		for _, child in ipairs(character:GetChildren()) do
-			if child:IsA("Model") and child:GetAttribute("IsCarried") == true then
-				carryingBrainrotModel = true
-				break
-			end
-		end
-	end
-
-	local shouldHide = (isInArea and carryingBrainrotModel)
+	local shouldHide = (isInArea and isBrainrotEquipped and not ownsEquippedBrainrot)
 
 	dprint("updateBackpackVisibility() -> shouldHide:", shouldHide)
 	dprint("  isInArea:", isInArea, "equipped:", isBrainrotEquipped, "owned:", ownsEquippedBrainrot)

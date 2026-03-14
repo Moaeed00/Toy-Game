@@ -7,6 +7,7 @@ local BaseServer = require(ServerScriptService.KnitServer.BaseService)
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerCharacter)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
+local DataHandlerService = require(ServerScriptService.KnitServer.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local MerchantService = Knit.CreateService {
@@ -43,12 +44,14 @@ function MerchantService:BuildBackpackSnapshot(player: Player)
     local function scan(container)
         for _, tool: Tool in ipairs(container:GetChildren()) do
             if tool:IsA("Tool") then
+                print("Tool name:", tool.Name)
                 local data = BrainrotsData.Processed[tool.Name]
                 if data then
                     local id = tool:GetAttribute("Id")
                     snapshot[tool.Name] = {
                         ID = id,
-                        Amount = (snapshot[tool.Name] or 0) + 1,
+                        Amount = (snapshot[tool.Name].Amount or 0) + 1,
+                        Variant = tool:GetAttribute("Mutation")
                     }
                 end
             end
@@ -79,7 +82,7 @@ function MerchantService.Client:Sell(player: Player, id: string)
         return
     end
 
-    local biomeName = toolModel:GetAttribute(AttributesConfiguration.BIOME)
+    local _biomeName = toolModel:GetAttribute(AttributesConfiguration.BIOME)
 	local entityName = toolModel:GetAttribute(AttributesConfiguration.ENTITY_NAME)
 	local _, entityData = getBiomeByEntity(entityName)
 
@@ -93,7 +96,7 @@ function MerchantService.Client:Sell(player: Player, id: string)
 end
 
 function MerchantService.Client:SellAll(player: Player)
-    local playerBase, playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -111,7 +114,7 @@ function MerchantService.Client:SellAll(player: Player)
             continue
         end
 
-		local biomeName = tool[1]
+		local _biomeName = tool[1]
 		local entityName = tool[2]
 
 		local _, entityData = getBiomeByEntity(entityName)
@@ -127,7 +130,7 @@ function MerchantService.Client:SellAll(player: Player)
 		toolInCharacter:Destroy()
 	end
 
-	playerProfile:IncrementValue("Money", total)
+	DataHandlerService:UpdateMoney("Money", total)
     self.Server:SyncPlayer(player)
     return total
 end
