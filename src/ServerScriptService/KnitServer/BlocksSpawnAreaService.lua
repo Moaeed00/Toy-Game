@@ -73,6 +73,24 @@ local function isCharacterInArea(character: Model): boolean
 end
 
 --// ------------------------------
+--// Check if player is carrying brainrot MODEL
+--// ------------------------------
+local function isPlayerCarryingBrainrotModel(player: Player): boolean
+	local character = player.Character
+	if not character then
+		return false
+	end
+
+	for _, child in ipairs(character:GetChildren()) do
+		if child:IsA("Model") and child:GetAttribute("IsCarried") == true then
+			return true
+		end
+	end
+
+	return false
+end
+
+--// ------------------------------
 --// Get equipped brainrot tool
 --// ------------------------------
 local function getEquippedBrainrotTool(player: Player): Tool?
@@ -150,42 +168,25 @@ end
 --// Update player speed based on zone and brainrot state
 --// ------------------------------
 function BlocksSpawnAreaService:UpdatePlayerSpeed(player: Player)
-	--// Function: UpdatePlayerSpeed
-	--// LOGIC:
-	--// - NORMAL speed (16) ONLY when: inside area AND brainrot EQUIPPED AND NOT owned
-	--// - BOOSTED speed (32) in ALL other cases
 
 	local character = player.Character
-	--// IF: no character
-	if not character then
-		dprint("UpdatePlayerSpeed() FAIL -> no character:", player.Name)
-		return
-	end
+	if not character then return end
 
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	--// IF: no humanoid
-	if not humanoid then
-		dprint("UpdatePlayerSpeed() FAIL -> no humanoid:", player.Name)
-		return
-	end
+	if not humanoid then return end
 
 	local isInside = playersInArea[player] == true
-	local isEquipped = (player:GetAttribute("IsBrainrotEquipped") == true)
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
+	local carryingModel = isPlayerCarryingBrainrotModel(player)
 
-	local newSpeed: number
+	local newSpeed
 
-	--// [IMPORTANT] Normal speed ONLY when inside area AND equipped AND NOT owned
-	if isInside and isEquipped and not isOwned then
+	-- 🔥 Only slow when player carries MODEL inside area
+	if isInside and carryingModel then
 		newSpeed = Config.NORMAL_SPEED
-		dprint("UpdatePlayerSpeed() ->", player.Name, "NORMAL (inside + equipped + not owned)")
 	else
-		--// [IMPORTANT] Boosted speed in ALL other cases
 		newSpeed = Config.BOOSTED_SPEED
-		dprint("UpdatePlayerSpeed() ->", player.Name, "BOOSTED")
 	end
 
-	--// [IMPORTANT] Set speed
 	humanoid.WalkSpeed = newSpeed
 end
 
@@ -285,6 +286,9 @@ function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
 			local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
 			BrainrotCarryService:GiveOwnership(player)
 
+			-- 🔥 CRITICAL FIX
+			player:SetAttribute("IsBrainrotEquipped", false)
+
 		end)
 
 	else
@@ -321,25 +325,18 @@ end
 --// Check if player can drop brainrot
 --// ------------------------------
 function BlocksSpawnAreaService:CanDropBrainrot(player: Player): boolean
-	--// Function: CanDropBrainrot
-	--// Returns true only if player is inside BlocksSpawnArea AND doesn't own it.
 
 	local isInside = playersInArea[player] == true
+	local carryingModel = isPlayerCarryingBrainrotModel(player)
 
-	--// IF: not inside
 	if not isInside then
-		dprint("CanDropBrainrot() BLOCKED ->", player.Name, "not in area")
 		return false
 	end
 
-	--// [IMPORTANT] Check ownership - can only drop if NOT owned
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
-	if isOwned then
-		dprint("CanDropBrainrot() BLOCKED ->", player.Name, "owns this brainrot")
+	if not carryingModel then
 		return false
 	end
 
-	dprint("CanDropBrainrot() ALLOWED ->", player.Name)
 	return true
 end
 
