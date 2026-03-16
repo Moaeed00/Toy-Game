@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local FootballTools = ReplicatedStorage:WaitForChild("Assets").Tools
 local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -19,6 +18,7 @@ function FootballShopService:KnitInit()
 end
 
 function FootballShopService:KnitStart()
+	FootballShopService.FootballService = Knit.GetService("FootballService")
     FootballShopService.PlayerData = {}
 
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)
@@ -42,30 +42,8 @@ function FootballShopService:EquipFootball(player, footballName)
 	local data = DataStoreHandler:GetPlayerData(player)
 	data.Footballs.Equipped = FootballsConfig[footballName].Id
 
-	self:GiveFootballTool(player, footballName)
+	self.FootballService:GiveFootball(player)
 	self.Client.UpdateClientDataEvent:Fire(player, data.Footballs)
-end
-
-function FootballShopService:GiveFootballTool(player: Player, footballName: string)
-	local newTool: Tool = FootballTools:FindFirstChild(footballName)
-	if not newTool then
-        return
-    end
-
-	-- remove old football tools
-	for _, tool in ipairs(player.Backpack:GetChildren()) do
-		if FootballTools:FindFirstChild(tool.Name) then
-			tool:Destroy()
-		end
-	end
-
-	for _, tool in ipairs(player.Character:GetChildren()) do
-		if tool:IsA("Tool") then
-			tool:Destroy()
-		end
-	end
-
-	newTool:Clone().Parent = player.Backpack
 end
 
 function FootballShopService:IsOwned(player, footballName)
