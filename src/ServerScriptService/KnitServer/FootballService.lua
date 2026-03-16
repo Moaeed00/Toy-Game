@@ -63,7 +63,6 @@ function FootballService:EquipBall(player: Player)
     if not playerData then
         return
     end
-    player:SetAttribute("CurrentFootball", footballTool.Name)
 
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
@@ -190,6 +189,7 @@ function FootballService:GiveFootball(player: Player)
     local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true
 
+    player:SetAttribute("CurrentFootball", footballTool.Name)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
 
