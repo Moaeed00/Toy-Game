@@ -129,6 +129,7 @@ end
 
 function MerchantController:ToggleNoBrainrotsVisibility(toggle: boolean)
 	NoBrainrotsLabel.Visible = toggle
+	SellAllButton.Interactable = not toggle
 end
 
 function MerchantController:FormatNumber(number: number)
