@@ -6,6 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local EntitiesConfiguration = require(Configuration:WaitForChild("Brainrots"):WaitForChild("EntitiesConfiguration"))
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
+local NotificationHandler = require(ReplicatedStorage.Utility:WaitForChild("NotificationHandler"))
 
 local player: Player = Players.LocalPlayer
 local ConfettiParticles: Part = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("VFX"):WaitForChild("Confetti")
@@ -60,14 +61,17 @@ function AnnounceWinnerToOwner(Result: string)
 	if Result == "Draw" then
 		--Prompt Notification
 		print("Match Drawn")
+		NotificationHandler:DisplayNotificationMessage("Match Drawn", "Success")
 	elseif Result == "Winner" then
 		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
 		--Prompt Notification
 		print(`You Saved Your {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
+		NotificationHandler:DisplayNotificationMessage(`You Saved Your ${ChallengeData.EntityName} Brainrot From ${OpponentPlayerName}`, "Success")
 	elseif Result == "Loser" then
 		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
 		--Prompt Notification
 		print(`{OpponentPlayerName} Stealed Your {ChallengeData.EntityName} Brainrot`)
+		NotificationHandler:DisplayNotificationMessage(`{OpponentPlayerName} Stealed Your {ChallengeData.EntityName} Brainrot`, "Error")
 	end
 end
 
@@ -75,14 +79,17 @@ function AnnounceWinnerToStealer(Result: string)
 	if Result == "Draw" then
 		--Prompt Notification
 		print("Match Drawn")
+		NotificationHandler:DisplayNotificationMessage("Match Drawn", "Success")
 	elseif Result == "Winner" then
 		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
 		--Prompt Notification
 		print(`You Stealed {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
+		NotificationHandler:DisplayNotificationMessage(`You Stealed ${ChallengeData.EntityName} Brainrot From ${OpponentPlayerName}`, "Success")
 	elseif Result == "Loser" then
 		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
 		--Prompt Notification
 		print(`{OpponentPlayerName} Saved his {ChallengeData.EntityName} Brainrot from stealing`)
+		NotificationHandler:DisplayNotificationMessage(`${OpponentPlayerName} Saved his ${ChallengeData.EntityName} Brainrot from stealing`, "Error")
 	end
 end
 
@@ -126,9 +133,11 @@ function HandleRobuxRejection()
 	if player:GetAttribute("Owner") then
 		--Prompt Notification Brainrot Saved Sucessfully
 		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
+		NotificationHandler:DisplayNotificationMessage(`${ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
 	elseif player:GetAttribute("Stealer") then
 		--Prompt Notification
 		print(`Challenge Declined`)
+		NotificationHandler:DisplayNotificationMessage(`Challenge Declined`, "Error")
 	end
 end
 
@@ -136,6 +145,7 @@ function HandlePointsRejection()
 	--Prompt Notification
 	-- print(`Challenge Declined you got {StealPoints} points`)
 	print(`Challenge Declined`)
+	NotificationHandler:DisplayNotificationMessage(`Challenge Declined`, "Error")
 end
 
 function HandlePointDeclineButton()
@@ -147,6 +157,7 @@ function HandlePointDeclineButton()
 	if PlayerPoints.Value < StealPoints then
 		--Prompt Notification
 		print("Points Not Enough")
+		NotificationHandler:DisplayNotificationMessage("Not enough points to decline the challenge.", "Error")
 		if not productId then
 			return
 		end
@@ -155,6 +166,7 @@ function HandlePointDeclineButton()
 		StealChallengeService.StealChallenge:Fire("PointsRejection")
 		--Prompt Notification Brainrot Saved Sucessfully
 		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
+		NotificationHandler:DisplayNotificationMessage(`${ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
 	end
 end
 
@@ -247,6 +259,7 @@ function StealChallengeController:HandleStates(
 	if State == "ChallengeRevoked" then
 		--Prompt Notification
 		print("Message ", Message)
+		NotificationHandler:DisplayNotificationMessage(Message, "Error")
 	elseif State == "ChallengeSent" then
 		ChallengeSent(Message, Time)
 	elseif State == "ChallengeReceived" then

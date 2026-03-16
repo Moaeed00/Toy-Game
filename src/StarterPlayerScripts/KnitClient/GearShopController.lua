@@ -117,7 +117,7 @@ end
 
 function GearShopController:ConnectCloseButton()
 	CloseButton.Activated:Connect(function()
-		self.LobbyHud:CloseContainer("GearShop")
+		self.LobbyHud:OpenContainer("MainGui")
 	end)
 end
 
