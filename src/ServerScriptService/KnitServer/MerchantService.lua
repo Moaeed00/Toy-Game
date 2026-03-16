@@ -100,7 +100,7 @@ function MerchantService.Client:Sell(player: Player, id: string)
 
 	toolModel:Destroy()
 	playerBase:ReleaseTool(id)
-	DataHandlerService:UpdateMoney("Money", price)
+	DataHandlerService:UpdateMoney(player, price)
     self.Server:SyncPlayer(player)
     return price
 end
@@ -128,7 +128,7 @@ function MerchantService.Client:SellAll(player: Player)
 		local entityName = tool[2]
 
 		local _, entityData = getBiomeByEntity(entityName)
-		local price = math.round(entityData.MoneyPerSec * BrainrotsData.Original.SELL_FACTOR)
+		local price = math.round(entityData.MoneyPerSec * (BrainrotsData.Original.SELL_FACTOR * 100))
 
 		total += price
 		toolModel:Destroy()
@@ -140,7 +140,7 @@ function MerchantService.Client:SellAll(player: Player)
 		toolInCharacter:Destroy()
 	end
 
-	DataHandlerService:UpdateMoney("Money", total)
+	DataHandlerService:UpdateMoney(player, total)
     self.Server:SyncPlayer(player)
     return total
 end
