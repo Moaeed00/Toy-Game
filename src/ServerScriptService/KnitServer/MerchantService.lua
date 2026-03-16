@@ -128,6 +128,9 @@ function MerchantService.Client:SellAll(player: Player)
 		local entityName = tool[2]
 
 		local _, entityData = getBiomeByEntity(entityName)
+        if not entityData then
+            return
+        end
 		local price = math.round(entityData.MoneyPerSec * (BrainrotsData.Original.SELL_FACTOR * 100))
 
 		total += price
