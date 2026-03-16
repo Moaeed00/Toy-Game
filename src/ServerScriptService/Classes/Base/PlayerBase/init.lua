@@ -337,6 +337,17 @@ function PlayerBase.GetSlot(self: PlayerBase): BasePart
 	return self._slot
 end
 
+function PlayerBase.UpdateLikes(self: PlayerBase, likes)
+	self:updateLikeDisplay(likes)
+end
+
+function PlayerBase.updateLikeDisplay(self: PlayerBase, count)
+	print("BaseModel", self:GetBaseModel())
+	local sign = self._baseModel.Sign
+	local likesLabel = sign.Surface.SurfaceGui.Frame.Likes.LikeDisplay
+	likesLabel.Text = tostring(count)
+end
+
 function PlayerBase.GetPlayerData(self: PlayerBase)
 	return self._service:GetPlayerData(self._player)
 end

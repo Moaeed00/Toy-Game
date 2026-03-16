@@ -7,6 +7,7 @@ local Format = require(ReplicatedStorage.Libraries.Format)
 
 local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local EntitiesConfig = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
+local BrainrotsVariantConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
 
 local RewardHandlerService = Knit.CreateService({
 	Name = "RewardHandlerService",
@@ -37,11 +38,12 @@ function RewardHandlers.Brainrot(player: Player, RewardData: {}, _mode: string)
 	local BaseService = Knit.GetService("BaseService")
 	local brainrotName
 	local brainrotRarity
+	local mutation = nil
 
 	if RewardData.Random then
 		local totalWeight = 0
 		local pool = {}
-		for rarityName, rarityGroup in pairs(EntitiesConfig) do
+		for rarityName, rarityGroup in pairs(EntitiesConfig.Original) do
 			if type(rarityGroup) == "table" then
 				for name, brainrotData in pairs(rarityGroup) do
 					if brainrotData.RarityWeight then
@@ -67,26 +69,35 @@ function RewardHandlers.Brainrot(player: Player, RewardData: {}, _mode: string)
 				break
 			end
 		end
-	else
-		brainrotName = RewardData.Name
 
-		for rarityName, rarityGroup in pairs(EntitiesConfig) do
-			if type(rarityGroup) == "table" then
-				if rarityGroup[brainrotName] then
-					brainrotRarity = rarityName
-					break
+		local winner = nil
+		for _, variant in ipairs(BrainrotsVariantConfig.VARIANTS) do
+			if math.random() <= variant.Chance then
+				if not winner or variant.Chance < winner.Chance then
+					winner = variant
 				end
 			end
 		end
+
+		mutation = winner and winner.Prefix or "Normal"
+	else
+		brainrotName = RewardData.Name
+		mutation = RewardData.Mutation
+		brainrotRarity = RewardData.Rarity
 	end
 
-	if not brainrotName or not brainrotRarity then
+	if not brainrotName or not brainrotRarity or not mutation then
 		warn("[RewardHandlerService] Could not resolve brainrot or rarity:", brainrotName)
 		return
 	end
 
-	BaseService:GiveTool(player, brainrotRarity, brainrotName, nil)
-	RewardHandlerService.Client.OnPurchaseNotification:Fire(player, `You Got {brainrotName} Brainrot`)
+	print("brainrotName", brainrotName)
+	print("brainrotRarity", brainrotRarity)
+	print("mutation", mutation)
+	BaseService:GiveTool(player, brainrotRarity, brainrotName, mutation)
+
+	local label = mutation and `{mutation} {brainrotName}` or brainrotName
+	RewardHandlerService.Client.OnPurchaseNotification:Fire(player, `You Got {label} Brainrot!`)
 end
 
 function RewardHandlers.Money(player: Player, RewardData: {}, _mode: string)
