@@ -1012,7 +1012,7 @@ for rarityCategory, brainrots in pairs(BRAINROTS_DATA) do
             RarityType = tostring(rarityCategory),
             IdleAnimationID = brainrot.IdleAnimationID,
             CashPerSecond = FormatCommas(tostring(brainrot.MoneyPerSec)),
-            SellPrice = math.floor(brainrot.MoneyPerSec * BRAINROTS_DATA.SELL_FACTOR),
+            SellPrice = math.max(1, math.round(brainrot.MoneyPerSec * (BRAINROTS_DATA.SELL_FACTOR * 100))),
             FractionChance = FormatCommas("1/" .. math.max(1, math.floor(100000000 / brainrot.RarityWeight * 2))),
             Timer = brainrot.Timer,
         }
