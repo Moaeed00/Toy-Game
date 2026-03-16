@@ -19,7 +19,7 @@ local function init_sign(player: Player, base: Model)
 	local sign = base.Sign
 	local surfaceGui = sign.Surface.SurfaceGui
 
-	surfaceGui.Frame.Info.Username.Text = `@{player.DisplayName} Base!`
+	surfaceGui.Frame.Info.Username.Text = `{player.DisplayName}'s`
 end
 
 return function(player: Player, slot: BasePart)
