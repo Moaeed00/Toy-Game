@@ -43,6 +43,8 @@ LobbyCircleTouch.LobbyHUD = Hud
 Hud.Buttons = {
 	-- DailySpin = MainGui.Left.Last.DailySpin,
 	ProductShop = MainGui.UILeft.Shop,
+	Home = MainGui.UITop.Frame.Home,
+	Shops = MainGui.UITop.Frame.Shops,
 }
 
 Hud.Controller = { MainGui = Hud }
