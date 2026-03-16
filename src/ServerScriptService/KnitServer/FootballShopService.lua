@@ -19,7 +19,6 @@ function FootballShopService:KnitInit()
 end
 
 function FootballShopService:KnitStart()
-	FootballShopService.PurchaseProductService = Knit.GetService("ProductPurchaseService")
     FootballShopService.PlayerData = {}
 
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)
@@ -30,17 +29,9 @@ function FootballShopService:KnitStart()
         self.PlayerData[player] = footballData
         self.Client.UpdateClientDataEvent:Fire(player, footballData)
     end)
-	self.Client.BuyFootballViaRobuxEvent:Connect(function(player, footballName)
-		self:GiveFootballViaRobux(player, footballName)
-	end)
 	self.Client.EquipFootballEvent:Connect(function(player, footballName)
 		self:EquipFootball(player, footballName)
 	end)
-end
-
-function FootballShopService:GiveFootballViaRobux(player, footballName)
-	local footballUnlockId = FootballsConfig[footballName].UnlockID
-	self.PurchaseProductService:PromptPurchaseHandler(player, footballUnlockId)
 end
 
 function FootballShopService:EquipFootball(player, footballName)
@@ -52,7 +43,7 @@ function FootballShopService:EquipFootball(player, footballName)
 	data.Footballs.Equipped = FootballsConfig[footballName].Id
 
 	self:GiveFootballTool(player, footballName)
-	self.Client.UpdateClientDataEvent:Fire(player, data)
+	self.Client.UpdateClientDataEvent:Fire(player, data.Footballs)
 end
 
 function FootballShopService:GiveFootballTool(player: Player, footballName: string)
@@ -117,7 +108,6 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 	DataStoreHandler:DeductMoney(player, config.Price)
 	table.insert(data.Footballs.Owned, config.Id)
 	self.Server:EquipFootball(player, footballName)
-	self.Server.UpdateClientDataEvent:Fire(player, data)
 	return {
 		Success = true,
 		FootballName = footballName
