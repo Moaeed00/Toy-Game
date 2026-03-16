@@ -25,7 +25,7 @@ BrainrotConfig.HOLD_ANIMATION_NAME = "HoldBrainrot"
 --// Carry positioning - centers Brainrot between both hands
 --// Offset from HumanoidRootPart center
 BrainrotConfig.CARRY_CENTER_OFFSET = CFrame.new(0, 2.25, -0.1) -- Slightly up and in front
-BrainrotConfig.CARRY_ROTATION_OFFSET = CFrame.Angles(0, math.rad(-90), 0)
+BrainrotConfig.CARRY_ROTATION_OFFSET = CFrame.Angles(0, math.rad(0), 0)
 
 --// Hand weld offsets (fine-tuning for different sized Brainrots)
 BrainrotConfig.LEFT_HAND_OFFSET = CFrame.new(-0.5, 0, 0) -- Left of center

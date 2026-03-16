@@ -7,6 +7,7 @@ local BaseServer = require(ServerScriptService.KnitServer.BaseService)
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerCharacter)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
+local DataHandlerService = require(ServerScriptService.KnitServer.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local MerchantService = Knit.CreateService {
@@ -21,8 +22,12 @@ end
 
 function MerchantService:KnitStart()
     Players.PlayerAdded:Connect(function(player: Player)
-        local backpack = player:WaitForChild("Backpack")
+        local playerBase = self:WaitForPlayerBase(player)
+        if not playerBase then
+            return
+        end
 
+        local backpack = player:WaitForChild("Backpack")
         backpack.ChildAdded:Connect(function()
             self:SyncPlayer(player)
         end)
@@ -38,26 +43,34 @@ function MerchantService:KnitStart()
 end
 
 function MerchantService:BuildBackpackSnapshot(player: Player)
-    local snapshot = {}
-
-    local function scan(container)
-        for _, tool: Tool in ipairs(container:GetChildren()) do
-            if tool:IsA("Tool") then
-                local data = BrainrotsData.Processed[tool.Name]
-                if data then
-                    local id = tool:GetAttribute("Id")
-                    snapshot[tool.Name] = {
-                        ID = id,
-                        Amount = (snapshot[tool.Name] or 0) + 1,
-                    }
-                end
-            end
-        end
+    local playerBase, _ = BaseServer:GetPlayerBase(player)
+    if not playerBase then
+        return {}
     end
 
-    scan(player.Backpack)
-    if player.Character then
-        scan(player.Character)
+    local snapshot = {}
+    local backpack = playerBase:GetBackpack()
+
+    for id, tool in pairs(backpack) do
+        local toolModel = playerBase:GetToolModelById(id)
+        if not toolModel then
+            continue
+        end
+
+        local entityName = tool[2] -- tool[1] = biomeName, tool[2] = entityName
+        local data = BrainrotsData.Processed[entityName]
+        if not data then
+            continue
+        end
+
+        if not snapshot[entityName] then
+            snapshot[entityName] = {
+                ID = id,
+                Amount = 0,
+                Variant = toolModel:GetAttribute("Mutation")
+            }
+        end
+        snapshot[entityName].Amount += 1
     end
 
     return snapshot
@@ -69,7 +82,7 @@ function MerchantService:SyncPlayer(player: Player)
 end
 
 function MerchantService.Client:Sell(player: Player, id: string)
-    local playerBase, playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -79,21 +92,21 @@ function MerchantService.Client:Sell(player: Player, id: string)
         return
     end
 
-    local biomeName = toolModel:GetAttribute(AttributesConfiguration.BIOME)
+    local _biomeName = toolModel:GetAttribute(AttributesConfiguration.BIOME)
 	local entityName = toolModel:GetAttribute(AttributesConfiguration.ENTITY_NAME)
 	local _, entityData = getBiomeByEntity(entityName)
 
-	local price = math.round(entityData.MoneyPerSec * BrainrotsData.Original.SELL_FACTOR)
+	local price = math.round(entityData.MoneyPerSec * (BrainrotsData.Original.SELL_FACTOR * 100))
 
 	toolModel:Destroy()
 	playerBase:ReleaseTool(id)
-	playerProfile:IncrementValue("Money", price)
+	DataHandlerService:UpdateMoney("Money", price)
     self.Server:SyncPlayer(player)
     return price
 end
 
 function MerchantService.Client:SellAll(player: Player)
-    local playerBase, playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -111,7 +124,7 @@ function MerchantService.Client:SellAll(player: Player)
             continue
         end
 
-		local biomeName = tool[1]
+		local _biomeName = tool[1]
 		local entityName = tool[2]
 
 		local _, entityData = getBiomeByEntity(entityName)
@@ -127,9 +140,27 @@ function MerchantService.Client:SellAll(player: Player)
 		toolInCharacter:Destroy()
 	end
 
-	playerProfile:IncrementValue("Money", total)
+	DataHandlerService:UpdateMoney("Money", total)
     self.Server:SyncPlayer(player)
     return total
+end
+
+function MerchantService:WaitForPlayerBase(player: Player, timeout: number?)
+    local elapsed = 0
+    local interval = 0.1
+    timeout = timeout or 5
+
+    while elapsed < timeout do
+        local playerBase = BaseServer:GetPlayerBase(player)
+        if playerBase then
+            return playerBase
+        end
+        task.wait(interval)
+        elapsed += interval
+    end
+
+    warn("[MerchantService] Timed out waiting for playerBase:", player.Name)
+    return nil
 end
 
 return MerchantService

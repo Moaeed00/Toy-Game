@@ -141,7 +141,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	tool:SetAttribute(AttributesConfiguration.MUTATION, mutationName)
 	tool:SetAttribute(AttributesConfiguration.ENTITY_NAME, entityModel.Name)
 
-	tool.TextureId = entityData.Icon
+	tool.TextureId = entityData.Icon[mutationName]
 	handle.Name = "Handle"
 
 	for _, part: BasePart? in entityModel:GetDescendants() do

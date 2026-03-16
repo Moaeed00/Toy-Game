@@ -131,10 +131,7 @@ function BrainrotSpawnService:PickBrainrotVariant()
     for i = #BrainrotVariantsConfig.VARIANTS, 1, -1 do
         local variant = BrainrotVariantsConfig.VARIANTS[i]
         if math.random() <= variant.Chance then
-            return {
-                Prefix = variant.Prefix,
-                Color = variant.Color,
-            }
+            return variant.Prefix
         end
     end
 
@@ -316,9 +313,6 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
 
         while timeLeft > 0 do
             if brainrot:GetAttribute("Timer") == 0 then
-                return
-            end
-            if brainrot:GetAttribute("TimerPaused") then
                 return
             end
 
