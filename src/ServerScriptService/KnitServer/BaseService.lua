@@ -174,7 +174,7 @@ function BaseService:SellEntity(player: Player, entityId: string)
 
 	local entityName = entity:GetName()
 	local entityData = entity:GetData()
-	local sellPrice = math.floor(entityData.MoneyPerSec * SELL_FACTOR)
+	local sellPrice = math.floor(entityData.MoneyPerSec * (SELL_FACTOR * 100))
 
 	local _, data = getBiomeByEntity(entityName)
 

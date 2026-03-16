@@ -82,7 +82,7 @@ function MerchantService:SyncPlayer(player: Player)
 end
 
 function MerchantService.Client:Sell(player: Player, id: string)
-    local playerBase, playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -96,11 +96,11 @@ function MerchantService.Client:Sell(player: Player, id: string)
 	local entityName = toolModel:GetAttribute(AttributesConfiguration.ENTITY_NAME)
 	local _, entityData = getBiomeByEntity(entityName)
 
-	local price = math.round(entityData.MoneyPerSec * BrainrotsData.Original.SELL_FACTOR)
+	local price = math.round(entityData.MoneyPerSec * (BrainrotsData.Original.SELL_FACTOR * 100))
 
 	toolModel:Destroy()
 	playerBase:ReleaseTool(id)
-	playerProfile:IncrementValue("Money", price)
+	DataHandlerService:UpdateMoney("Money", price)
     self.Server:SyncPlayer(player)
     return price
 end

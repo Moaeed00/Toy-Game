@@ -105,7 +105,7 @@ function MerchantController:RefreshUI()
         end
         clone.SellButton.Activated:Connect(function()
             self.MerchantService:Sell(item.ID):andThen(function(reward: number)
-                local message = `Sold {item.Name} for ${self:FormatNumber(tostring(reward))}`
+                local message = `Sold {item.Name} for ${self:FormatNumber(reward)}`
                 NotificationHandler:DisplayNotificationMessage(message, "Success")
             end)
         end)
