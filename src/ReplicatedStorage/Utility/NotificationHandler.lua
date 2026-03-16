@@ -50,7 +50,7 @@ function NotificationHandler:CreateNotification(Text: string, Color: Color3?)
 	end)
 end
 
-function NotificationHandler:DisplayNotificationMessage(Text: string, NotificationType: "Success" | "Error" | nil)
+function NotificationHandler:DisplayNotificationMessage(Text: string, NotificationType: "Success" | "Error" | "Gameplay" | "Win" | nil)
 	-- if NotificationType == "Success" then
 	-- 	--SoundModule.PlayTouchSound(Constants.Sounds.Success,1,1)
 	-- else

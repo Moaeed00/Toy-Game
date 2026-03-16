@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player: Player = Players.LocalPlayer
 
+local NotificationHandler = require(ReplicatedStorage.Utility.NotificationHandler)
+
 local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
 
@@ -14,11 +16,17 @@ local OpponentScoreBG: ImageLabel = ScoreGui:WaitForChild("Main"):WaitForChild("
 local OpponentScoreValue: TextLabel = OpponentScoreBG:WaitForChild("Score")
 local ComboValue: TextLabel = ScoreGui:WaitForChild("Main"):WaitForChild("Combo")
 
+local _prevScore
+
 local ScoringHelperClient = {}
 
 local function AddScore()
 	local UpdatedScore = player:GetAttribute("Score")
+	local delta = UpdatedScore - _prevScore
+	_prevScore = UpdatedScore
+
 	ScoreValue.Text = `{UpdatedScore}`
+	NotificationHandler:DisplayNotificationMessage(`+{delta}`, "Gameplay")
 	ScoringHelperClient:PlayFireCrackers()
 end
 
@@ -36,6 +44,7 @@ local function AddCombo()
 
 	ComboValue.Text = `+{UpdatedCombo - 1}`
 	ComboValue.Visible = true
+	NotificationHandler:DisplayNotificationMessage(`Combo x{UpdatedCombo - 1}`, "Win")
 end
 
 local function ResetCombo()
@@ -46,7 +55,8 @@ end
 function ScoringHelperClient:PlayFireCrackers()
 	local duration = 2
 	local slotName = player:GetAttribute("MiniGameSlot")
-	local FireCrackers = workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("FireCrackers"):GetChildren()
+	local FireCrackers =
+		workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("FireCrackers"):GetChildren()
 
 	for _, fire: Part in FireCrackers do
 		local emitter = fire:FindFirstChildOfClass("ParticleEmitter")
@@ -66,6 +76,7 @@ function ScoringHelperClient:PlayFireCrackers()
 end
 
 function ScoringHelperClient:OnStartScoring(Challenge: boolean?)
+	_prevScore = 0
 	ScoreValue.Text = "0"
 	ScoreGui.Enabled = true
 	ComboValue.Visible = false
@@ -98,6 +109,7 @@ function ScoringHelperClient:CleanUp()
 	OpponentScoreBG.Visible = false
 	ScoreValue.Text = "0"
 	OpponentScoreValue.Text = "0"
+	_prevScore = 0
 	Trove:Destroy()
 end
 

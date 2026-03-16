@@ -2,11 +2,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
-local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
+-- local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
 local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
-local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
+-- local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
 local headerUtils = require(ReplicatedStorage.Shared.Utils.headerUtils)
 local RateLimit = require(ReplicatedStorage.Shared.Modules.RateLimit)
 local Particle = require(ReplicatedStorage.Shared.Modules.Particle)
@@ -34,6 +34,37 @@ export type EntityInBase = {
 export type constructor = EntityInBase & {
 	new: (biomeName: string, entityName: string, mutationName: string, slotName: string) -> (),
 }
+
+local function play_entity_animation(model: Model, entityName: string)
+	local _, entityData = getBiomeByEntity(entityName)
+	if not entityData then
+		return
+	end
+
+	local animationId = entityData.IdleAnimationID
+	if not animationId then
+		return
+	end
+
+	local animationController = model:FindFirstChildOfClass("AnimationController")
+	if not animationController then
+		return
+	end
+
+	local animator = animationController:FindFirstChildOfClass("Animator")
+	if not animator then
+		return
+	end
+
+	local animation = Instance.new("Animation")
+	animation.AnimationId = "rbxassetid://" .. tostring(animationId)
+	local track = animator:LoadAnimation(animation)
+	track.Priority = Enum.AnimationPriority.Action
+	track.Looped = true
+	track:Play()
+
+	--task.wait(0.1)
+end
 
 local function create_sell_proximity(entityModel: Model)
 	local sellProximityPrompt = PromptHelper.CreateProximityPrompt(entityModel.PrimaryPart, {
@@ -110,6 +141,7 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	-- end
 
 	headerUtils.create(entityName, biome, mutationName, model)
+	play_entity_animation(model, entityName)
 
 	return model
 end

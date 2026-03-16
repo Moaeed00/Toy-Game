@@ -29,6 +29,7 @@ local Controllers = {
 	FootballShop = "FootballShopController",
 	Merchant = "MerchantController",
 	GearShop = "GearShopController",
+	ProductShop = "ProductShopController",
 }
 
 local Hud = Knit.CreateController({
@@ -41,6 +42,9 @@ LobbyCircleTouch.LobbyHUD = Hud
 
 Hud.Buttons = {
 	-- DailySpin = MainGui.Left.Last.DailySpin,
+	ProductShop = MainGui.UILeft.Shop,
+	Home = MainGui.UITop.Frame.Home,
+	Shops = MainGui.UITop.Frame.Shops,
 }
 
 Hud.Controller = { MainGui = Hud }
@@ -50,6 +54,7 @@ local GUIS = {
 	FootballShop = "FootballShopGui",
 	Merchant = "MerchantGui",
 	GearShop = "GearGui",
+	ProductShop = "ProductShopGui",
 }
 
 Hud.GUI = { MainGui = MainGui }

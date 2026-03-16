@@ -69,73 +69,13 @@ local StealConfiguration = {
 		RewardData = {},
 	},
 
-	["Celestial"] = {
+	["God"] = {
 		Price = 90,
 		Type = "Steal",
 		UnlockID = 3532169753,
 		StealPoints = 200,
 		SaveFromStellID = 3515527436,
 		SaveFromStellRobux = 45,
-		RewardData = {},
-	},
-
-	["Fire"] = {
-		Price = 100,
-		Type = "Steal",
-		UnlockID = 3532209893,
-		StealPoints = 200,
-		SaveFromStellID = 3431450571,
-		SaveFromStellRobux = 50,
-		RewardData = {},
-	},
-
-	["Abyssal"] = {
-		Price = 110,
-		Type = "Steal",
-		UnlockID = 3533857539,
-		StealPoints = 200,
-		SaveFromStellID = 3431450432,
-		SaveFromStellRobux = 55,
-		RewardData = {},
-	},
-
-	["Void"] = {
-		Price = 120,
-		Type = "Steal",
-		UnlockID = 3533857645,
-		StealPoints = 200,
-		SaveFromStellID = 3515528693,
-		SaveFromStellRobux = 60,
-		RewardData = {},
-	},
-
-	["Ancient"] = {
-		Price = 130,
-		Type = "Steal",
-		UnlockID = 3533857722,
-		StealPoints = 200,
-		SaveFromStellID = 3431449452,
-		SaveFromStellRobux = 65,
-		RewardData = {},
-	},
-
-	["Neon"] = {
-		Price = 140,
-		Type = "Steal",
-		UnlockID = 3534384171,
-		StealPoints = 200,
-		SaveFromStellID = 3431449038,
-		SaveFromStellRobux = 70,
-		RewardData = {},
-	},
-
-	["Rainbow"] = {
-		Price = 150,
-		Type = "Steal",
-		UnlockID = 3534399305,
-		StealPoints = 200,
-		SaveFromStellID = 3431448727,
-		SaveFromStellRobux = 75,
 		RewardData = {},
 	},
 }

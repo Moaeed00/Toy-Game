@@ -160,6 +160,10 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		tool:SetAttribute("GearType","Punch")
 		tool:SetAttribute("GearName",gearName)
 
+		if gearData.Image then
+			tool.TextureId = gearData.Image
+		end
+
 		-- find mesh inside model
 		local meshPart = model:FindFirstChildWhichIsA("BasePart", true)
 		if not meshPart then
@@ -208,6 +212,9 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		tool.RequiresHandle = true
 		tool:SetAttribute("GearType", "Coil")
 		tool:SetAttribute("GearName", gearName)
+		if gearData.Image then
+			tool.TextureId = gearData.Image
+		end
 
 		handle.Name = "Handle"
 		handle.Anchored = false

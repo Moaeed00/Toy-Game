@@ -185,6 +185,7 @@ function FootballService.Client:GiveFootball(player: Player)
     local footballTool: Tool = toolTemplate:Clone()
     footballTool.Parent = player.Backpack
     self.Server.Footballs[player] = footballTool
+    footballTool.TextureId = footballData.Image
 
     local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true

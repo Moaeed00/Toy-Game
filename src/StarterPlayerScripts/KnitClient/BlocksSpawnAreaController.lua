@@ -1,472 +1,324 @@
 --!strict
---// File: StarterPlayerScripts/KnitClient/Controllers/BlocksSpawnAreaController.lua
---// BlocksSpawnAreaController.lua
---// FINAL WITH OWNERSHIP:
---// - Show DropButton + hide Backpack ONLY when equipped + inside + NOT owned
---// - Show Backpack + hide DropButton when equipped + inside + IS owned
+-- BlocksSpawnAreaController.lua
+-- Handles Drop UI + Backpack visibility for Brainrot system
 
-local Players: Players = game:GetService("Players")
-local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService: TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Config = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("BlocksSpawnAreaConfig"))
+local Config = require(
+	ReplicatedStorage.Configuration.BlocksSpawnAreaConfig
+)
 
 local BlocksSpawnAreaController = Knit.CreateController({
 	Name = "BlocksSpawnAreaController",
 })
 
---// Local player reference
-local localPlayer: Player = Players.LocalPlayer
-local playerGui: PlayerGui
+--------------------------------------------------
+-- Player
+--------------------------------------------------
 
---// UI References
-local dropButtonFrame: Frame? = nil
-local dropButton: TextButton? = nil
+local LocalPlayer: Player = Players.LocalPlayer
+local PlayerGui: PlayerGui
 
---// Audio instance
-local exitAudio: Sound? = nil
+--------------------------------------------------
+-- UI
+--------------------------------------------------
 
---// State tracking
-local isInArea: boolean = false
-local isBrainrotEquipped: boolean = false
-local ownsEquippedBrainrot: boolean = false
+local DropButtonFrame: Frame?
+local DropButton: TextButton?
 
---// Reference to BrainrotCarryService
-local BrainrotCarryService = nil
+--------------------------------------------------
+-- State
+--------------------------------------------------
 
---// ------------------------------
---// Debug print helper
---// ------------------------------
-local function dprint(...: any)
-	--// Function: dprint
-	--// Debug print helper.
+local isInArea = false
+local isCarryingBrainrot = false
 
-	--// IF: debug enabled
+--------------------------------------------------
+-- Services
+--------------------------------------------------
+
+local BrainrotCarryService
+local BlocksSpawnAreaService
+
+--------------------------------------------------
+-- Audio
+--------------------------------------------------
+
+local ExitAudio: Sound?
+
+--------------------------------------------------
+-- Debug
+--------------------------------------------------
+
+local function dprint(...)
+
 	if Config.DEBUG_PRINTS then
 		print("[BlocksSpawnAreaController]", ...)
 	end
+
 end
 
---// ------------------------------
---// Set CoreGui Backpack visibility
---// ------------------------------
+--------------------------------------------------
+-- Backpack Visibility
+--------------------------------------------------
+
 local function setBackpackVisible(visible: boolean)
-	--// Function: setBackpackVisible
-	--// Shows/hides the default Roblox Backpack.
 
-	dprint("setBackpackVisible() ->", visible)
+	local ok, err = pcall(function()
 
-	local success, err = pcall(function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible)
+		StarterGui:SetCoreGuiEnabled(
+			Enum.CoreGuiType.Backpack,
+			visible
+		)
+
 	end)
 
-	--// IF: failed
-	if not success then
-		warn("[BlocksSpawnAreaController] Failed to set Backpack visibility:", err)
-	end
-end
-
---// ------------------------------
---// Play exit audio
---// ------------------------------
-local function playExitAudio()
-	--// Function: playExitAudio
-	--// Plays audio when player exits area with brainrot equipped.
-
-	--// IF: no audio instance
-	if not exitAudio then
-		dprint("playExitAudio() FAIL -> audio not initialized")
-		return
+	if not ok then
+		warn("[BlocksSpawnAreaController]", err)
 	end
 
-	dprint("Playing exit audio")
-	exitAudio:Play()
 end
 
---// ------------------------------
---// Zoom out animation for frame
---// ------------------------------
+--------------------------------------------------
+-- UI Animation
+--------------------------------------------------
+
 local function zoomOutFrame(frame: Frame)
-	--// Function: zoomOutFrame
-	--// Animates frame zooming out (scale 1 -> 0) over ZOOM_OUT_DURATION.
 
-	--// IF: no frame
-	if not frame then
-		return
-	end
-
-	dprint("zoomOutFrame() animating:", frame.Name)
-
-	--// Store original size
 	local originalSize = frame.Size
 
-	--// Create tween (scale down to 0)
 	local tweenInfo = TweenInfo.new(
 		Config.ZOOM_OUT_DURATION,
 		Enum.EasingStyle.Back,
 		Enum.EasingDirection.In
 	)
 
-	local tween = TweenService:Create(frame, tweenInfo, {
-		Size = UDim2.new(0, 0, 0, 0)
+	local tween = TweenService:Create(frame,tweenInfo,{
+		Size = UDim2.new(0,0,0,0)
 	})
 
 	tween:Play()
 
-	--// After animation, hide and restore size
 	tween.Completed:Connect(function()
-		--// Event: tween completed
+
 		frame.Visible = false
 		frame.Size = originalSize
-		dprint("zoomOutFrame() complete:", frame.Name)
+
 	end)
+
 end
 
---// ------------------------------
---// Update DropButtonFrame visibility
---// ------------------------------
-local function updateDropButtonFrame()
-	--// Function: updateDropButtonFrame
-	--// Shows DropButtonFrame ONLY when inside area AND equipped AND NOT owned.
+--------------------------------------------------
+-- Drop UI Logic
+--------------------------------------------------
 
-	--// IF: no frame
-	if not dropButtonFrame then
-		dprint("updateDropButtonFrame() FAIL -> frame not found")
-		return
-	end
+local function updateDropUI()
 
-	--// [IMPORTANT] Show ONLY when inside + equipped + NOT owned
-	local shouldShow = (isInArea and isBrainrotEquipped and not ownsEquippedBrainrot)
+	if not DropButtonFrame then return end
 
-	dprint("updateDropButtonFrame() -> shouldShow:", shouldShow)
-	dprint("  isInArea:", isInArea, "equipped:", isBrainrotEquipped, "owned:", ownsEquippedBrainrot)
+	local shouldShow = (isInArea and isCarryingBrainrot)
 
-	--// IF: should show
 	if shouldShow then
-		--// [IMPORTANT] Show frame
-		if not dropButtonFrame.Visible then
-			dropButtonFrame.Visible = true
-			dprint("DropButtonFrame SHOWN (not owned)")
+
+		if not DropButtonFrame.Visible then
+			dprint("Show Drop UI")
+			DropButtonFrame.Visible = true
 		end
+
 	else
-		--// [IMPORTANT] Hide frame
-		if dropButtonFrame.Visible then
-			--// IF: exiting area with non-owned brainrot
-			if isBrainrotEquipped and not ownsEquippedBrainrot and not isInArea then
-				dprint("DropButtonFrame HIDING with zoom out animation")
-				playExitAudio()
-				zoomOutFrame(dropButtonFrame)
+
+		if DropButtonFrame.Visible then
+
+			if not isInArea then
+				zoomOutFrame(DropButtonFrame)
 			else
-				--// ELSE: just hide instantly
-				dropButtonFrame.Visible = false
-				dprint("DropButtonFrame HIDDEN (instant)")
+				DropButtonFrame.Visible = false
 			end
+
 		end
+
 	end
+
 end
 
---// ------------------------------
---// Update Backpack visibility
---// ------------------------------
-local function updateBackpackVisibility()
-	--// Function: updateBackpackVisibility
-	--// Hides Backpack ONLY when inside area AND equipped AND NOT owned.
+--------------------------------------------------
+-- Backpack Logic
+--------------------------------------------------
 
-	--// [IMPORTANT] Hide ONLY when inside + equipped + NOT owned
-	local shouldHide = (isInArea and isBrainrotEquipped and not ownsEquippedBrainrot)
+local function updateBackpack()
 
-	dprint("updateBackpackVisibility() -> shouldHide:", shouldHide)
-	dprint("  isInArea:", isInArea, "equipped:", isBrainrotEquipped, "owned:", ownsEquippedBrainrot)
+	local shouldHide = (isInArea and isCarryingBrainrot)
 
-	--// IF: should hide
 	if shouldHide then
-		--// [IMPORTANT] Hide Backpack (brainrot picked up inside, not owned yet)
 		setBackpackVisible(false)
-		dprint("Backpack HIDDEN (not owned)")
 	else
-		--// [IMPORTANT] Show Backpack (owned brainrot OR outside area OR not equipped)
 		setBackpackVisible(true)
-		dprint("Backpack SHOWN")
 	end
+
 end
 
---// ------------------------------
---// Update all UI
---// ------------------------------
-local function updateAllUI()
-	--// Function: updateAllUI
-	--// Updates both DropButton and Backpack based on current state.
+--------------------------------------------------
+-- Update All UI
+--------------------------------------------------
 
-	dprint("updateAllUI() called")
-	dprint("  State: isInArea=", isInArea, "equipped=", isBrainrotEquipped, "owned=", ownsEquippedBrainrot)
-	
-	updateDropButtonFrame()
-	updateBackpackVisibility()
+local function updateAll()
+
+	updateDropUI()
+	updateBackpack()
+
 end
 
---// ------------------------------
---// Handle zone change
---// ------------------------------
+--------------------------------------------------
+-- Zone Changed
+--------------------------------------------------
+
 local function onZoneChanged(newIsInside: boolean)
-	--// Function: onZoneChanged
-	--// Called when player enters/exits BlocksSpawnArea.
 
-	dprint("onZoneChanged() -> newIsInside:", newIsInside)
+	dprint("ZoneChanged:", newIsInside)
 
-	--// [IMPORTANT] Update state
 	isInArea = newIsInside
 
-	--// [IMPORTANT] Force check current equipped and ownership state
-	isBrainrotEquipped = (localPlayer:GetAttribute("IsBrainrotEquipped") == true)
-	ownsEquippedBrainrot = (localPlayer:GetAttribute("OwnsEquippedBrainrot") == true)
-	
-	dprint("onZoneChanged() -> forced state check:")
-	dprint("  equipped:", isBrainrotEquipped, "owned:", ownsEquippedBrainrot)
+	isCarryingBrainrot =
+		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
-	--// [IMPORTANT] Update UI immediately
-	updateAllUI()
+	updateAll()
+
 end
 
---// ------------------------------
---// Handle brainrot equipped state change
---// ------------------------------
-local function onBrainrotEquippedChanged()
-	--// Function: onBrainrotEquippedChanged
-	--// Called when IsBrainrotEquipped attribute changes.
+--------------------------------------------------
+-- Carry State Changed
+--------------------------------------------------
 
-	local newEquipped = (localPlayer:GetAttribute("IsBrainrotEquipped") == true)
+local function onCarryChanged()
 
-	dprint("onBrainrotEquippedChanged() -> newEquipped:", newEquipped)
+	isCarryingBrainrot =
+		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
-	--// [IMPORTANT] Update state
-	isBrainrotEquipped = newEquipped
+	dprint("CarryStateChanged:", isCarryingBrainrot)
 
-	--// [IMPORTANT] Also update ownership
-	ownsEquippedBrainrot = (localPlayer:GetAttribute("OwnsEquippedBrainrot") == true)
+	updateAll()
 
-	--// [IMPORTANT] Update UI
-	updateAllUI()
 end
 
---// ------------------------------
---// Handle ownership state change
---// ------------------------------
-local function onOwnershipChanged()
-	--// Function: onOwnershipChanged
-	--// Called when OwnsEquippedBrainrot attribute changes.
+--------------------------------------------------
+-- Initialize UI
+--------------------------------------------------
 
-	local newOwned = (localPlayer:GetAttribute("OwnsEquippedBrainrot") == true)
+function BlocksSpawnAreaController:_initUI()
 
-	dprint("onOwnershipChanged() -> newOwned:", newOwned)
+	PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-	--// [IMPORTANT] Update state
-	ownsEquippedBrainrot = newOwned
+	local dropGui =
+		PlayerGui:WaitForChild("DropGui")
 
-	--// [IMPORTANT] Update UI
-	updateAllUI()
-end
+	DropButtonFrame =
+		dropGui:WaitForChild("DropButtonFrame")
 
---// ------------------------------
---// Initialize UI references
---// ------------------------------
-function BlocksSpawnAreaController:_initializeUI()
-	--// Function: _initializeUI
-	--// Finds UI frames in PlayerGui (from StarterGui).
+	DropButton =
+		DropButtonFrame:WaitForChild("DropButton")
 
-	dprint("_initializeUI() start")
+	DropButton.MouseButton1Click:Connect(function()
 
-	playerGui = localPlayer:WaitForChild("PlayerGui")
-
-	--// [IMPORTANT] Find DropGui from StarterGui (cloned to PlayerGui)
-	local dropGui = playerGui:WaitForChild(Config.DROP_GUI_NAME, 10)
-
-	--// IF: not found
-	if not dropGui then
-		warn("[BlocksSpawnAreaController] DropGui not found in PlayerGui!")
-		warn("[BlocksSpawnAreaController] Expected path: PlayerGui/DropGui")
-		warn("[BlocksSpawnAreaController] Make sure DropGui exists in StarterGui")
-		return
-	end
-
-	dprint("Found DropGui:", dropGui:GetFullName())
-
-	--// [IMPORTANT] Find DropButtonFrame
-	dropButtonFrame = dropGui:FindFirstChild(Config.DROP_BUTTON_FRAME_NAME) :: Frame?
-
-	--// IF: not found
-	if not dropButtonFrame then
-		warn("[BlocksSpawnAreaController] DropButtonFrame not found in DropGui!")
-		warn("[BlocksSpawnAreaController] Expected: DropGui/DropButtonFrame")
-		return
-	end
-
-	dprint("Found DropButtonFrame:", dropButtonFrame:GetFullName())
-
-	--// [IMPORTANT] Find DropButton
-	dropButton = dropButtonFrame:FindFirstChild(Config.DROP_BUTTON_NAME) :: TextButton?
-
-	--// IF: not found
-	if not dropButton then
-		warn("[BlocksSpawnAreaController] DropButton not found in DropButtonFrame!")
-		warn("[BlocksSpawnAreaController] Expected: DropGui/DropButtonFrame/DropButton")
-		return
-	end
-
-	dprint("Found DropButton:", dropButton:GetFullName())
-
-	--// [IMPORTANT] Connect drop button click
-	dropButton.MouseButton1Click:Connect(function()
-		--// Event: Drop button clicked
-		dprint("Drop button clicked -> requesting drop from server")
-
-		--// IF: service available
 		if BrainrotCarryService then
 			BrainrotCarryService:RequestDrop("DropButtonClicked")
-		else
-			warn("[BlocksSpawnAreaController] BrainrotCarryService not available!")
 		end
+
 	end)
 
-	--// [IMPORTANT] Initially hide DropButtonFrame
-	dropButtonFrame.Visible = false
+	DropButtonFrame.Visible = false
 
-	dprint("_initializeUI() complete ✅")
 end
 
---// ------------------------------
---// Initialize audio
---// ------------------------------
-function BlocksSpawnAreaController:_initializeAudio()
-	--// Function: _initializeAudio
-	--// Creates exit audio instance.
+--------------------------------------------------
+-- Initialize Audio
+--------------------------------------------------
 
-	dprint("_initializeAudio() start")
+function BlocksSpawnAreaController:_initAudio()
 
-	exitAudio = Instance.new("Sound")
-	exitAudio.Name = "ExitAreaAudio"
-	exitAudio.SoundId = Config.EXIT_AUDIO_ID
-	exitAudio.Volume = Config.EXIT_AUDIO_VOLUME
-	exitAudio.Parent = localPlayer
+	ExitAudio = Instance.new("Sound")
+	ExitAudio.Name = "ExitAreaAudio"
+	ExitAudio.SoundId = Config.EXIT_AUDIO_ID
+	ExitAudio.Volume = Config.EXIT_AUDIO_VOLUME
+	ExitAudio.Parent = LocalPlayer
 
-	dprint("_initializeAudio() complete ✅")
 end
 
---// ------------------------------
---// Connect signals
---// ------------------------------
+--------------------------------------------------
+-- Connect Signals
+--------------------------------------------------
+
 function BlocksSpawnAreaController:_connectSignals()
-	--// Function: _connectSignals
-	--// Connects to server signals and attribute changes.
 
-	dprint("_connectSignals() start")
+	BlocksSpawnAreaService.ZoneChanged:Connect(function(isInside)
 
-	--// [SIGNAL] ZoneChanged from server
-	self.BlocksSpawnAreaService.ZoneChanged:Connect(function(newIsInside: boolean)
-		--// Event: ZoneChanged
-		dprint("ZoneChanged signal received:", newIsInside)
-		onZoneChanged(newIsInside)
+		onZoneChanged(isInside)
+
 	end)
 
-	--// [ATTRIBUTE] IsBrainrotEquipped changed
-	localPlayer:GetAttributeChangedSignal("IsBrainrotEquipped"):Connect(function()
-		--// Event: IsBrainrotEquipped changed
-		onBrainrotEquippedChanged()
+	LocalPlayer:GetAttributeChangedSignal(
+		"IsCarryingBrainrot"
+	):Connect(function()
+
+		onCarryChanged()
+
 	end)
 
-	--// [ATTRIBUTE] OwnsEquippedBrainrot changed (NEW)
-	localPlayer:GetAttributeChangedSignal("OwnsEquippedBrainrot"):Connect(function()
-		--// Event: OwnsEquippedBrainrot changed
-		onOwnershipChanged()
-	end)
+	LocalPlayer:GetAttributeChangedSignal(
+		"IsInBlocksSpawnArea"
+	):Connect(function()
 
-	--// [ATTRIBUTE] IsInBlocksSpawnArea changed (backup check)
-	localPlayer:GetAttributeChangedSignal("IsInBlocksSpawnArea"):Connect(function()
-		--// Event: IsInBlocksSpawnArea changed
-		local attrInArea = (localPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
-		dprint("IsInBlocksSpawnArea attribute changed:", attrInArea)
-		
-		--// [IMPORTANT] If attribute changed but our state didn't update, force update
-		if attrInArea ~= isInArea then
-			dprint("Attribute mismatch detected -> forcing zone update")
-			onZoneChanged(attrInArea)
+		local attr =
+			(LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
+
+		if attr ~= isInArea then
+			onZoneChanged(attr)
 		end
+
 	end)
 
-	dprint("_connectSignals() complete ✅")
 end
 
---// ------------------------------
---// Knit Lifecycle: Init
---// ------------------------------
+--------------------------------------------------
+-- Knit Init
+--------------------------------------------------
+
 function BlocksSpawnAreaController:KnitInit()
-	--// Function: KnitInit
-	--// Get service references.
 
-	dprint("KnitInit() start")
+	dprint("KnitInit")
 
-	self.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
-	dprint("Got BlocksSpawnAreaService:", self.BlocksSpawnAreaService)
+	BlocksSpawnAreaService =
+		Knit.GetService("BlocksSpawnAreaService")
 
-	BrainrotCarryService = Knit.GetService("BrainrotCarryService")
-	dprint("Got BrainrotCarryService:", BrainrotCarryService)
+	BrainrotCarryService =
+		Knit.GetService("BrainrotCarryService")
 
-	dprint("KnitInit() complete")
 end
 
---// ------------------------------
---// Knit Lifecycle: Start
---// ------------------------------
+--------------------------------------------------
+-- Knit Start
+--------------------------------------------------
+
 function BlocksSpawnAreaController:KnitStart()
-	--// Function: KnitStart
-	--// Initialize UI, audio, and connect signals.
 
-	dprint("KnitStart() start")
+	dprint("KnitStart")
 
-	self:_initializeUI()
-	self:_initializeAudio()
+	self:_initUI()
+	self:_initAudio()
 	self:_connectSignals()
 
-	--// [IMPORTANT] Initial state check from attributes
-	isInArea = (localPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
-	isBrainrotEquipped = (localPlayer:GetAttribute("IsBrainrotEquipped") == true)
-	ownsEquippedBrainrot = (localPlayer:GetAttribute("OwnsEquippedBrainrot") == true)
+	isInArea =
+		(LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
 
-	dprint("Initial state:")
-	dprint("  isInArea:", isInArea)
-	dprint("  equipped:", isBrainrotEquipped)
-	dprint("  owned:", ownsEquippedBrainrot)
+	isCarryingBrainrot =
+		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
-	--// [IMPORTANT] Initial UI update
-	updateAllUI()
+	updateAll()
 
-	--// [IMPORTANT] Setup periodic check (backup safety net)
-	task.spawn(function()
-		while true do
-			task.wait(0.5)
-
-			local attrInArea = (localPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
-			local attrEquipped = (localPlayer:GetAttribute("IsBrainrotEquipped") == true)
-			local attrOwned = (localPlayer:GetAttribute("OwnsEquippedBrainrot") == true)
-
-			--// IF: state mismatch detected
-			if attrInArea ~= isInArea or attrEquipped ~= isBrainrotEquipped or attrOwned ~= ownsEquippedBrainrot then
-				dprint("Periodic check: State mismatch detected!")
-				dprint("  Attributes: inArea=", attrInArea, "equipped=", attrEquipped, "owned=", attrOwned)
-				dprint("  Local state: inArea=", isInArea, "equipped=", isBrainrotEquipped, "owned=", ownsEquippedBrainrot)
-				
-				--// [IMPORTANT] Force sync
-				isInArea = attrInArea
-				isBrainrotEquipped = attrEquipped
-				ownsEquippedBrainrot = attrOwned
-				updateAllUI()
-			end
-		end
-	end)
-
-	dprint("KnitStart() complete ✅")
 end
 
 return BlocksSpawnAreaController
