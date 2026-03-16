@@ -17,6 +17,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local ProductShopGui = PlayerGui:WaitForChild("ProductShopGui")
 local ShopFrame = ProductShopGui:WaitForChild("ShopFrame")
 local Deals = ShopFrame:WaitForChild("Deals")
+local CloseButton = ShopFrame:WaitForChild("CloseButton")
 
 local ProductPurchaseService
 local RewardHandlerService
@@ -57,12 +58,18 @@ local function WireItem(itemFrame: Frame, itemData: {})
 	end)
 end
 
+function ProductShopController:SetEnabled(enabled: boolean)
+	ProductShopGui.Enabled = enabled
+end
+
 function ProductShopController:KnitInit()
 	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 	RewardHandlerService = Knit.GetService("RewardHandlerService")
 end
 
 function ProductShopController:KnitStart()
+	ProductShopController.LobbyHud = Knit.GetController("Hud")
+
 	for itemKey, itemData in pairs(ProductStoreData) do
 		local itemFrame = Deals:FindFirstChild(itemKey, true)
 		if itemFrame and itemFrame:IsA("Frame") then
@@ -75,6 +82,10 @@ function ProductShopController:KnitStart()
 	RewardHandlerService.OnPurchaseNotification:Connect(function(message: string)
 		task.wait(1)
 		ShowNotification(message)
+	end)
+
+	CloseButton.Activated:Connect(function()
+		self.LobbyHud:OpenContainer("MainGui")
 	end)
 end
 

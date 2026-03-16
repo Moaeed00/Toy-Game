@@ -11,6 +11,9 @@ return {
 	},
 	Money = 100,
 
+	LikesReceived = 0,
+	LikedPlayers = {},
+
 	LastJoin = 0,
 
 	Backpack = {},

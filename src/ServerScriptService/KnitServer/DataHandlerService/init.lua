@@ -283,6 +283,65 @@ function DataHandlerService:ReturnTopTenPlayers()
 	}
 end
 
+--- Base Likes Helpers
+function DataHandlerService:AddLike(likerPlayer: Player, targetPlayer: Player)
+	if likerPlayer == targetPlayer then
+		warn("You can not like yourself")
+		return false, "self_like"
+	end
+
+	local likerData = self:GetPlayerData(likerPlayer)
+	local targetData = self:GetPlayerData(targetPlayer)
+	if not likerData or not targetData then
+		warn("One of the players has no profile data")
+		return false, "no_data"
+	end
+
+	likerData.LikedPlayers = likerData.LikedPlayers or {}
+	targetData.LikesReceived = targetData.LikesReceived or 0
+
+	local targetKey = tostring(targetPlayer.UserId)
+
+	if likerData.LikedPlayers[targetKey] then
+		return false, "already_liked"
+	end
+
+	likerData.LikedPlayers[targetKey] = true
+	targetData.LikesReceived = targetData.LikesReceived + 1
+
+	self:SetPlayerData(likerPlayer, { LikedPlayers = likerData.LikedPlayers })
+	self:SetPlayerData(targetPlayer, { LikesReceived = targetData.LikesReceived })
+
+	return true, targetData.LikesReceived
+end
+
+function DataHandlerService:GetLikes(likerPlayer: Player, targetPlayer: Player)
+	local likerData = self:GetPlayerData(likerPlayer)
+	local targetData = self:GetPlayerData(targetPlayer)
+	if not likerData or not targetData then
+		return 0, "no_data"
+	end
+	return likerData.LikedPlayers[targetPlayer.UserId] or false
+end
+
+function DataHandlerService:GetTotalLikes(player: Player)
+	local data = self:GetPlayerData(player)
+	return data and data.LikesReceived or 0
+end
+
+function DataHandlerService:HasPlayerLiked(likerPlayer: Player, targetPlayer: Player)
+	local likerData = self:GetPlayerData(likerPlayer)
+	if not likerData then
+		return false
+	end
+
+	likerData.LikedPlayers = likerData.LikedPlayers or {}
+
+	local targetKey = tostring(targetPlayer.UserId)
+
+	return likerData.LikedPlayers[targetKey] == true
+end
+
 --Initialization
 function DataHandlerService:KnitInit() end
 

@@ -15,6 +15,8 @@ local Format = require(ReplicatedStorage.Libraries.Format)
 
 local SELL_FACTOR = EntitiesConfiguration.Original.SELL_FACTOR
 
+local TotalLikes
+local LikesService
 local TimerService
 local DataHandlerService
 
@@ -26,17 +28,18 @@ local BaseService = Knit.CreateService({
 		TakeEntity = Knit.CreateSignal(),
 		SellEntity = Knit.CreateSignal(),
 		RemoveEntityInBase = Knit.CreateSignal(),
+		BaseCreated = Knit.CreateSignal(),
 	},
 })
 
 function BaseService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
 	TimerService = Knit.GetService("TimerService")
+	LikesService = Knit.GetService("LikesService")
 end
 
 function BaseService:KnitStart()
 	self._activeBases = {}
-	--self.BaseAdded = Signal.new()
 
 	DataHandlerService.OnPlayerProfileLoaded:Connect(function(player)
 		--local base = self:GetPlayerBase(player)
@@ -242,7 +245,66 @@ function BaseService:CreateBase(player: Player)
 	local key = tostring(player.UserId)
 
 	self._activeBases[key] = playerBase
-	--self.BaseAdded:Fire(player)
+	self.Client.BaseCreated:Fire(player)
+
+	TotalLikes = DataHandlerService:GetTotalLikes(player)
+	playerBase:UpdateLikes(TotalLikes)
+	LikesService:BroadcastLikeUpdate(player.UserId, TotalLikes)
+	self:NotifyAlreadyLikedPlayers(player)
+	self:AttachLikePromptHandler(player, playerBase)
+end
+
+function BaseService:NotifyAlreadyLikedPlayers(owner: Player)
+	for _, otherPlayer in Players:GetPlayers() do
+		if otherPlayer == owner then
+			continue
+		end
+
+		local otherData = DataHandlerService:GetPlayerData(otherPlayer)
+		if not otherData or not otherData.LikedPlayers then
+			continue
+		end
+
+		-- check if this player already liked the owner's base
+		if otherData.LikedPlayers[tostring(owner.UserId)] then
+			print("[BaseService]", otherPlayer.Name, "already liked", owner.Name, "— hiding prompt")
+			LikesService.Client.OnPromptHide:Fire(otherPlayer, owner.UserId)
+		end
+	end
+end
+
+function BaseService:AttachLikePromptHandler(owner: Player, playerBase)
+	local baseModel = playerBase:GetBaseModel()
+	if not baseModel then
+		return
+	end
+
+	local surface = baseModel.Sign.Surface
+	local prompt = surface:FindFirstChild("LikePrompt")
+	if not prompt then
+		warn(" No LikePrompt found on base for", owner.Name)
+		return
+	end
+
+	prompt.Triggered:Connect(function(triggeringPlayer: Player)
+		if triggeringPlayer == owner then
+			return
+		end
+		local success, result = DataHandlerService:AddLike(triggeringPlayer, owner)
+
+		if not success then
+			print("Like rejected:", result)
+			return
+		end
+
+		local newCount = result
+		print("[BaseService]", triggeringPlayer.Name, "liked", owner.Name, "| Total:", newCount)
+
+		playerBase:UpdateLikes(newCount)
+		LikesService:BroadcastLikeUpdate(owner.UserId, newCount)
+
+		LikesService.Client.OnPromptHide:Fire(triggeringPlayer, owner.UserId)
+	end)
 end
 
 function BaseService:OnAllRemoveEntityRemote(playerUserId: number, id: string)

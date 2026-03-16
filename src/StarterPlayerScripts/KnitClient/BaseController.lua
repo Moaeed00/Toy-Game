@@ -28,17 +28,18 @@ function BaseController:KnitInit()
 end
 
 function BaseController:KnitStart()
+	self._entitiesInBases = {}
 	self._basesFolder = workspace:WaitForChild("Bases")
 
-	self._base = self._basesFolder:WaitForChild(tostring(player.UserId)) :: Model
+	BaseService.BaseCreated:Connect(function()
+		self._base = self._basesFolder:WaitForChild(tostring(player.UserId)) :: Model
 
-	self._YourBase =
-		self._base:WaitForChild("Sign"):WaitForChild("YourBase"):WaitForChild("YourBaseGui") :: BillboardGui
-	if self._YourBase then
-		self._YourBase.Enabled = true
-	end
-
-	self._entitiesInBases = {}
+		self._YourBase =
+			self._base:WaitForChild("Sign"):WaitForChild("YourBase"):WaitForChild("YourBaseGui") :: BillboardGui
+		if self._YourBase then
+			self._YourBase.Enabled = true
+		end
+	end)
 
 	-- BaseService.ReplicatedOthersBase:Fire()
 

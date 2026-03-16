@@ -168,7 +168,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	-- 	setModelColor(tool, mutationInfo.Color, mutationName)
 	-- end
 
-	headerUtils.create(entityName, biomeName, mutationName, model, false, handle)
+	-- headerUtils.create(entityName, biomeName, mutationName, model, false, handle)
 
 	tool.CanBeDropped = false
 	tool.Parent = playerBackpack
