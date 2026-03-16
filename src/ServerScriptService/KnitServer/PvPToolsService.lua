@@ -45,7 +45,6 @@ PvPToolsService.CombatMovementService = nil
 PvPToolsService.BrainrotCarryService = nil
 
 local lastPunchTime: { [Player]: number } = {}
-local ragdollData: { [Player]: any } = {}
 
 local function dprint(...)
 	if Config.DEBUG_PRINTS then
@@ -69,129 +68,6 @@ local function getCharacterParts(player: Player)
 	end
 
 	return character, humanoid, hrp
-end
-
---=====================================================
--- REAL RAGDOLL SYSTEM (MATCH SLIDE)
---=====================================================
-
-function PvPToolsService:_enableRealRagdoll(player: Player)
-
-	local character = player.Character
-	if not character then return end
-	if ragdollData[player] then return end
-
-	local hum = character:FindFirstChildOfClass("Humanoid")
-	if not hum then return end
-
-	local data = {
-		Motors = {},
-		Constraints = {},
-	}
-
-	hum:ChangeState(Enum.HumanoidStateType.Physics)
-	hum.AutoRotate = false
-	hum.PlatformStand = true
-
-	for _, joint in ipairs(character:GetDescendants()) do
-		if joint:IsA("Motor6D") then
-
-			local part0 = joint.Part0
-			local part1 = joint.Part1
-			if not part0 or not part1 then continue end
-
-			local att0 = Instance.new("Attachment")
-			att0.CFrame = joint.C0
-			att0.Parent = part0
-
-			local att1 = Instance.new("Attachment")
-			att1.CFrame = joint.C1
-			att1.Parent = part1
-
-			local socket = Instance.new("BallSocketConstraint")
-			socket.Attachment0 = att0
-			socket.Attachment1 = att1
-
-			--// Enable constraint limits
-			socket.LimitsEnabled = true
-			socket.TwistLimitsEnabled = true
-
-			--// Determine if this joint is Neck
-			local isNeck = joint.Name == "Neck"
-
-			--// Apply HEAD or BODY limits (from PvPToolsConfig)
-			if isNeck then
-				socket.UpperAngle = Config.HEAD_UPPER_ANGLE
-				socket.TwistLowerAngle = -Config.HEAD_TWIST_LIMIT
-				socket.TwistUpperAngle = Config.HEAD_TWIST_LIMIT
-			else
-				socket.UpperAngle = Config.BODY_UPPER_ANGLE
-				socket.TwistLowerAngle = -Config.BODY_TWIST_LIMIT
-				socket.TwistUpperAngle = Config.BODY_TWIST_LIMIT
-			end
-
-			socket.Parent = part0
-
-			table.insert(data.Motors, joint)
-			table.insert(data.Constraints, socket)
-
-			joint.Enabled = false
-		end
-	end
-
-	ragdollData[player] = data
-
-	dprint("🔥 RAGDOLL ENABLED:", player.Name)
-end
-
-function PvPToolsService:_disableRealRagdoll(player: Player)
-
-	local character = player.Character
-	if not character then return end
-
-	local hum = character:FindFirstChildOfClass("Humanoid")
-	local hrp = character:FindFirstChild("HumanoidRootPart")
-	if not hum or not hrp then return end
-
-	local data = ragdollData[player]
-	if not data then return end
-
-	-- Hard stop velocity
-	for _, part in ipairs(character:GetDescendants()) do
-		if part:IsA("BasePart") then
-			part.AssemblyLinearVelocity = Vector3.zero
-			part.AssemblyAngularVelocity = Vector3.zero
-		end
-	end
-
-	hrp.Anchored = true
-	RunService.Heartbeat:Wait()
-
-	for _, motor in ipairs(data.Motors) do
-		if motor and motor.Parent then
-			motor.Enabled = true
-		end
-	end
-
-	for _, constraint in ipairs(data.Constraints) do
-		if constraint then
-			local att0 = constraint.Attachment0
-			local att1 = constraint.Attachment1
-			if constraint.Parent then constraint:Destroy() end
-			if att0 then att0:Destroy() end
-			if att1 then att1:Destroy() end
-		end
-	end
-
-	ragdollData[player] = nil
-
-	hrp.Anchored = false
-
-	hum.PlatformStand = false
-	hum.AutoRotate = true
-	hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-
-	dprint("🟢 RAGDOLL DISABLED:", player.Name)
 end
 
 --=====================================================
@@ -231,42 +107,7 @@ end
 -- MONITOR RAGDOLL STOP
 --=====================================================
 
-function PvPToolsService:_monitorRagdoll(player: Player, hrp: BasePart)
 
-	local startTime = os.clock()
-	local stoppedTime = nil
-
-	while ragdollData[player] do
-
-		local speed = hrp.AssemblyLinearVelocity.Magnitude
-
-		if speed <= Config.RAGDOLL_VELOCITY_THRESHOLD then
-
-			if not stoppedTime then
-				stoppedTime = os.clock()
-				dprint("Velocity low, starting stable timer")
-			end
-
-			if os.clock() - stoppedTime >= Config.RAGDOLL_STABLE_DELAY then
-				dprint("Stable delay reached, disabling ragdoll")
-				break
-			end
-
-		else
-			stoppedTime = nil
-		end
-
-		-- Emergency timeout
-		if os.clock() - startTime > Config.RAGDOLL_MAX_DURATION then
-			dprint("Emergency ragdoll timeout reached")
-			break
-		end
-
-		RunService.Heartbeat:Wait()
-	end
-
-	self:_disableRealRagdoll(player)
-end
 
 --=====================================================
 -- GET GEAR STATS
@@ -330,9 +171,11 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 
 		-- Prevent hitting already ragdolled players
         -- prevent hitting ragdolled players
-        if ragdollData[otherPlayer] then
-	        continue
-        end
+		if self.CombatMovementService 
+		and self.CombatMovementService.slideRagdollData 
+		and self.CombatMovementService.slideRagdollData[otherPlayer] then
+			continue
+		end
 
         if self.CombatMovementService and self.CombatMovementService.slideRagdollData then
 	        if self.CombatMovementService.slideRagdollData[otherPlayer] then
@@ -351,7 +194,7 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 		end
 
 		if self.CombatMovementService then
-			self:_enableRealRagdoll(otherPlayer)
+			self.CombatMovementService:_enableRealRagdoll(otherPlayer)
 		end
 
 		--// Play punch hit sound
@@ -407,7 +250,9 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 					RunService.Heartbeat:Wait()
 				end
 
-				self:_disableRealRagdoll(otherPlayer)
+				if self.CombatMovementService then
+					self.CombatMovementService:_disableRealRagdoll(otherPlayer)
+				end
 
 			end)
 		end
