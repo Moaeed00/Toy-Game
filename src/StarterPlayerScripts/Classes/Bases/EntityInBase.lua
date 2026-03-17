@@ -128,6 +128,7 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	end
 
 	local model = entityModel:Clone()
+	model.PrimaryPart.Position -= Vector3.new(0, 1, 0)
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
