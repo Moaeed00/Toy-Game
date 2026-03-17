@@ -115,15 +115,14 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		tool.RequiresHandle = false
 		tool:SetAttribute("GearType", "Slide")
 		tool:SetAttribute("GearName", gearName)
+		tool:SetAttribute("ToolCategory", "Gear")
 
 		if gearData.Image and gearData.Image ~= "rbxassetid://0" then
 			tool.TextureId = gearData.Image
 		end
 
 		print("[GearShopService] ✅ Created Slide tool:", gearName)
-
 	elseif gearData.Type == "Punch" then
-
 		print("[GearShopService] Creating punch tool:", gearName)
 
 		local assetsFolder = ReplicatedStorage:WaitForChild("Assets")
@@ -132,13 +131,9 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		local templateModel: Model?
 
 		if gearName == "Golden Punch" then
-			templateModel = punchesFolder
-				:WaitForChild("GoldenPunch")
-				:WaitForChild("GoldenPunch1")
+			templateModel = punchesFolder:WaitForChild("GoldenPunch"):WaitForChild("GoldenPunch1")
 		else
-			templateModel = punchesFolder
-				:WaitForChild("NormalPunch")
-				:WaitForChild("Punch1")
+			templateModel = punchesFolder:WaitForChild("NormalPunch"):WaitForChild("Punch1")
 		end
 
 		if not templateModel then
@@ -158,8 +153,9 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		local tool = Instance.new("Tool")
 		tool.Name = gearName
 		tool.RequiresHandle = true
-		tool:SetAttribute("GearType","Punch")
-		tool:SetAttribute("GearName",gearName)
+		tool:SetAttribute("GearType", "Punch")
+		tool:SetAttribute("GearName", gearName)
+		tool:SetAttribute("ToolCategory", "Gear")
 
 		if gearData.Image then
 			tool.TextureId = gearData.Image
@@ -180,17 +176,13 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		meshPart.Parent = tool
 
 		-- Correct punch orientation in the hand
-		tool.Grip =
-			CFrame.new(-0.3, -1.5, -0.27) *
-			CFrame.Angles(math.rad(-70), math.rad(-170), math.rad(-30))
+		tool.Grip = CFrame.new(-0.3, -1.5, -0.27) * CFrame.Angles(math.rad(-70), math.rad(-170), math.rad(-30))
 
 		model:Destroy()
 
 		tool.Parent = backpack
 		return
-
 	elseif gearData.Type == "Coil" then
-
 		local assetsFolder = ReplicatedStorage:WaitForChild("Assets")
 		local coilFolder = assetsFolder:WaitForChild("Coil")
 
@@ -213,6 +205,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		tool.RequiresHandle = true
 		tool:SetAttribute("GearType", "Coil")
 		tool:SetAttribute("GearName", gearName)
+		tool:SetAttribute("ToolCategory", "Gear")
 		if gearData.Image then
 			tool.TextureId = gearData.Image
 		end
@@ -267,7 +260,7 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	end
 
 	local price = gearData.Price or 0
-    local playerCoins = playerData.Money or 0
+	local playerCoins = playerData.Money or 0
 
 	if playerCoins < price then
 		dprint("Not enough Coins:", playerCoins, "/", price)
@@ -304,7 +297,6 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 end
 
 function GearShopService:_clearPlayerGear(player: Player)
-
 	local backpack = player:FindFirstChild("Backpack")
 	local character = player.Character
 
@@ -326,15 +318,15 @@ function GearShopService:_clearPlayerGear(player: Player)
 end
 
 function GearShopService:_processAutoBuy(player: Player)
-
 	local data = self:GetPlayerData(player)
-	if not data then return end
+	if not data then
+		return
+	end
 
 	data.Gear = data.Gear or {}
 	data.AutoBuy = data.AutoBuy or {}
 
 	for gearName, isAutoBuy in pairs(data.AutoBuy) do
-
 		-- Always give default gear
 		if gearName == "Slide" or gearName == "Punch" then
 			self:GiveGearTool(player, gearName)
@@ -351,11 +343,11 @@ function GearShopService:_processAutoBuy(player: Player)
 		end
 
 		if isAutoBuy == true then
-
 			if not hasTool(player, gearName) then
-
 				local gearData = GearModule[gearName]
-				if not gearData then continue end
+				if not gearData then
+					continue
+				end
 
 				local price = gearData.Price or 0
 
@@ -372,15 +364,16 @@ function GearShopService:_processAutoBuy(player: Player)
 end
 
 function GearShopService:ToggleAutoBuy(player: Player, gearName: string, enabled: boolean)
-
 	local data = self:GetPlayerData(player)
-	if not data then return end
+	if not data then
+		return
+	end
 
 	data.AutoBuy = data.AutoBuy or {}
 	data.AutoBuy[gearName] = enabled
 
 	self.DataHandlerService:SetPlayerData(player, {
-		AutoBuy = data.AutoBuy
+		AutoBuy = data.AutoBuy,
 	})
 
 	self.Client.GearUpdated:Fire(player)
@@ -400,7 +393,6 @@ function GearShopService:SetupPlayer(player: Player)
 	local connection = nil
 	connection = self.DataHandlerService.OnPlayerProfileLoaded:Connect(function(loadedPlayer, profileData)
 		if loadedPlayer == player then
-
 			-- ✅ FORCE DEFAULT GEAR (Slide + Punch)
 			profileData.Gear = profileData.Gear or {}
 			profileData.AutoBuy = profileData.AutoBuy or {}
@@ -413,14 +405,13 @@ function GearShopService:SetupPlayer(player: Player)
 
 			self.DataHandlerService:SetPlayerData(player, {
 				Gear = profileData.Gear,
-				AutoBuy = profileData.AutoBuy
+				AutoBuy = profileData.AutoBuy,
 			})
 
 			print("[GearShopService] ========== PROFILE LOADED ==========")
 			print("[GearShopService] Player:", player.Name)
 			print("[GearShopService] Coins:", profileData.Money)
 			print("[GearShopService] Points:", profileData.Points)
-
 
 			if profileData.Gear then
 				print("[GearShopService] Gear ownership:")
@@ -482,9 +473,7 @@ function GearShopService:KnitStart()
 
 	-- Connect profile loaded
 	self.DataHandlerService.OnPlayerProfileLoaded:Connect(function(player)
-
 		self:_clearPlayerGear(player)
-
 	end)
 
 	-- Setup already existing players

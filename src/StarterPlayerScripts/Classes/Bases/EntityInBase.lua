@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 -- local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
-local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
+-- local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 -- local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
 local headerUtils = require(ReplicatedStorage.Shared.Utils.headerUtils)
@@ -222,14 +222,14 @@ function EntityInBase.DisplayForOwner(self: EntityInBase)
 	end))
 end
 
-function EntityInBase.OnTouch(self: EntityInBase, defaultScale: number, _slotPart: BasePart)
+function EntityInBase.OnTouch(self: EntityInBase, _defaultScale: number, _slotPart: BasePart)
 	Particle.EmitAt(self._model.PrimaryPart.Position + Vector3.new(0, 2, 0), EffectsFolder.Money)
-	tweenModelScale(defaultScale, 1.2, TweenInfo.new(0.15), self._model)
+	-- tweenModelScale(defaultScale, 1.2, TweenInfo.new(0.15), self._model)
 	--Sound.PlayAt(CASH_COLLECT_SOUND, slotPart.Position)
 
-	task.delay(0.15, function()
-		tweenModelScale(1.2, defaultScale, TweenInfo.new(0.15), self._model)
-	end)
+	-- task.delay(0.15, function()
+	-- 	tweenModelScale(1.2, defaultScale, TweenInfo.new(0.15), self._model)
+	-- end)
 end
 
 function EntityInBase.Destroy(self: EntityInBase)
