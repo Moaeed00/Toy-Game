@@ -43,7 +43,7 @@ function FootballService:KnitStart()
 end
 
 function FootballService:EquipBall(player: Player)
-    if self.IsKicking[player] then
+    if self.IsKicking[player] or player:GetAttribute("InMiniGame") then
         return
     end
 
