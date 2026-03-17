@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+-- local BackpackSorter = require(ReplicatedStorage.Utility.BackpackSorter)
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 local FootballUtils = require(ReplicatedStorage.Configuration.Footballs.FootballUtils)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
@@ -59,6 +60,10 @@ function FootballService:EquipBall(player: Player)
     if not footballTool then
         return
     end
+    footballTool.RequiresHandle = false
+    footballTool:WaitForChild("Handle").Name = "HandlePoint"
+    local handle = footballTool:WaitForChild("HandlePoint")
+
     local playerData = DataStoreHandler:GetPlayerData(player)
     if not playerData then
         return
@@ -67,7 +72,6 @@ function FootballService:EquipBall(player: Player)
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
-    local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
     ball.Anchored = false
     ball.CanCollide = false
@@ -114,7 +118,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
-    local handle = footballTool:WaitForChild("Handle")
+    local handle = footballTool:WaitForChild("HandlePoint") or footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
     if ball:FindFirstChild("Weld") then
         ball.BallWeld:Destroy()
@@ -150,6 +154,8 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     attachment:Destroy()
     self.IsKicking[player] = false
 
+    footballTool.RequiresHandle = true
+    footballTool:WaitForChild("HandlePoint").Name = "Handle"
     self:EquipBall(player)
 end
 
@@ -185,13 +191,16 @@ function FootballService:GiveFootball(player: Player)
     footballTool.Parent = player.Backpack
     self.Footballs[player] = footballTool
     footballTool.TextureId = footballData.Image
+    footballTool:SetAttribute("ToolCategory", "Football")
 
-    local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
+    local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName) or footballTool:WaitForChild("HandlePoint"):WaitForChild(footballName)
     ball.Anchored = true
 
     player:SetAttribute("CurrentFootball", footballTool.Name)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
+
+    -- BackpackSorter.Sort(player)
 
     return footballTool
 end
