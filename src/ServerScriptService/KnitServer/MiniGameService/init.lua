@@ -86,7 +86,7 @@ end
 
 function MiniGameService:SpawnBall(player, SlotName, BallName)
 	if not BallName then
-		BallName = "Default"
+		BallName = "Basic"
 	end
 
 	local Football = FootBalls:FindFirstChild(BallName)
@@ -203,7 +203,7 @@ function MiniGameService:EndMiniGame(player: Player)
 	player:SetAttribute("HasScored", nil)
 	player:SetAttribute("InMiniGame", nil)
 	player:SetAttribute("Mode", nil)
-	CharacterSize:ScaleDown(player)
+
 	PlayerPositionReferences[player.UserId] = nil
 
 	self:ReleaseSlot(player)
@@ -215,7 +215,8 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 		return warn("Slot Not Assigned")
 	end
 
-	local BallSpawned = self:SpawnBall(player, SlotName)
+	local BallName = player:GetAttribute("CurrentFootball")
+	local BallSpawned = self:SpawnBall(player, SlotName, BallName)
 	if not BallSpawned then
 		return warn("FootBall Not Assigned")
 	end
@@ -338,7 +339,6 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		Player:SetAttribute("HasScored", nil)
 		Player:SetAttribute("InMiniGame", nil)
 		Player:SetAttribute("Mode", nil)
-		CharacterSize:ScaleDown(Player)
 
 		self:ReleaseSlot(Player)
 	end
@@ -379,7 +379,8 @@ function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
 			return warn("Slot Not Assigned")
 		end
 
-		local BallSpawned = self:SpawnBall(Player, Slot)
+		local BallName = Player:GetAttribute("CurrentFootball")
+		local BallSpawned = self:SpawnBall(Player, Slot, BallName)
 		if not BallSpawned then
 			return warn("FootBall Not Assigned")
 		end
@@ -455,6 +456,8 @@ function MiniGameService:HandleStates(player, State, SlotName)
 		self:StartChallengeGame(player)
 	elseif State == "BallKicked" then
 		self:OnBallKicked(player)
+	elseif State == "ScaleDown" then
+		CharacterSize:ScaleDown(player)
 	end
 end
 
