@@ -19,6 +19,7 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
 
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
+local WinnerGui: PlayerGui = PlayerGui:WaitForChild("WinnerGui")
 local MainGui: ScreenGui = PlayerGui:WaitForChild("MainGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
@@ -280,6 +281,12 @@ function MiniGameController:HandleStates(State, Time, Mode)
 end
 
 function MiniGameController:EndMiniGame()
+	WinnerGui.Enabled = true
+	task.wait(2)
+	WinnerGui.Enabled = false
+
+	MiniGameService.MiniGame:Fire("ScaleDown")
+
 	CountDownRunning = false
 	GameRunning = false
 	CanKick = false
