@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
+local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local KickAnimation: Animation = Assets.Animations.Kick_with_Event
 
@@ -14,46 +14,52 @@ end
 
 function FootballController:KnitStart()
     FootballController.FootballService = Knit.GetService("FootballService")
-
     FootballController.IsKicking = false
 
+    local character: Model = Player.Character or Player.CharacterAdded:Wait()
+    local humanoid: Humanoid = character:WaitForChild("Humanoid")
+
+    -- listen for any football tool added to the backpack (covers both
+    -- initial spawn and shop purchases) instead of connecting once at startup
+    Player.Backpack.ChildAdded:Connect(function(tool: Tool)
+        if not tool:IsA("Tool") or not FootballsConfig[tool.Name] then
+            return
+        end
+        self:ConnectFootballTool(tool, humanoid)
+    end)
+
     task.wait(2)
-    self:OnFootballToolTriggered()
+    self.FootballService:GiveFootball()
 end
 
-function FootballController:OnFootballToolTriggered()
-    local character: Model = Player.Character
-	local humanoid: Humanoid = character:WaitForChild("Humanoid")
+function FootballController:ConnectFootballTool(football: Tool, humanoid: Humanoid)
+    local handle: Part = football:WaitForChild("Handle")
+    local ball: MeshPart = handle:WaitForChild(football.Name)
 
-    self.FootballService:GiveFootball():andThen(function(football: Tool)
-        local handle: Part = football:WaitForChild("Handle")
-        local ball: MeshPart = handle:WaitForChild(football.Name)
+    football.Equipped:Connect(function()
+        self.FootballService.EquipBallEvent:Fire()
+    end)
 
-        football.Equipped:Connect(function()
-            self.FootballService.EquipBallEvent:Fire()
+    football.Activated:Connect(function()
+        if self.IsKicking then
+            return
+        end
+        self.IsKicking = true
+
+        local currentBallPosition = ball.CFrame.Position
+        local track = self:PlayKickBallAnimation(humanoid)
+
+        track:GetMarkerReachedSignal("KickMoment"):Once(function()
+            self.FootballService.KickBallEvent:Fire(currentBallPosition)
         end)
 
-        football.Activated:Connect(function()
-            if self.IsKicking then
-                return
-            end
-            self.IsKicking = true
-
-            local currentBallPosition = ball.CFrame.Position
-            local track = self:PlayKickBallAnimation(humanoid)
-
-            track:GetMarkerReachedSignal("KickMoment"):Once(function()
-                self.FootballService.KickBallEvent:Fire(currentBallPosition)
-            end)
-
-            track.Stopped:Once(function()
-                self.IsKicking = false
-            end)
+        track.Stopped:Once(function()
+            self.IsKicking = false
         end)
+    end)
 
-        football.Unequipped:Connect(function()
-            self.FootballService.UnequipBallEvent:Fire()
-        end)
+    football.Unequipped:Connect(function()
+        self.FootballService.UnequipBallEvent:Fire()
     end)
 end
 
