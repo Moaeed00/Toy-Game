@@ -2,11 +2,7 @@ return {
     Basic = {
 		Price = 25,
 		Robux = 3,
-		UnlockID = 3431449609,
 		Type = "Football",
-		RewardData = {
-			ItemName = "Basic",
-		},
 		Id = 1,
 		RarityType = "Common",
 		Image = "rbxassetid://128150003516305",
@@ -15,7 +11,7 @@ return {
 	["Ash Rock"] = {
 		Price = 500,
 		Robux = 9,
-		UnlockID = 3431449609,
+		UnlockID = 3557561578,
 		Type = "Football",
 		RewardData = {
 			ItemName = "Ash Rock",
@@ -28,7 +24,7 @@ return {
 	["Marble Rim"] = {
 		Price = 1500,
 		Robux = 14,
-		UnlockID = 3431449609,
+		UnlockID = 3557581136,
 		Type = "Football",
 		RewardData = {
 			ItemName = "Marble Rim",
