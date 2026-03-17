@@ -6,6 +6,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 local CollectionService = game:GetService("CollectionService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -354,6 +355,13 @@ function BrainrotCarryService:ConvertToTool(player: Player)
 	if self.BlocksSpawnAreaService then
 		self.BlocksSpawnAreaService:UpdatePlayerSpeed(player)
 	end
+
+	-- 🔊 Play reward sound using SoundModule system
+	SoundPlay:Play("RewardSound", "Touch", -- or "Touch" depending on your setup
+		1, -- pitch
+		1  -- volume
+	)
+
 end
 
 --------------------------------------------------
