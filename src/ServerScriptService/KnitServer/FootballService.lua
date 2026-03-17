@@ -63,7 +63,6 @@ function FootballService:EquipBall(player: Player)
     if not playerData then
         return
     end
-    player:SetAttribute("CurrentFootball", footballTool.Name)
 
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
@@ -158,7 +157,7 @@ function FootballService:UnequipBall(player: Player)
     self.IsKicking[player] = false
 end
 
-function FootballService.Client:GiveFootball(player: Player)
+function FootballService:GiveFootball(player: Player)
     local playerData = DataStoreHandler:GetPlayerData(player)
     if not playerData then
         return
@@ -177,23 +176,28 @@ function FootballService.Client:GiveFootball(player: Player)
         return
     end
 
-     -- remove previous tool
-    if self.Server.Footballs[player] then
-        self.Server.Footballs[player]:Destroy()
+    -- Remove previous tracked tool
+    if self.Footballs[player] then
+        self.Footballs[player]:Destroy()
     end
 
     local footballTool: Tool = toolTemplate:Clone()
     footballTool.Parent = player.Backpack
-    self.Server.Footballs[player] = footballTool
+    self.Footballs[player] = footballTool
     footballTool.TextureId = footballData.Image
 
     local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true
 
+    player:SetAttribute("CurrentFootball", footballTool.Name)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
 
     return footballTool
+end
+
+function FootballService.Client:GiveFootball(player: Player)
+    return self.Server:GiveFootball(player)
 end
 
 return FootballService

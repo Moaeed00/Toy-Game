@@ -30,7 +30,7 @@ function RewardHandlers.Football(player: Player, RewardData: {}, _mode: string)
 	if footballData then
 		table.insert(data.Footballs.Owned, footballId)
 		FootballShopService.Client.UpdateClientDataEvent:Fire(player, data.Footballs)
-		-- FootballShopService:EquipFootball(player, footballName)
+		FootballShopService:EquipFootball(player, footballName)
 	end
 end
 
