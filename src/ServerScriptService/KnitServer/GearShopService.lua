@@ -253,10 +253,21 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 		return false, "Data not loaded"
 	end
 
-	-- ✅ Only block if AutoBuy already enabled
+	-- ✅ Block ONLY if AutoBuy ON AND already has tool
+	local function hasTool(player, gearName)
+		for _, obj in ipairs(player:GetDescendants()) do
+			if obj:IsA("Tool") and obj.Name == gearName then
+				return true
+			end
+		end
+		return false
+	end
+
 	if playerData.AutoBuy and playerData.AutoBuy[gearName] == true then
-		dprint("Already owned (AutoBuy):", gearName)
-		return false, "Already owned"
+		if hasTool(player, gearName) then
+			dprint("Already has tool (AutoBuy):", gearName)
+			return false, "Already owned"
+		end
 	end
 
 	if not self:CanUnlockGear(player, gearName) then
@@ -297,7 +308,6 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 		gearFolder:SetAttribute(gearName:gsub(" ", "_"), true)
 	end
 
-	self:GiveGearTool(player, gearName)
 	self.Client.GearUpdated:Fire(player)
 
 	return true, "Purchased!"
