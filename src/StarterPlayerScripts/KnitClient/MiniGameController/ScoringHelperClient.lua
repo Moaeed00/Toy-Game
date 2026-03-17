@@ -22,6 +22,10 @@ local ScoringHelperClient = {}
 
 local function AddScore()
 	local UpdatedScore = player:GetAttribute("Score")
+	if not UpdatedScore then
+		return
+	end
+
 	local delta = UpdatedScore - _prevScore
 	_prevScore = UpdatedScore
 
@@ -32,11 +36,19 @@ end
 
 local function AddOpponentScore()
 	local UpdatedScore = player:GetAttribute("OpponentScore")
+	if not UpdatedScore then
+		return
+	end
+
 	OpponentScoreValue.Text = `{UpdatedScore}`
 end
 
 local function AddCombo()
 	local UpdatedCombo = player:GetAttribute("Combo")
+	if not UpdatedCombo then
+		return
+	end
+
 	if (UpdatedCombo - 1) <= 0 then
 		ComboValue.Visible = false
 		return
@@ -55,6 +67,10 @@ end
 function ScoringHelperClient:PlayFireCrackers()
 	local duration = 2
 	local slotName = player:GetAttribute("MiniGameSlot")
+	if not slotName then
+		return
+	end
+
 	local FireCrackers =
 		workspace:WaitForChild("Toys"):WaitForChild(slotName):WaitForChild("FireCrackers"):GetChildren()
 
