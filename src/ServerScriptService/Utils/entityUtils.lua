@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
-local EntitiesConfiguration = require(ReplicatedStorage.Configuration.EntitiesConfiguration)
+local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local getPlayerCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerCharacter)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
@@ -125,7 +125,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	end
 
 	local _, entityData = getBiomeByEntity(entityName)
-	local model = Assets:WaitForChild("Entities"):WaitForChild(biomeName):WaitForChild(entityName)
+	local model = Assets:WaitForChild("Entities"):WaitForChild(mutationName):WaitForChild(entityName)
 	if not model then
 		return
 	end
@@ -141,7 +141,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	tool:SetAttribute(AttributesConfiguration.MUTATION, mutationName)
 	tool:SetAttribute(AttributesConfiguration.ENTITY_NAME, entityModel.Name)
 
-	tool.TextureId = entityData.Icon
+	tool.TextureId = entityData.Icon[mutationName]
 	handle.Name = "Handle"
 
 	for _, part: BasePart? in entityModel:GetDescendants() do
@@ -159,16 +159,16 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	tool.Name = entityName
 	tool.PrimaryPart = handle
 
-	if mutationName then
-		local mutationInfo = MutationsConfiguration[mutationName]
-		if not mutationInfo then
-			return
-		end
+	-- if mutationName then
+	-- 	local mutationInfo = MutationsConfiguration[mutationName]
+	-- 	if not mutationInfo then
+	-- 		return
+	-- 	end
 
-		setModelColor(tool, mutationInfo.Color, mutationName)
-	end
+	-- 	setModelColor(tool, mutationInfo.Color, mutationName)
+	-- end
 
-	headerUtils.create(entityName, biomeName, mutationName, model, false, handle)
+	-- headerUtils.create(entityName, biomeName, mutationName, model, false, handle)
 
 	tool.CanBeDropped = false
 	tool.Parent = playerBackpack
@@ -177,7 +177,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 end
 
 function entityUtils.getRandomEntityIndexInBiome(biomeName: string)
-	local entitiesInBiome = EntitiesConfiguration[biomeName]
+	local entitiesInBiome = EntitiesConfiguration.Original[biomeName]
 	if not entitiesInBiome then
 		return
 	end

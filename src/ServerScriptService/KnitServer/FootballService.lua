@@ -55,7 +55,7 @@ function FootballService:EquipBall(player: Player)
         return
     end
 
-    local footballTool = self.Footballs[player]
+    local footballTool: Tool = self.Footballs[player]
     if not footballTool then
         return
     end
@@ -63,6 +63,7 @@ function FootballService:EquipBall(player: Player)
     if not playerData then
         return
     end
+    player:SetAttribute("CurrentFootball", footballTool.Name)
 
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
@@ -184,6 +185,7 @@ function FootballService.Client:GiveFootball(player: Player)
     local footballTool: Tool = toolTemplate:Clone()
     footballTool.Parent = player.Backpack
     self.Server.Footballs[player] = footballTool
+    footballTool.TextureId = footballData.Image
 
     local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true

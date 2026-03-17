@@ -1,492 +1,276 @@
 --!strict
---// File: ServerScriptService/KnitServer/Services/BlocksSpawnAreaService.lua
---// BlocksSpawnAreaService.lua
---// FINAL VERSION WITH OWNERSHIP:
---// - Player becomes "owner" of brainrot when exiting area with it
---// - Owned brainrots show backpack UI (even inside area)
---// - Non-owned brainrots (picked up inside) hide backpack UI
+-- BlocksSpawnAreaService.lua
+-- CLEAN REWRITE
+-- Responsibilities:
+-- Zone detection
+-- Speed control
+-- Pickup permission
+-- Drop permission
+-- Convert carried brainrot to tool on exit
 
-local Players: Players = game:GetService("Players")
-local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService: RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Config = require(ReplicatedStorage:WaitForChild("Configuration"):WaitForChild("BlocksSpawnAreaConfig"))
+local Config = require(
+	ReplicatedStorage.Configuration.BlocksSpawnAreaConfig
+)
 
 local BlocksSpawnAreaService = Knit.CreateService({
 	Name = "BlocksSpawnAreaService",
 
 	Client = {
-		--// Signal to notify client of zone entry/exit
-		ZoneChanged = Knit.CreateSignal(), -- (isInside: boolean)
-	},
+		ZoneChanged = Knit.CreateSignal(),
+	}
 })
 
---// Track which players are inside the area
-local playersInArea: { [Player]: boolean } = {}
+local playersInArea: {[Player]:boolean} = {}
 
---// Reference to the BlocksSpawnArea part
-local blocksSpawnAreaPart: Part? = nil
+local areaPart: Part?
 
---// ------------------------------
---// Debug print helper
---// ------------------------------
-local function dprint(...: any)
-	--// Function: dprint
-	--// Debug print helper.
+local BrainrotCarryService
 
-	--// IF: debug enabled
-	if Config.DEBUG_PRINTS then
-		print("[BlocksSpawnAreaService]", ...)
-	end
-end
+--------------------------------------------------
+-- Area Check
+--------------------------------------------------
 
---// ------------------------------
---// Check if player's character is inside area
---// ------------------------------
-local function isCharacterInArea(character: Model): boolean
-	--// Function: isCharacterInArea
-	--// Returns true if character's HRP is inside BlocksSpawnArea bounds.
+local function isCharacterInside(character: Model): boolean
 
-	--// IF: no area part
-	if not blocksSpawnAreaPart or not blocksSpawnAreaPart.Parent then
+	if not areaPart then
 		return false
 	end
 
 	local hrp = character:FindFirstChild("HumanoidRootPart")
-	--// IF: no HRP
-	if not hrp or not hrp:IsA("BasePart") then
+	if not hrp then
 		return false
 	end
 
-	--// Check if HRP position is within part bounds
-	local partPos = blocksSpawnAreaPart.Position
-	local partSize = blocksSpawnAreaPart.Size
-	local hrpPos = hrp.Position
+	local pos = hrp.Position
+	local size = areaPart.Size
+	local center = areaPart.Position
 
-	local inX = math.abs(hrpPos.X - partPos.X) <= (partSize.X / 2)
-	local inY = math.abs(hrpPos.Y - partPos.Y) <= (partSize.Y / 2)
-	local inZ = math.abs(hrpPos.Z - partPos.Z) <= (partSize.Z / 2)
+	local inX = math.abs(pos.X - center.X) <= size.X/2
+	local inY = math.abs(pos.Y - center.Y) <= size.Y/2
+	local inZ = math.abs(pos.Z - center.Z) <= size.Z/2
 
 	return inX and inY and inZ
 end
 
---// ------------------------------
---// Get equipped brainrot tool
---// ------------------------------
-local function getEquippedBrainrotTool(player: Player): Tool?
-	--// Function: getEquippedBrainrotTool
-	--// Returns the equipped brainrot tool if any.
+--------------------------------------------------
+-- Speed Control
+--------------------------------------------------
 
-	local character = player.Character
-	--// IF: no character
-	if not character then
-		return nil
-	end
-
-	--// LOOP: character children
-	for _, child in ipairs(character:GetChildren()) do
-		--// Loop: character child
-		if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") == true then
-			return child
-		end
-	end
-
-	return nil
-end
-
---// ------------------------------
---// Mark brainrot as owned by player
---// ------------------------------
-local function markBrainrotAsOwned(brainrotTool: Tool, player: Player)
-	--// Function: markBrainrotAsOwned
-	--// Marks a brainrot tool as owned by a specific player.
-
-	--// [IMPORTANT] Set ownership attribute on the tool
-	brainrotTool:SetAttribute("OwnedByUserId", player.UserId)
-
-	--// [IMPORTANT] Also mark on the Handle if it exists
-	local handle = brainrotTool:FindFirstChild("Handle")
-	if handle then
-		handle:SetAttribute("OwnedByUserId", player.UserId)
-	end
-
-	dprint("Brainrot marked as owned by:", player.Name, "tool:", brainrotTool.Name)
-end
-
---// ------------------------------
---// Check if player owns the equipped brainrot
---// ------------------------------
-local function doesPlayerOwnEquippedBrainrot(player: Player): boolean
-	-- Check equipped tool first
-	local character = player.Character
-	if character then
-		for _, child in ipairs(character:GetChildren()) do
-			if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") == true then
-				local ownerId = child:GetAttribute("OwnedByUserId")
-				return ownerId == player.UserId
-			end
-		end
-	end
-
-	-- 🔥 NEW: Also check backpack tools
-	local backpack = player:FindFirstChildOfClass("Backpack")
-	if backpack then
-		for _, child in ipairs(backpack:GetChildren()) do
-			if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") == true then
-				local ownerId = child:GetAttribute("OwnedByUserId")
-				if ownerId == player.UserId then
-					return true
-				end
-			end
-		end
-	end
-
-	return false
-end
-
---// ------------------------------
---// Update player speed based on zone and brainrot state
---// ------------------------------
 function BlocksSpawnAreaService:UpdatePlayerSpeed(player: Player)
-	--// Function: UpdatePlayerSpeed
-	--// LOGIC:
-	--// - NORMAL speed (16) ONLY when: inside area AND brainrot EQUIPPED AND NOT owned
-	--// - BOOSTED speed (32) in ALL other cases
 
-	local character = player.Character
-	--// IF: no character
-	if not character then
-		dprint("UpdatePlayerSpeed() FAIL -> no character:", player.Name)
-		return
-	end
+	local char = player.Character
+	if not char then return end
 
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	--// IF: no humanoid
-	if not humanoid then
-		dprint("UpdatePlayerSpeed() FAIL -> no humanoid:", player.Name)
-		return
-	end
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
 
-	local isInside = playersInArea[player] == true
-	local isEquipped = (player:GetAttribute("IsBrainrotEquipped") == true)
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
+	local inside = playersInArea[player] == true
+	local carrying = player:GetAttribute("IsCarryingBrainrot") == true
 
-	local newSpeed: number
-
-	--// [IMPORTANT] Normal speed ONLY when inside area AND equipped AND NOT owned
-	if isInside and isEquipped and not isOwned then
-		newSpeed = Config.NORMAL_SPEED
-		dprint("UpdatePlayerSpeed() ->", player.Name, "NORMAL (inside + equipped + not owned)")
+	if inside and carrying then
+		hum.WalkSpeed = Config.NORMAL_SPEED
 	else
-		--// [IMPORTANT] Boosted speed in ALL other cases
-		newSpeed = Config.BOOSTED_SPEED
-		dprint("UpdatePlayerSpeed() ->", player.Name, "BOOSTED")
+		hum.WalkSpeed = Config.BOOSTED_SPEED
 	end
-
-	--// [IMPORTANT] Set speed
-	humanoid.WalkSpeed = newSpeed
 end
 
---// ------------------------------
---// Handle player entering area
---// ------------------------------
-function BlocksSpawnAreaService:_onPlayerEnterArea(player: Player)
-	--// Function: _onPlayerEnterArea
-	--// Called when player enters BlocksSpawnArea.
+--------------------------------------------------
+-- Pickup Check
+--------------------------------------------------
 
-	--// IF: already marked as inside
-	if playersInArea[player] == true then
+function BlocksSpawnAreaService:CanPickupBrainrot(player: Player): boolean
+
+	return playersInArea[player] == true
+
+end
+
+--------------------------------------------------
+-- Drop Check
+--------------------------------------------------
+
+function BlocksSpawnAreaService:CanDropBrainrot(player: Player): boolean
+
+	return playersInArea[player] == true
+
+end
+
+--------------------------------------------------
+-- Player Enter Area
+--------------------------------------------------
+
+function BlocksSpawnAreaService:_playerEntered(player: Player)
+
+	if playersInArea[player] then
 		return
 	end
 
-	dprint("Player ENTERED area:", player.Name)
-
-	--// [IMPORTANT] Mark as inside
 	playersInArea[player] = true
 
-	--// [IMPORTANT] Set player attribute
 	player:SetAttribute("IsInBlocksSpawnArea", true)
 
-	--// [IMPORTANT] Check if they own the equipped brainrot
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
-	player:SetAttribute("OwnsEquippedBrainrot", isOwned)
-
-	--// [IMPORTANT] Update speed
 	self:UpdatePlayerSpeed(player)
 
-	--// [IMPORTANT] Fire to client
-	self.Client.ZoneChanged:Fire(player, true)
+	self.Client.ZoneChanged:Fire(player,true)
+
 end
 
---// ------------------------------
---// Handle player exiting area
---// ------------------------------
-function BlocksSpawnAreaService:_onPlayerExitArea(player: Player)
-	--// Function: _onPlayerExitArea
-	--// Called when player exits BlocksSpawnArea.
-	--// [IMPORTANT] This is where player becomes OWNER of brainrot!
+--------------------------------------------------
+-- Player Exit Area
+--------------------------------------------------
 
-	--// IF: not marked as inside
-	if playersInArea[player] ~= true then
+function BlocksSpawnAreaService:_playerExited(player: Player)
+
+	if not playersInArea[player] then
 		return
 	end
 
-	dprint("Player EXITED area:", player.Name)
-
-	--// [IMPORTANT] Check if they're carrying a brainrot
-	local brainrotTool = getEquippedBrainrotTool(player)
-	if brainrotTool then
-		--// [CRITICAL] Mark brainrot as owned when exiting area
-		markBrainrotAsOwned(brainrotTool, player)
-
-		--// [IMPORTANT] Update ownership attribute
-		player:SetAttribute("OwnsEquippedBrainrot", true)
-
-		brainrotTool:FindFirstChildOfClass("Model"):SetAttribute("TimerPaused", true)
-
-		local meshPart: MeshPart = brainrotTool:FindFirstChildOfClass("Model"):FindFirstChildOfClass("MeshPart")
-		if meshPart then
-			local infoGUI: BillboardGui = meshPart:FindFirstChild("InfoGUI")
-			if infoGUI then
-				infoGUI.Enabled = false
-			end
-		end
-
-		dprint("Player exited with brainrot -> NOW OWNS IT:", player.Name)
-	end
-
-	--// [IMPORTANT] Mark as outside
 	playersInArea[player] = false
 
-	--// [IMPORTANT] Set player attribute
 	player:SetAttribute("IsInBlocksSpawnArea", false)
-	
-	local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
 
-	if player:GetAttribute("IsBrainrotEquipped") then
-		BrainrotCarryService:GiveOwnership(player)
+	--------------------------------------------------
+	-- Convert brainrot to tool if carrying
+	--------------------------------------------------
+
+	if player:GetAttribute("IsCarryingBrainrot") then
+
+		task.defer(function()
+
+			if BrainrotCarryService then
+				BrainrotCarryService:ConvertToTool(player)
+			end
+
+		end)
+
 	end
 
-	--// [IMPORTANT] Update speed
 	self:UpdatePlayerSpeed(player)
 
-	--// [IMPORTANT] Fire to client
-	self.Client.ZoneChanged:Fire(player, false)
+	self.Client.ZoneChanged:Fire(player,false)
+
 end
 
---// ------------------------------
---// Check if player can pickup brainrot
---// ------------------------------
-function BlocksSpawnAreaService:CanPickupBrainrot(player: Player): boolean
-	--// Function: CanPickupBrainrot
-	--// Returns true only if player is inside BlocksSpawnArea.
+--------------------------------------------------
+-- Brainrot Destroyed While Carrying
+--------------------------------------------------
 
-	local isInside = playersInArea[player] == true
+function BlocksSpawnAreaService:_brainrotDestroyed(player: Player)
 
-	--// IF: not inside
-	if not isInside then
-		dprint("CanPickupBrainrot() BLOCKED ->", player.Name, "not in area")
-		return false
-	end
+	-- reset player state
+	player:SetAttribute("IsCarryingBrainrot", false)
 
-	dprint("CanPickupBrainrot() ALLOWED ->", player.Name)
-	return true
+	-- reset speed
+	self:UpdatePlayerSpeed(player)
+
+	-- remove drop UI / restart pickup loop
+	self.Client.ZoneChanged:Fire(player, playersInArea[player] == true)
+
 end
 
---// ------------------------------
---// Check if player can drop brainrot
---// ------------------------------
-function BlocksSpawnAreaService:CanDropBrainrot(player: Player): boolean
-	--// Function: CanDropBrainrot
-	--// Returns true only if player is inside BlocksSpawnArea AND doesn't own it.
+--------------------------------------------------
+-- Tracking Loop
+--------------------------------------------------
 
-	local isInside = playersInArea[player] == true
-
-	--// IF: not inside
-	if not isInside then
-		dprint("CanDropBrainrot() BLOCKED ->", player.Name, "not in area")
-		return false
-	end
-
-	--// [IMPORTANT] Check ownership - can only drop if NOT owned
-	local isOwned = doesPlayerOwnEquippedBrainrot(player)
-	if isOwned then
-		dprint("CanDropBrainrot() BLOCKED ->", player.Name, "owns this brainrot")
-		return false
-	end
-
-	dprint("CanDropBrainrot() ALLOWED ->", player.Name)
-	return true
-end
-
---// ------------------------------
---// Setup player tracking
---// ------------------------------
-function BlocksSpawnAreaService:_setupPlayer(player: Player)
-	--// Function: _setupPlayer
-	--// Sets up tracking for a player.
-
-	dprint("_setupPlayer() for:", player.Name)
-
-	--// [EVENT] Character added
-	player.CharacterAdded:Connect(function(character: Model)
-		--// Event: CharacterAdded
-
-		dprint("CharacterAdded ->", player.Name)
-
-		--// Reset state
-		playersInArea[player] = false
-		player:SetAttribute("IsInBlocksSpawnArea", false)
-		local BrainrotCarryService = Knit.GetService("BrainrotCarryService")
-
-		if player:GetAttribute("IsBrainrotEquipped") then
-			BrainrotCarryService:GiveOwnership(player)
-		end
-		
-		player:SetAttribute("OwnsEquippedBrainrot", false)
-
-		--// Wait for HRP
-		local hrp = character:WaitForChild("HumanoidRootPart", 10)
-		--// IF: no HRP
-		if not hrp then
-			return
-		end
-
-		--// Initial speed (boosted by default)
-		self:UpdatePlayerSpeed(player)
-
-		--// Initial check
-		task.wait(0.5)
-		if isCharacterInArea(character) then
-			self:_onPlayerEnterArea(player)
-		end
-	end)
-
-	--// [EVENT] IsBrainrotEquipped changed
-	player:GetAttributeChangedSignal("IsBrainrotEquipped"):Connect(function()
-		--// Event: IsBrainrotEquipped changed
-		local isEquipped = player:GetAttribute("IsBrainrotEquipped")
-		dprint("IsBrainrotEquipped changed for:", player.Name, "->", isEquipped)
-
-		--// [IMPORTANT] Update ownership status
-		if isEquipped then
-			local isOwned = doesPlayerOwnEquippedBrainrot(player)
-			player:SetAttribute("OwnsEquippedBrainrot", isOwned)
-		end
-
-		self:UpdatePlayerSpeed(player)
-	end)
-
-	--// Initial character check
-	if player.Character then
-		task.defer(function()
-			self:UpdatePlayerSpeed(player)
-		end)
-	end
-end
-
---// ------------------------------
---// Main tracking loop (heartbeat)
---// ------------------------------
-function BlocksSpawnAreaService:_startTrackingLoop()
-	--// Function: _startTrackingLoop
-	--// Runs every Heartbeat to check player positions.
-
-	dprint("_startTrackingLoop() starting")
+function BlocksSpawnAreaService:_startTracking()
 
 	RunService.Heartbeat:Connect(function()
-		--// Event: Heartbeat
 
-		--// IF: no area part
-		if not blocksSpawnAreaPart or not blocksSpawnAreaPart.Parent then
-			return
-		end
+		for _,player in ipairs(Players:GetPlayers()) do
 
-		--// LOOP: all players
-		for _, player in ipairs(Players:GetPlayers()) do
-			--// Loop: player
-
-			local character = player.Character
-			--// IF: no character
-			if not character then
+			local char = player.Character
+			if not char then
 				continue
 			end
 
-			local wasInside = (playersInArea[player] == true)
-			local isInside = isCharacterInArea(character)
+			local inside = isCharacterInside(char)
+			local wasInside = playersInArea[player] == true
 
-			--// IF: state changed (entered)
-			if isInside and not wasInside then
-				self:_onPlayerEnterArea(player)
+			if inside and not wasInside then
+				self:_playerEntered(player)
 			end
 
-			--// IF: state changed (exited)
-			if not isInside and wasInside then
-				self:_onPlayerExitArea(player)
+			if not inside and wasInside then
+				self:_playerExited(player)
 			end
+
 		end
+
 	end)
+
 end
 
---// ------------------------------
---// Knit Lifecycle: Init
---// ------------------------------
+--------------------------------------------------
+-- Player Setup
+--------------------------------------------------
+
+function BlocksSpawnAreaService:_setupPlayer(player: Player)
+
+	player:SetAttribute("IsInBlocksSpawnArea", false)
+
+	player.CharacterAdded:Connect(function()
+
+		task.wait(0.5)
+
+		self:UpdatePlayerSpeed(player)
+
+	end)
+
+	player:GetAttributeChangedSignal("IsCarryingBrainrot"):Connect(function()
+
+		self:UpdatePlayerSpeed(player)
+
+	end)
+
+end
+
+--------------------------------------------------
+-- Knit Init
+--------------------------------------------------
+
 function BlocksSpawnAreaService:KnitInit()
-	--// Function: KnitInit
-	--// Setup player cleanup.
 
-	dprint("KnitInit() start")
+	Players.PlayerRemoving:Connect(function(player)
 
-	--// [EVENT] Player removing
-	Players.PlayerRemoving:Connect(function(player: Player)
-		--// Event: PlayerRemoving
-
-		dprint("PlayerRemoving ->", player.Name)
 		playersInArea[player] = nil
+
 	end)
 
-	dprint("KnitInit() complete")
 end
 
---// ------------------------------
---// Knit Lifecycle: Start
---// ------------------------------
+--------------------------------------------------
+-- Knit Start
+--------------------------------------------------
+
 function BlocksSpawnAreaService:KnitStart()
-	--// Function: KnitStart
-	--// Find area part and start tracking.
 
-	dprint("KnitStart() start")
+	areaPart =
+		workspace.Environment:WaitForChild(
+			Config.BLOCKS_SPAWN_AREA_NAME
+		)
 
-	--// [IMPORTANT] Find BlocksSpawnArea part in Workspace
-	blocksSpawnAreaPart = workspace:WaitForChild("Environment"):FindFirstChild(Config.BLOCKS_SPAWN_AREA_NAME)
-
-	--// IF: not found
-	if not blocksSpawnAreaPart or not blocksSpawnAreaPart:IsA("Part") then
-		warn("[BlocksSpawnAreaService] BlocksSpawnArea part not found in Workspace!")
-		warn("[BlocksSpawnAreaService] Please create a Part named:", Config.BLOCKS_SPAWN_AREA_NAME)
-		return
-	end
-
-	dprint("Found BlocksSpawnArea:", blocksSpawnAreaPart:GetFullName())
-
-	--// Setup existing players
-	for _, player in ipairs(Players:GetPlayers()) do
-		self:_setupPlayer(player)
-	end
-
-	--// Setup new players
-	Players.PlayerAdded:Connect(function(player: Player)
-		--// Event: PlayerAdded
-		dprint("PlayerAdded ->", player.Name)
-		self:_setupPlayer(player)
+	pcall(function()
+		BrainrotCarryService =
+			Knit.GetService("BrainrotCarryService")
 	end)
 
-	--// Start tracking loop
-	self:_startTrackingLoop()
+	for _,player in ipairs(Players:GetPlayers()) do
+		self:_setupPlayer(player)
+	end
 
-	dprint("KnitStart() complete ✅")
+	Players.PlayerAdded:Connect(function(player)
+
+		self:_setupPlayer(player)
+
+	end)
+
+	self:_startTracking()
+
 end
 
 return BlocksSpawnAreaService

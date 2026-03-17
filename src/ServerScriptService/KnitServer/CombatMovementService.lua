@@ -42,7 +42,8 @@ print("[CombatMovementService] Service created with PlaySlideAnimation signal âœ
 
 --// Cooldowns
 local lastSlideTime: { [Player]: number } = {}
-local slideRagdollData: { [Player]: any } = {}
+CombatMovementService.slideRagdollData = {}
+local slideRagdollData = CombatMovementService.slideRagdollData
 local slideDebugPartByPlayer: { [Player]: BasePart } = {}
 local slideAdornmentByPlayer: { [Player]: BoxHandleAdornment } = {}
 

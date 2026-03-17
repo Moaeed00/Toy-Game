@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
-local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Brainrots")
+local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Entities")
 local BrainrotsFolder: Folder = workspace:WaitForChild("Brainrots")
 local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
@@ -10,7 +10,7 @@ local Camera = workspace.CurrentCamera
 local SparkleParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles.Sparkles:WaitForChild("Attachment")
 local BlockSpawnRarities = require(ReplicatedStorage.Configuration.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
-local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BrainrotSpawnService = Knit.CreateService {
@@ -37,17 +37,16 @@ function BrainrotSpawnService:KnitStart()
         Mythic    = 0.08,
         Secret    = 0.03,
         God       = 0.01,
-        OG        = 0.003,
     }
 
-    self.BrainrotsData = BrainrotsData
+    self.BrainrotsData = BrainrotsData.Processed
     self:GenerateBrainrotRarityPools()
     self:CacheAllBlockPools()
 end
 
 function BrainrotSpawnService:GenerateBrainrotRarityPools()
     for brainrotName, data in pairs(self.BrainrotsData) do
-        if data.Rarity > 0 then
+        if data.RarityWeight > 0 then
             local rarity = data.RarityType
             if not self.BrainrotRaritiesPool[rarity] then
                 self.BrainrotRaritiesPool[rarity] = {
@@ -57,9 +56,9 @@ function BrainrotSpawnService:GenerateBrainrotRarityPools()
             end
             table.insert(self.BrainrotRaritiesPool[rarity].brainrots, {
                 name = brainrotName,
-                weight = data.Rarity,
+                weight = data.RarityWeight,
             })
-            self.BrainrotRaritiesPool[rarity].totalWeight += data.Rarity
+            self.BrainrotRaritiesPool[rarity].totalWeight += data.RarityWeight
         end
     end
 
@@ -77,9 +76,9 @@ function BrainrotSpawnService:CacheAllBlockPools()
     end
 end
 
--- Merge the given rarity pools into a single weighted pool, applying RarityWeightScale
+-- Merge the given rarity pools into a single weighted pool, applying RarityWeight
 -- so rarities with lower weight are not completely overshadowed by Common's massive Rarity numbers
-function BrainrotSpawnService:GenerateCombinedRarityPool(allowedRarities: { any })
+function BrainrotSpawnService:GenerateCombinedRarityPool(allowedRarities: {})
     local combined = { brainrots = {}, totalWeight = 0 }
     for _, rarity in ipairs(allowedRarities) do
         local pool = self.BrainrotRaritiesPool[rarity]
@@ -87,9 +86,9 @@ function BrainrotSpawnService:GenerateCombinedRarityPool(allowedRarities: { any 
             continue
         end
 
-        local scale = self.RarityWeightScale[rarity]
+        local rarityWeight = self.RarityWeightScale[rarity]
         for _, brainrot in ipairs(pool.brainrots) do
-            local scaledWeight = math.max(1, math.floor(brainrot.weight * scale))
+            local scaledWeight = math.max(1, math.floor(brainrot.weight * rarityWeight))
             table.insert(combined.brainrots, {
                 name = brainrot.name,
                 weight = scaledWeight,
@@ -106,7 +105,7 @@ function BrainrotSpawnService:GenerateCombinedRarityPool(allowedRarities: { any 
     return combined
 end
 
-function BrainrotSpawnService:AssignCumulativeWeights(brainrots: { any })
+function BrainrotSpawnService:AssignCumulativeWeights(brainrots: {})
     local cumulative = 0
     for _, brainrot in ipairs(brainrots) do
         cumulative += brainrot.weight
@@ -114,7 +113,7 @@ function BrainrotSpawnService:AssignCumulativeWeights(brainrots: { any })
     end
 end
 
-function BrainrotSpawnService:PickBrainrot(pool)
+function BrainrotSpawnService:PickBrainrot(pool: {})
     if not pool or pool.totalWeight == 0 then
         warn("[BrainrotSpawnService] PickBrainrot called with empty pool")
         return nil
@@ -132,10 +131,7 @@ function BrainrotSpawnService:PickBrainrotVariant()
     for i = #BrainrotVariantsConfig.VARIANTS, 1, -1 do
         local variant = BrainrotVariantsConfig.VARIANTS[i]
         if math.random() <= variant.Chance then
-            return {
-                Prefix = variant.Prefix,
-                Color = variant.Color,
-            }
+            return variant.Prefix
         end
     end
 
@@ -172,19 +168,12 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
         return
     end
 
-    local selectedBrainrotToSpawn: Model
-    if brainrotVariant == BASE_VARIANT_FOLDER then
-        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
-    else
-        print("******************** brainrot spawned **************", brainrotVariant.Prefix .. brainrotName)
-        selectedBrainrotToSpawn = BrainrotModels:WaitForChild(brainrotVariant.Prefix:gsub("%s+$", "")):WaitForChild(brainrotVariant.Prefix .. brainrotName)
-    end
+    local selectedBrainrotToSpawn: Model = BrainrotModels:WaitForChild(brainrotVariant):WaitForChild(brainrotName)
     local spawnedBrainrot: Model = selectedBrainrotToSpawn:Clone()
     spawnedBrainrot.Parent = BrainrotsFolder
 
-    local _, size = spawnedBrainrot:GetBoundingBox()
-    local yOffset = size.Y / 2
-    local finalCFrame = blockPart.CFrame * CFrame.new(0, yOffset, 0) * CFrame.Angles(0, math.rad(180), 0)
+    local spawnPoint: Part = blockPart:WaitForChild("MiniBlocksSpawnPoint")
+    local finalCFrame = CFrame.new(Vector3.new(spawnPoint.CFrame.Position.X, spawnPoint.CFrame.Position.Y + 0.5, spawnPoint.CFrame.Position.Z)) * CFrame.Angles(0, math.rad(180), 0)
     spawnedBrainrot:PivotTo(finalCFrame)
 
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
@@ -206,13 +195,8 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     spawnedBrainrot:SetAttribute("CashPerSecond", brainrotData.CashPerSecond)
     spawnedBrainrot:SetAttribute("SellPrice", brainrotData.SellPrice)
     spawnedBrainrot:SetAttribute("FractionChance", brainrotData.FractionChance)
-    spawnedBrainrot:SetAttribute("Type", brainrotData.Type)
     spawnedBrainrot:SetAttribute("Timer", brainrotData.Timer)
-    if brainrotVariant == BASE_VARIANT_FOLDER then
-        spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
-    else
-        spawnedBrainrot:SetAttribute("Variant", brainrotVariant.Prefix:gsub("%s+$", ""))
-    end
+    spawnedBrainrot:SetAttribute("Variant", brainrotVariant)
 
     self:SetupInfoGUI(spawnedBrainrot)
 
@@ -329,9 +313,6 @@ function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)
 
         while timeLeft > 0 do
             if brainrot:GetAttribute("Timer") == 0 then
-                return
-            end
-            if brainrot:GetAttribute("TimerPaused") then
                 return
             end
 

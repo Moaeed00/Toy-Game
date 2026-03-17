@@ -12,11 +12,13 @@ local Knit: {} = require(ReplicatedStorage.Packages.Knit)
 --[Modules]
 local StealConfiguration: {} = require(Configuration:WaitForChild("StealConfiguration"))
 local FootballsConfig = require(Configuration.Footballs.FootballsConfig)
+local ProductStoreData = require(Configuration:WaitForChild("ProductStoreData"))
 
 --[Shop Tables]
 local AllShops = {
 	StealConfiguration = StealConfiguration,
-	FootballsConfig = FootballsConfig
+	FootballsConfig = FootballsConfig,
+	ProductStoreData = ProductStoreData,
 }
 
 --[Lookup Table]

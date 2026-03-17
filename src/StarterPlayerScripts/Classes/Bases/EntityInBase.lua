@@ -2,11 +2,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
-local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
+-- local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
 local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
-local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
+-- local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
 local headerUtils = require(ReplicatedStorage.Shared.Utils.headerUtils)
 local RateLimit = require(ReplicatedStorage.Shared.Modules.RateLimit)
 local Particle = require(ReplicatedStorage.Shared.Modules.Particle)
@@ -35,6 +35,37 @@ export type constructor = EntityInBase & {
 	new: (biomeName: string, entityName: string, mutationName: string, slotName: string) -> (),
 }
 
+local function play_entity_animation(model: Model, entityName: string)
+	local _, entityData = getBiomeByEntity(entityName)
+	if not entityData then
+		return
+	end
+
+	local animationId = entityData.IdleAnimationID
+	if not animationId then
+		return
+	end
+
+	local animationController = model:FindFirstChildOfClass("AnimationController")
+	if not animationController then
+		return
+	end
+
+	local animator = animationController:FindFirstChildOfClass("Animator")
+	if not animator then
+		return
+	end
+
+	local animation = Instance.new("Animation")
+	animation.AnimationId = "rbxassetid://" .. tostring(animationId)
+	local track = animator:LoadAnimation(animation)
+	track.Priority = Enum.AnimationPriority.Action
+	track.Looped = true
+	track:Play()
+
+	--task.wait(0.1)
+end
+
 local function create_sell_proximity(entityModel: Model)
 	local sellProximityPrompt = PromptHelper.CreateProximityPrompt(entityModel.PrimaryPart, {
 		Style = Enum.ProximityPromptStyle.Custom,
@@ -52,13 +83,13 @@ local function create_sell_proximity(entityModel: Model)
 	return sellProximityPrompt
 end
 
-local function create_steal_proximity(entityModel: Model, _biomeName: string, entityName: string)
+local function create_steal_proximity(entityModel: Model, biomeName: string, entityName: string)
 	local _, entityInfo = getBiomeByEntity(entityName)
 	if not entityInfo then
 		return
 	end
 
-	local productId = StealConfiguration[entityInfo.Rarity.DisplayName].UnlockID
+	local productId = StealConfiguration[biomeName].UnlockID
 	if not productId then
 		return
 	end
@@ -70,7 +101,7 @@ local function create_steal_proximity(entityModel: Model, _biomeName: string, en
 		MaxActivationDistance = 15,
 		HoldDuration = 1,
 		Enabled = false,
-		ActionText = `Steal ({entityInfo.Rarity.DisplayName})`,
+		ActionText = `Steal ({biomeName})`,
 	})
 
 	return stealProxmityPrompt
@@ -91,7 +122,7 @@ end
 
 local function create_entity_model(_biomeName: string, entityName: string, mutationName: string, slotPart: BasePart)
 	local biome = getBiomeByEntity(entityName)
-	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(biome):WaitForChild(entityName)
+	local entityModel = Assets:WaitForChild("Entities"):WaitForChild(mutationName):WaitForChild(entityName)
 	if not entityModel then
 		return
 	end
@@ -100,16 +131,17 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
-	if mutationName then
-		local mutationInfo = MutationsConfiguration[mutationName]
-		if not mutationInfo then
-			return
-		end
+	-- if mutationName then
+	-- 	local mutationInfo = MutationsConfiguration[mutationName]
+	-- 	if not mutationInfo then
+	-- 		return
+	-- 	end
 
-		setModelColor(model, mutationInfo.Color, mutationName)
-	end
+	-- 	setModelColor(model, mutationInfo.Color, mutationName)
+	-- end
 
 	headerUtils.create(entityName, biome, mutationName, model)
+	play_entity_animation(model, entityName)
 
 	return model
 end
@@ -159,7 +191,7 @@ local EntityInBase: constructor = Class(
 				return
 			end
 
-			local productId = StealConfiguration[entityData.Rarity.DisplayName].UnlockID
+			local productId = StealConfiguration[biomeName].UnlockID
 			if not productId then
 				return
 			end

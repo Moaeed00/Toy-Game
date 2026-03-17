@@ -70,12 +70,9 @@ local function SortTable()
 	--// Sorts the player list by category value (descending)
 	
 	table.sort(SortedPlayerList, function(playerOne: Player, playerTwo: Player): boolean
-		local a = PlayerData[playerOne]
-		local b = PlayerData[playerTwo]
-		if not a or not b then
-			return false
-		end
-		return (a[Category] or 0) >= (b[Category] or 0)
+		local av = playerOne:GetAttribute("MoneyPerSec") or 0
+		local bv = playerTwo:GetAttribute("MoneyPerSec") or 0
+		return av >= bv
 	end)
 	
 	dprint("SortTable() complete, players sorted by:", Category)
@@ -101,7 +98,7 @@ local function ReturnServerLeaderboardTable()
 			end)
 
 			playerTable.Name = success and name or "NotAvailable"
-			playerTable.Value = data[Category] or 0
+			playerTable.Value = player:GetAttribute("MoneyPerSec") or 0
 
 			table.insert(leaderboardTable, playerTable)
 		end
@@ -449,6 +446,7 @@ function LeaderboardService:KnitStart()
 			table.insert(SortedPlayerList, player)
 			SortTable()
 			self:UpdateServerLeaderboard()
+            self:UpdateGlobalLeaderboard()
 		end
 	end)
 
@@ -466,6 +464,7 @@ function LeaderboardService:KnitStart()
 			PlayerData[player] = profileData
 			SortTable()
 			self:UpdateServerLeaderboard()
+            self:UpdateGlobalLeaderboard()
 		end
 	end)
 
@@ -480,18 +479,16 @@ function LeaderboardService:KnitStart()
 		end
 		PlayerData[player] = nil
 		self:UpdateServerLeaderboard()
+        self:UpdateGlobalLeaderboard()
 	end)
 
-	--// ========================================
-	--// Start periodic update loop for global/world leaderboards
-	--// ========================================
-	task.spawn(function()
-		dprint("Starting periodic update loop (interval:", CONFIG.UPDATE_TICK, "seconds)")
-		
-		while true do
-			self:UpdateGlobalLeaderboard()
-			task.wait(CONFIG.UPDATE_TICK)
-		end
+	Players.PlayerAdded:Connect(function(player)
+
+		player:GetAttributeChangedSignal("MoneyPerSec"):Connect(function()
+			SortTable()
+			self:UpdateServerLeaderboard()
+		end)
+
 	end)
 	
 	dprint("KnitStart() complete ✅")

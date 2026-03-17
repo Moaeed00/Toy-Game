@@ -59,12 +59,22 @@ DataHandlerService.OnPlayerSessionEnded = Signal.new()
 DataHandlerService.OnPlayerDataChanged = Signal.new()
 
 -- the data that will be used to update to rank players
-DataHandlerService.LeaderboardCategory = { EnumDataValue.Coins }
+DataHandlerService.LeaderboardCategory = { "MoneyPerSec" }
 
 local function OnPlayerRemoving(player: Player)
 	local profile = Profiles[player]
-
 	if profile ~= nil then
+		local data = profile.Data
+		if data then
+			local mps = player:GetAttribute("MoneyPerSec") or 0
+
+			task.spawn(function()
+				CoinsDataStoreModule:SaveData(player, math.floor(mps))
+			end)
+			task.spawn(function()
+				PointsDataStoreModule:SaveData(player, math.floor(data.Points))
+			end)
+		end
 		profile:EndSession()
 	end
 end
@@ -213,9 +223,6 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 		local prevPoints = playerData.Points
 		local updatedPoints = prevPoints + pointsEarned
 		self:SetPlayerData(player, { Points = updatedPoints })
-		task.spawn(function()
-			PointsDataStoreModule:SaveData(player, math.floor(updatedPoints))
-		end)
 		SetLeaderboardStats(player, "Points", updatedPoints)
 	end
 end
@@ -256,9 +263,6 @@ function DataHandlerService:UpdateMoney(player: Player, MoneyEarned: number)
 		local prevMoney = playerData.Money
 		local updatedMoney = prevMoney + MoneyEarned
 		self:SetPlayerData(player, { Money = updatedMoney })
-		task.spawn(function()
-			CoinsDataStoreModule:SaveData(player, math.floor(updatedMoney))
-		end)
 		SetLeaderboardStats(player, "Cash", updatedMoney)
 	end
 end
@@ -279,6 +283,65 @@ function DataHandlerService:ReturnTopTenPlayers()
 		Coins = coins,
 		Points = points,
 	}
+end
+
+--- Base Likes Helpers
+function DataHandlerService:AddLike(likerPlayer: Player, targetPlayer: Player)
+	if likerPlayer == targetPlayer then
+		warn("You can not like yourself")
+		return false, "self_like"
+	end
+
+	local likerData = self:GetPlayerData(likerPlayer)
+	local targetData = self:GetPlayerData(targetPlayer)
+	if not likerData or not targetData then
+		warn("One of the players has no profile data")
+		return false, "no_data"
+	end
+
+	likerData.LikedPlayers = likerData.LikedPlayers or {}
+	targetData.LikesReceived = targetData.LikesReceived or 0
+
+	local targetKey = tostring(targetPlayer.UserId)
+
+	if likerData.LikedPlayers[targetKey] then
+		return false, "already_liked"
+	end
+
+	likerData.LikedPlayers[targetKey] = true
+	targetData.LikesReceived = targetData.LikesReceived + 1
+
+	self:SetPlayerData(likerPlayer, { LikedPlayers = likerData.LikedPlayers })
+	self:SetPlayerData(targetPlayer, { LikesReceived = targetData.LikesReceived })
+
+	return true, targetData.LikesReceived
+end
+
+function DataHandlerService:GetLikes(likerPlayer: Player, targetPlayer: Player)
+	local likerData = self:GetPlayerData(likerPlayer)
+	local targetData = self:GetPlayerData(targetPlayer)
+	if not likerData or not targetData then
+		return 0, "no_data"
+	end
+	return likerData.LikedPlayers[targetPlayer.UserId] or false
+end
+
+function DataHandlerService:GetTotalLikes(player: Player)
+	local data = self:GetPlayerData(player)
+	return data and data.LikesReceived or 0
+end
+
+function DataHandlerService:HasPlayerLiked(likerPlayer: Player, targetPlayer: Player)
+	local likerData = self:GetPlayerData(likerPlayer)
+	if not likerData then
+		return false
+	end
+
+	likerData.LikedPlayers = likerData.LikedPlayers or {}
+
+	local targetKey = tostring(targetPlayer.UserId)
+
+	return likerData.LikedPlayers[targetKey] == true
 end
 
 --Initialization

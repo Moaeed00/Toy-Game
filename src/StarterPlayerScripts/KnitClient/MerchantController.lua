@@ -2,8 +2,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
-local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsConfig)
-local Gradients: Folder = ReplicatedStorage.Assets.Gradients
+local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
+local Gradients = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Gradients")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -17,100 +17,103 @@ local CloseButton: ImageButton = MerchantFrame:WaitForChild("CloseButton")
 local NoBrainrotsLabel: TextLabel = MerchantFrame:WaitForChild("NoBrainrots")
 local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
-local MerchantController = Knit.CreateController { Name = "MerchantController" }
+local MerchantController = Knit.CreateController({ Name = "MerchantController" })
 
-function MerchantController:KnitInit()
-end
+function MerchantController:KnitInit() end
 
 function MerchantController:KnitStart()
-    MerchantController.CameraController = Knit.GetController("CameraController")
-    MerchantController.MerchantService = Knit.GetService("MerchantService")
-    MerchantController.LobbyHud = Knit.GetController("Hud")
-    MerchantController.CurrentInventory = {}
-    MerchantController.ActiveFrames = {}
+	MerchantController.CameraController = Knit.GetController("CameraController")
+	MerchantController.MerchantService = Knit.GetService("MerchantService")
+	MerchantController.LobbyHud = Knit.GetController("Hud")
+	MerchantController.CurrentInventory = {}
+	MerchantController.ActiveFrames = {}
 
-    self:ConnectCloseButton()
+	self:ConnectCloseButton()
 
-    self.MerchantService.InventoryUpdateEvent:Connect(function(inventorySnapshot: {})
-        self.CurrentInventory = inventorySnapshot
-        self:RefreshUI()
-    end)
-    SellAllButton.Activated:Connect(function()
-        self.MerchantService:SellAll():andThen(function(totalInventoryValue: number)
-            local message = `Inventory sold for ${self:FormatNumber(tostring(totalInventoryValue))}`
-            NotificationHandler:DisplayNotificationMessage(message, "Success")
-            self:UpdateTotalValue(0)
-        end)
-    end)
+	self.MerchantService.InventoryUpdateEvent:Connect(function(inventorySnapshot: {})
+		self.CurrentInventory = inventorySnapshot
+		self:RefreshUI()
+	end)
+	SellAllButton.Activated:Connect(function()
+		self.MerchantService:SellAll():andThen(function(totalInventoryValue: number)
+			local message = `Inventory sold for ${self:FormatNumber(tostring(totalInventoryValue))}`
+			NotificationHandler:DisplayNotificationMessage(message, "Success")
+			self:UpdateTotalValue(0)
+		end)
+	end)
 end
 
 function MerchantController:ConnectCloseButton()
-    CloseButton.Activated:Connect(function()
-        self.LobbyHud:CloseContainer("Merchant")
-    end)
+	CloseButton.Activated:Connect(function()
+		self.LobbyHud:OpenContainer("MainGui")
+	end)
 end
 
 function MerchantController:SetEnabled(enabled: boolean)
-    MerchantGui.Enabled = enabled
+	MerchantGui.Enabled = enabled
 end
 
 function MerchantController:RefreshUI()
-    self:ClearFrames()
-    local sortable = {}
-    local totalValue = 0
+	self:ClearFrames()
+	local sortable = {}
+	local totalValue = 0
 
-    for name, amount in pairs(self.CurrentInventory) do
-        local data = BrainrotsData[name]
-        if not data then
-            continue
-        end
+	for name, data: {} in pairs(self.CurrentInventory) do
+		local brainrotData = BrainrotsData.Processed[name]
+		if not brainrotData then
+			continue
+		end
 
-        totalValue += (data.SellPrice * amount)
+		totalValue += (brainrotData.SellPrice * data.Amount)
 
-        table.insert(sortable, {
-            Name = name,
-            Amount = amount,
-            SellPrice = data.SellPrice,
-            RarityType = data.RarityType
-        })
-    end
+		table.insert(sortable, {
+			ID = data.ID,
+			Name = name,
+			Image = brainrotData.Icon,
+			Amount = data.Amount,
+			SellPrice = brainrotData.SellPrice,
+			Variant = data.Variant,
+			RarityType = brainrotData.RarityType,
+		})
+	end
 
-    self:UpdateTotalValue(totalValue)
+	self:UpdateTotalValue(totalValue)
 
-    table.sort(sortable, function(a, b)
-        return a.SellPrice > b.SellPrice
-    end)
+	table.sort(sortable, function(a, b)
+		return a.SellPrice > b.SellPrice
+	end)
 
-    for index, item in ipairs(sortable) do
-        local clone = TempItem:Clone()
+	for index, item in ipairs(sortable) do
+		local clone = TempItem:Clone()
 		clone.Parent = ScrollingFrame
 		clone.LayoutOrder = index
 
-        clone.BrainrotName.Text = item.Name
+		clone.BrainrotName.Text = item.Name
+		clone.BrainrotImage:WaitForChild("ImageLabel").Image = item.Image[item.Variant]
 		clone.OwnedAmount.Text = "Owned: x" .. item.Amount
 		clone.SellPrice.Text = "$" .. self:FormatNumber(item.SellPrice)
-        clone.BrainrotRarity.Text = item.RarityType
+		clone.BrainrotRarity.Text = item.RarityType
 
-        local rarity = item.RarityType
-        if rarity then
-            local gradient = Gradients:FindFirstChild(rarity)
-            if gradient then
-                gradient:Clone().Parent = clone:WaitForChild("BG")
-                gradient:Clone().Parent = clone:WaitForChild("BrainrotRarity")
-            end
-        end
-        clone.SellButton.Activated:Connect(function()
-            self.MerchantService:Sell(item.Name):andThen(function(reward: number)
-                local message = `Sold {item.Name} for ${self:FormatNumber(tostring(reward))}`
-                NotificationHandler:DisplayNotificationMessage(message, "Success")
-            end)
-        end)
-        clone.Visible = true
+		local rarity = item.RarityType
+		if rarity then
+			local gradient = Gradients:FindFirstChild(rarity)
+			if gradient then
+				gradient:Clone().Parent = clone:WaitForChild("BG")
+				gradient:Clone().Parent = clone:WaitForChild("BrainrotRarity")
+			end
+		end
+		clone.SellButton.Activated:Connect(function()
+			self.MerchantService:Sell(item.ID):andThen(function(reward: number)
+				local message = `Sold {item.Name} for ${self:FormatNumber(reward)}`
+				NotificationHandler:DisplayNotificationMessage(message, "Success")
+			end)
+		end)
+		clone.Visible = true
 
-        self.ActiveFrames[index] = clone
-    end
+		self.ActiveFrames[index] = clone
+	end
 
-    self:ToggleNoBrainrotsVisibility(#sortable == 0)
+	self:ToggleNoBrainrotsVisibility(#sortable == 0)
 end
 
 function MerchantController:ClearFrames()
@@ -125,7 +128,8 @@ function MerchantController:UpdateTotalValue(totalValue: number)
 end
 
 function MerchantController:ToggleNoBrainrotsVisibility(toggle: boolean)
-    NoBrainrotsLabel.Visible = toggle
+	NoBrainrotsLabel.Visible = toggle
+	SellAllButton.Interactable = not toggle
 end
 
 function MerchantController:FormatNumber(number: number)
