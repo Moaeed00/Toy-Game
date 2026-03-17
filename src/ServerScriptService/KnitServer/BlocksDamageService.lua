@@ -50,7 +50,7 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
     local updatedHitPower: number = math.max(0, currentHitPower - footballHitPower)
     hitBlock:SetAttribute("HitPower", updatedHitPower)
     self:PlayParticlesOnBlockHit(hitBlock)
-    self:UpdateProgressUI(hitBlock, totalHitPower, updatedHitPower)
+    self:UpdateProgressUI(hitBlock, tonumber(totalHitPower), updatedHitPower)
 
     hitBlock:SetAttribute("Hit", false)
 

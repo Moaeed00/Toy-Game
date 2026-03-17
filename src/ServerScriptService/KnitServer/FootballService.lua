@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
--- local BackpackSorter = require(ReplicatedStorage.Utility.BackpackSorter)
+
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 local FootballUtils = require(ReplicatedStorage.Configuration.Footballs.FootballUtils)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
@@ -203,7 +203,7 @@ function FootballService:GiveFootball(player: Player)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
 
-    -- BackpackSorter.Sort(player)
+
 
     return footballTool
 end
