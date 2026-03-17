@@ -140,6 +140,7 @@ function entityUtils.createEntityTool(player: Player, biomeName: string, entityN
 	tool:SetAttribute(AttributesConfiguration.BIOME, biomeName)
 	tool:SetAttribute(AttributesConfiguration.MUTATION, mutationName)
 	tool:SetAttribute(AttributesConfiguration.ENTITY_NAME, entityModel.Name)
+	tool:SetAttribute("ToolCategory", "Brainrot")
 
 	tool.TextureId = entityData.Icon[mutationName]
 	handle.Name = "Handle"
