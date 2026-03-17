@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GearModule = require(ReplicatedStorage:WaitForChild("GearModule"))
+local DataHandlerService
 
 local GearShopService = Knit.CreateService({
 	Name = "GearShopService",
@@ -252,8 +253,9 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 		return false, "Data not loaded"
 	end
 
-	if playerData.Gear and playerData.Gear[gearName] == true then
-		dprint("Already owns:", gearName)
+	-- ✅ Only block if AutoBuy already enabled
+	if playerData.AutoBuy and playerData.AutoBuy[gearName] == true then
+		dprint("Already owned (AutoBuy):", gearName)
 		return false, "Already owned"
 	end
 
@@ -284,9 +286,10 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	if not playerData.Gear then
 		playerData.Gear = {}
 	end
-	playerData.Gear[gearName] = true
 
-	self.DataHandlerService:SetPlayerData(player, { Gear = playerData.Gear })
+	-- Temporary give only (NOT ownership)
+	self:GiveGearTool(player, gearName)
+
 	dprint("✅ Granted ownership:", gearName)
 
 	local gearFolder = player:FindFirstChild("Gear")
@@ -300,51 +303,87 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	return true, "Purchased!"
 end
 
-function GearShopService:ToggleAutoBuy(player: Player, gearName: string, enabled: boolean)
-	dprint("ToggleAutoBuy() ->", player.Name, gearName, enabled)
+function GearShopService:_clearPlayerGear(player: Player)
 
-	local playerData = self:GetPlayerData(player)
-	if not playerData then
-		return
-	end
+	local backpack = player:FindFirstChild("Backpack")
+	local character = player.Character
 
-	if not playerData.AutoBuy then
-		playerData.AutoBuy = {}
-	end
-
-	playerData.AutoBuy[gearName] = enabled
-	self.DataHandlerService:SetPlayerData(player, { AutoBuy = playerData.AutoBuy })
-
-	local autoBuyFolder = player:FindFirstChild("AutoBuy")
-	if autoBuyFolder then
-		autoBuyFolder:SetAttribute(gearName:gsub(" ", "_"), enabled)
-	end
-
-	dprint("✅ Auto-buy", gearName, "=", enabled)
-end
-
-function GearShopService:ProcessAutoBuy(player: Player)
-	dprint("ProcessAutoBuy() for", player.Name)
-
-	local playerData = self:GetPlayerData(player)
-	if not playerData or not playerData.AutoBuy then
-		return
-	end
-
-	for gearName, isEnabled in pairs(playerData.AutoBuy) do
-		if isEnabled == true then
-			if not playerData.Gear or playerData.Gear[gearName] ~= true then
-				local success, message = self:BuyGear(player, gearName)
-				if success then
-					dprint("✅ Auto-bought:", gearName)
-				else
-					dprint("❌ Auto-buy failed:", gearName, message)
-				end
-			else
-				self:GiveGearTool(player, gearName)
+	if backpack then
+		for _, tool in ipairs(backpack:GetChildren()) do
+			if tool:IsA("Tool") then
+				tool:Destroy()
 			end
 		end
 	end
+
+	if character then
+		for _, tool in ipairs(character:GetChildren()) do
+			if tool:IsA("Tool") then
+				tool:Destroy()
+			end
+		end
+	end
+end
+
+function GearShopService:_processAutoBuy(player: Player)
+
+	local data = self:GetPlayerData(player)
+	if not data then return end
+
+	data.Gear = data.Gear or {}
+	data.AutoBuy = data.AutoBuy or {}
+
+	for gearName, isAutoBuy in pairs(data.AutoBuy) do
+
+		-- Always give default gear
+		if gearName == "Slide" or gearName == "Punch" then
+			self:GiveGearTool(player, gearName)
+			continue
+		end
+
+		local function hasTool(player, gearName)
+			for _, obj in ipairs(player:GetDescendants()) do
+				if obj:IsA("Tool") and obj.Name == gearName then
+					return true
+				end
+			end
+			return false
+		end
+
+		if isAutoBuy == true then
+
+			if not hasTool(player, gearName) then
+
+				local gearData = GearModule[gearName]
+				if not gearData then continue end
+
+				local price = gearData.Price or 0
+
+				if data.Money >= price then
+					local success = self.DataHandlerService:DeductMoney(player, price)
+
+					if success then
+						self:GiveGearTool(player, gearName)
+					end
+				end
+			end
+		end
+	end
+end
+
+function GearShopService:ToggleAutoBuy(player: Player, gearName: string, enabled: boolean)
+
+	local data = self:GetPlayerData(player)
+	if not data then return end
+
+	data.AutoBuy = data.AutoBuy or {}
+	data.AutoBuy[gearName] = enabled
+
+	self.DataHandlerService:SetPlayerData(player, {
+		AutoBuy = data.AutoBuy
+	})
+
+	self.Client.GearUpdated:Fire(player)
 end
 
 function GearShopService:SetupPlayer(player: Player)
@@ -361,6 +400,22 @@ function GearShopService:SetupPlayer(player: Player)
 	local connection = nil
 	connection = self.DataHandlerService.OnPlayerProfileLoaded:Connect(function(loadedPlayer, profileData)
 		if loadedPlayer == player then
+
+			-- ✅ FORCE DEFAULT GEAR (Slide + Punch)
+			profileData.Gear = profileData.Gear or {}
+			profileData.AutoBuy = profileData.AutoBuy or {}
+
+			profileData.Gear["Slide"] = true
+			profileData.Gear["Punch"] = true
+
+			profileData.AutoBuy["Slide"] = true
+			profileData.AutoBuy["Punch"] = true
+
+			self.DataHandlerService:SetPlayerData(player, {
+				Gear = profileData.Gear,
+				AutoBuy = profileData.AutoBuy
+			})
+
 			print("[GearShopService] ========== PROFILE LOADED ==========")
 			print("[GearShopService] Player:", player.Name)
 			print("[GearShopService] Coins:", profileData.Money)
@@ -371,6 +426,7 @@ function GearShopService:SetupPlayer(player: Player)
 				print("[GearShopService] Gear ownership:")
 				for gearName, isOwned in pairs(profileData.Gear) do
 					print("  -", gearName, "=", isOwned)
+					local isOwned = profileData.AutoBuy and profileData.AutoBuy[gearName] == true
 					gearFolder:SetAttribute(gearName:gsub(" ", "_"), isOwned)
 				end
 			end
@@ -381,20 +437,6 @@ function GearShopService:SetupPlayer(player: Player)
 				end
 			end
 
-			-- Give owned gear
-			if profileData.Gear then
-				for gearName, isOwned in pairs(profileData.Gear) do
-					if isOwned == true then
-						print("[GearShopService] Giving owned gear:", gearName)
-						self:GiveGearTool(player, gearName)
-					end
-				end
-			end
-
-			task.delay(1, function()
-				self:ProcessAutoBuy(player)
-			end)
-
 			print("[GearShopService] ========== SETUP COMPLETE ==========")
 
 			if connection then
@@ -403,18 +445,9 @@ function GearShopService:SetupPlayer(player: Player)
 		end
 	end)
 
-	player.CharacterAdded:Connect(function(character: Model)
-		dprint("CharacterAdded for", player.Name)
+	player.CharacterAdded:Connect(function()
 		task.wait(1)
-
-		local playerData = self:GetPlayerData(player)
-		if playerData and playerData.Gear then
-			for gearName, isOwned in pairs(playerData.Gear) do
-				if isOwned == true then
-					self:GiveGearTool(player, gearName)
-				end
-			end
-		end
+		self:_processAutoBuy(player)
 	end)
 end
 
@@ -434,6 +467,8 @@ end
 function GearShopService:KnitInit()
 	dprint("KnitInit() start")
 
+	self.DataHandlerService = Knit.GetService("DataHandlerService")
+
 	Players.PlayerAdded:Connect(function(player: Player)
 		dprint("PlayerAdded:", player.Name)
 		self:SetupPlayer(player)
@@ -445,25 +480,14 @@ end
 function GearShopService:KnitStart()
 	dprint("KnitStart() start")
 
-	local ok, result = pcall(function()
-		return Knit.GetService("DataHandlerService")
+	-- Connect profile loaded
+	self.DataHandlerService.OnPlayerProfileLoaded:Connect(function(player)
+
+		self:_clearPlayerGear(player)
+
 	end)
 
-	if ok then
-		self.DataHandlerService = result
-		dprint("✅ Got DataHandlerService")
-
-		-- Debug: Print available gears
-		print("[GearShopService] Available gears in GearModule:")
-		for name, data in pairs(GearModule) do
-			if type(data) == "table" and data.Price ~= nil then
-				print("  -", name, "| Type:", data.Type, "| Price:", data.Price)
-			end
-		end
-	else
-		warn("[GearShopService] Failed to get DataHandlerService:", result)
-	end
-
+	-- Setup already existing players
 	for _, player in ipairs(Players:GetPlayers()) do
 		self:SetupPlayer(player)
 	end
