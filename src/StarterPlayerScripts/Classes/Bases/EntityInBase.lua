@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 -- local MutationsConfiguration = require(ReplicatedStorage.Configuration.MutationsConfiguration)
 local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerFromCharacter)
-local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
+-- local tweenModelScale = require(ReplicatedStorage.Shared.Modules.tweenModelScale)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 -- local setModelColor = require(ReplicatedStorage.Shared.Utils.setModelColor)
 local headerUtils = require(ReplicatedStorage.Shared.Utils.headerUtils)
@@ -15,6 +15,7 @@ local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
 local PromptHelper = require(ReplicatedStorage.Shared.Modules.PromptHelper)
 local StealConfiguration = require(ReplicatedStorage.Configuration.StealConfiguration)
+local PlaySound = require(ReplicatedStorage.Shared.Utils.PlaySound)
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
@@ -23,6 +24,7 @@ local EffectsFolder = Assets:WaitForChild("Effects")
 local TOUCH_COOLDOWN = RateLimit(1, 0.3)
 
 local player = Players.LocalPlayer
+local debounce = false
 
 export type EntityInBase = {
 	_model: Model,
@@ -128,6 +130,7 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	end
 
 	local model = entityModel:Clone()
+	model.PrimaryPart.Position -= Vector3.new(0, 1, 0)
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
@@ -222,14 +225,22 @@ function EntityInBase.DisplayForOwner(self: EntityInBase)
 	end))
 end
 
-function EntityInBase.OnTouch(self: EntityInBase, defaultScale: number, _slotPart: BasePart)
+function EntityInBase.OnTouch(self: EntityInBase, _defaultScale: number, _slotPart: BasePart)
 	Particle.EmitAt(self._model.PrimaryPart.Position + Vector3.new(0, 2, 0), EffectsFolder.Money)
-	tweenModelScale(defaultScale, 1.2, TweenInfo.new(0.15), self._model)
+	if not debounce then
+		debounce = true
+		PlaySound:Play("CollectMoney", "Touch")
+	end
+
+	task.delay(1, function()
+		debounce = false
+	end)
+	-- tweenModelScale(defaultScale, 1.2, TweenInfo.new(0.15), self._model)
 	--Sound.PlayAt(CASH_COLLECT_SOUND, slotPart.Position)
 
-	task.delay(0.15, function()
-		tweenModelScale(1.2, defaultScale, TweenInfo.new(0.15), self._model)
-	end)
+	-- task.delay(0.15, function()
+	-- 	tweenModelScale(1.2, defaultScale, TweenInfo.new(0.15), self._model)
+	-- end)
 end
 
 function EntityInBase.Destroy(self: EntityInBase)

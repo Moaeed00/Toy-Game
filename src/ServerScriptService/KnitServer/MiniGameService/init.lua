@@ -322,9 +322,9 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 
 		if QuittingPlayer and QuittingPlayer.UserId == Player.UserId then
 			Player = QuittingPlayer
-			self.Client.EndMiniGame:Fire(QuittingPlayer)
+			self.Client.EndMiniGame:Fire(QuittingPlayer, ScoreCard)
 		else
-			self.Client.EndMiniGame:Fire(Player)
+			self.Client.EndMiniGame:Fire(Player, ScoreCard)
 		end
 
 		SlotData[Player.UserId] = Player:GetAttribute("MiniGameSlot")

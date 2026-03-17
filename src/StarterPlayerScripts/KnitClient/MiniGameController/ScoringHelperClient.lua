@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player: Player = Players.LocalPlayer
 
 local NotificationHandler = require(ReplicatedStorage.Utility.NotificationHandler)
+local PlaySound = require(ReplicatedStorage.Shared.Utils.PlaySound)
 
 local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
@@ -31,6 +32,7 @@ local function AddScore()
 
 	ScoreValue.Text = `{UpdatedScore}`
 	NotificationHandler:DisplayNotificationMessage(`+{delta}`, "Gameplay")
+	PlaySound:Play("ScoreUp", "Touch")
 	ScoringHelperClient:PlayFireCrackers()
 end
 

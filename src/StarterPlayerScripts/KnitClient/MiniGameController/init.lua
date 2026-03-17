@@ -7,6 +7,8 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
+local PlaySound = require(ReplicatedStorage.Shared.Utils.PlaySound)
+local NotificationHandler = require(ReplicatedStorage.Utility.NotificationHandler)
 
 local player: Player = Players.LocalPlayer
 local camera: Camera = workspace.CurrentCamera
@@ -280,10 +282,20 @@ function MiniGameController:HandleStates(State, Time, Mode)
 	end
 end
 
-function MiniGameController:EndMiniGame()
-	WinnerGui.Enabled = true
-	task.wait(2)
-	WinnerGui.Enabled = false
+function MiniGameController:EndMiniGame(ScoreCard)
+
+	if ScoreCard then
+		if ScoreCard.Result == "Draw" then
+			NotificationHandler:DisplayNotificationMessage("It's a Tie!", "Gameplay")
+
+		elseif ScoreCard.WinnerUserID == player.UserId then
+			NotificationHandler:DisplayNotificationMessage("You Win!", "Win")
+			PlaySound:Play("Victory", "Touch")
+
+		else
+			NotificationHandler:DisplayNotificationMessage("You Lose!", "Error")
+		end
+	end
 
 	MiniGameService.MiniGame:Fire("ScaleDown")
 
@@ -324,8 +336,8 @@ function MiniGameController:KnitStart()
 		self:HandleStates(State, Time, Mode)
 	end)
 
-	MiniGameService.EndMiniGame:Connect(function()
-		self:EndMiniGame()
+	MiniGameService.EndMiniGame:Connect(function(ScoreCard)
+		self:EndMiniGame(ScoreCard)
 	end)
 end
 
