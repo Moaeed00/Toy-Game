@@ -30,9 +30,9 @@ end
 function LikesController:DisablePrompt()
 	local ownBase = self._basesFolder:WaitForChild(tostring(player.UserId), 10)
 	if ownBase then
-		local prompt = ownBase:FindFirstChild("Sign")
-			and ownBase.Sign:FindFirstChild("Surface")
-			and ownBase.Sign.Surface:FindFirstChild("LikePrompt")
+		local prompt = ownBase:WaitForChild("Sign")
+			and ownBase.Sign:WaitForChild("Surface")
+			and ownBase.Sign.Surface:WaitForChild("LikePrompt")
 		if prompt then
 			prompt.Enabled = false
 		end
