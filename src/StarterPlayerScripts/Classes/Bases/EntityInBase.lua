@@ -15,6 +15,7 @@ local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
 local PromptHelper = require(ReplicatedStorage.Shared.Modules.PromptHelper)
 local StealConfiguration = require(ReplicatedStorage.Configuration.StealConfiguration)
+local PlaySound = require(ReplicatedStorage.Shared.Utils.PlaySound)
 
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 
@@ -23,6 +24,7 @@ local EffectsFolder = Assets:WaitForChild("Effects")
 local TOUCH_COOLDOWN = RateLimit(1, 0.3)
 
 local player = Players.LocalPlayer
+local debounce = false
 
 export type EntityInBase = {
 	_model: Model,
@@ -225,6 +227,14 @@ end
 
 function EntityInBase.OnTouch(self: EntityInBase, _defaultScale: number, _slotPart: BasePart)
 	Particle.EmitAt(self._model.PrimaryPart.Position + Vector3.new(0, 2, 0), EffectsFolder.Money)
+	if not debounce then
+		debounce = true
+		PlaySound:Play("CollectMoney", "Touch")
+	end
+
+	task.delay(1, function()
+		debounce = false
+	end)
 	-- tweenModelScale(defaultScale, 1.2, TweenInfo.new(0.15), self._model)
 	--Sound.PlayAt(CASH_COLLECT_SOUND, slotPart.Position)
 
