@@ -12,12 +12,14 @@ local CloseButton: ImageButton = FootballFrameUI:WaitForChild("CloseButton")
 local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
 
 local FootballShopController = Knit.CreateController({ Name = "FootballShopController" })
+local ProductPurchaseService
 
 function FootballShopController:KnitInit() end
 
 function FootballShopController:KnitStart()
 	FootballShopController.CameraController = Knit.GetController("CameraController")
 	FootballShopController.FootballShopService = Knit.GetService("FootballShopService")
+	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 	FootballShopController.LobbyHud = Knit.GetController("Hud")
 	FootballShopController.ShopGenerated = false
 
@@ -85,7 +87,8 @@ function FootballShopController:GenerateShopData()
 		self:UpdateButtonState(item, name)
 
 		itemFrame.RobuxBuy.MouseButton1Click:Connect(function()
-			self.FootballShopService.BuyFootballViaRobuxEvent:Fire(name)
+			local footballUnlockId = FootballsConfig[name].UnlockID
+			ProductPurchaseService.PromptPurchase:Fire(footballUnlockId)
 		end)
 
 		itemFrame.Equip.MouseButton1Click:Connect(function()
@@ -144,6 +147,7 @@ end
 function FootballShopController:UpdateButtonState(item: Frame, name: string)
 	local owned = self:IsOwned(name)
 	local equipped = self:IsEquipped(name)
+	local config = FootballsConfig[name]
 
 	local robuxBuyButton: ImageButton = item:WaitForChild("Frame"):WaitForChild("RobuxBuy")
 	local equipButton: ImageButton = item:WaitForChild("Frame"):WaitForChild("Equip")
@@ -152,7 +156,9 @@ function FootballShopController:UpdateButtonState(item: Frame, name: string)
 	if not owned then
 		-- not owned → show buy
 		equipButton.Visible = true
-		robuxBuyButton.Visible = true
+		robuxBuyButton.Visible = config.UnlockID ~= nil
+		priceText.Text = "$" .. self:FormatCommas(tostring(config.Price))
+		self:ToggleButtonStatus(item, false)
 		return
 	end
 	-- owned → hide buy

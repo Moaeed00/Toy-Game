@@ -9,6 +9,7 @@ local uiTopFrame: Frame = mainGui:WaitForChild("UITop")
 local innerFrame: Frame = uiTopFrame:WaitForChild("Frame")
 local homeButton: ImageButton = innerFrame:WaitForChild("Home")
 local shopButton: ImageButton = innerFrame:WaitForChild("Shops")
+local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -23,6 +24,10 @@ local function teleportToBase()
 
 	if spawnPoint then
 		Player.Character:PivotTo(spawnPoint.CFrame)
+		SoundPlay:Play("BGMusic", "BackgroundSounds", -- or "BackgroundSounds" depending on your setup
+			1, -- pitch
+			1  -- volume
+		)
 	end
 end
 
