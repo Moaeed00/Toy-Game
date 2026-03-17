@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local WallPushers = require(script:WaitForChild("WallPushers"))
@@ -21,7 +22,6 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 Trove = Trove.new()
 
 local PlayerGui: PlayerGui = player:WaitForChild("PlayerGui")
-local WinnerGui: PlayerGui = PlayerGui:WaitForChild("WinnerGui")
 local MainGui: ScreenGui = PlayerGui:WaitForChild("MainGui")
 local CountDownGui: ScreenGui = PlayerGui:WaitForChild("CountDownGui")
 local CountDownValue: TextLabel = CountDownGui:WaitForChild("Main"):WaitForChild("CountDown")
@@ -169,8 +169,22 @@ function StartTimer(Time: number)
 	end)
 end
 
+function UnequipAllTools()
+	local character = player.Character
+	if not character then
+		return
+	end
+
+	local humanoid: Humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:UnequipTools()
+	end
+end
+
 function StartCountDown()
 	MainGui.Enabled = false
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	UnequipAllTools()
 	CountDownGui.Enabled = true
 	CountDownRunning = true
 
@@ -283,15 +297,12 @@ function MiniGameController:HandleStates(State, Time, Mode)
 end
 
 function MiniGameController:EndMiniGame(ScoreCard)
-
 	if ScoreCard then
 		if ScoreCard.Result == "Draw" then
 			NotificationHandler:DisplayNotificationMessage("It's a Tie!", "Gameplay")
-
 		elseif ScoreCard.WinnerUserID == player.UserId then
 			NotificationHandler:DisplayNotificationMessage("You Win!", "Win")
 			PlaySound:Play("Victory", "Touch")
-
 		else
 			NotificationHandler:DisplayNotificationMessage("You Lose!", "Error")
 		end
@@ -312,6 +323,7 @@ function MiniGameController:EndMiniGame(ScoreCard)
 		CountDownGui.Enabled = false
 	end
 	MainGui.Enabled = true
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
 
 	CountDownTime = 3
 	IndicatorHelperClient:CleanUp()
