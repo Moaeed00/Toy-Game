@@ -33,7 +33,7 @@ function FootballController:KnitStart()
 end
 
 function FootballController:ConnectFootballTool(football: Tool, humanoid: Humanoid)
-    local handle: Part = football:WaitForChild("Handle") or football:WaitForChild("HandlePoint")
+    local handle: Part = football:FindFirstChild("Handle") or football:FindFirstChild("HandlePoint")
     local ball: MeshPart = handle:WaitForChild(football.Name)
 
     football.Equipped:Connect(function()
