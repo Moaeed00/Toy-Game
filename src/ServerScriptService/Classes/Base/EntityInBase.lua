@@ -9,7 +9,6 @@ local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local Format = require(ReplicatedStorage.Libraries.Format)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
 local CounterTween = require(ReplicatedStorage.Utility.Countertween)
-local PlaySound = require(ReplicatedStorage.Shared.Utils.PlaySound)
 
 export type EntityInBase = {
 
@@ -144,7 +143,6 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 		isCollecting = true
 
 		self._service:UpdateMoney(self._player, self._pendingMoney)
-		PlaySound:Play("CollectMoney", "Touch")
 
 		self._pendingMoney = 0
 

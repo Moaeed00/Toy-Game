@@ -33,7 +33,7 @@ function BlocksSpawningService:KnitStart()
     end
     PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Blocks", false)
 
-    self:SpawnBlocks(150)
+    self:SpawnBlocks(125)
 end
 
 function BlocksSpawningService:SpawnBlocks(amount: number)
