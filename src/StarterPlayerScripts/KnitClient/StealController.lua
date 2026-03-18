@@ -37,7 +37,7 @@ local StealController = Knit.CreateController({
 	Name = "StealController",
 })
 
-function StealController:PlayerHasBrainrot(player: Player)
+function StealController:PlayerHasBrainrot()
 	local character = player.Character
 	if not character then
 		return false
