@@ -359,7 +359,7 @@ function GearShopService:_processAutoBuy(player: Player)
 
 	for gearName, isAutoBuy in pairs(data.AutoBuy) do
 		-- Always give default gear
-		if gearName == "Slide" or gearName == "Punch" then
+		if gearName == "Punch" then
 			self:GiveGearTool(player, gearName)
 			continue
 		end
@@ -428,10 +428,7 @@ function GearShopService:SetupPlayer(player: Player)
 			profileData.Gear = profileData.Gear or {}
 			profileData.AutoBuy = profileData.AutoBuy or {}
 
-			profileData.Gear["Slide"] = true
 			profileData.Gear["Punch"] = true
-
-			profileData.AutoBuy["Slide"] = true
 			profileData.AutoBuy["Punch"] = true
 
 			self.DataHandlerService:SetPlayerData(player, {
