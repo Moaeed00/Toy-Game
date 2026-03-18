@@ -177,7 +177,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		meshPart.Parent = tool
 
 		-- Correct punch orientation in the hand
-		tool.Grip = CFrame.new(-0.3, -1.5, -0.27) * CFrame.Angles(math.rad(-70), math.rad(-170), math.rad(-30))
+		tool.Grip = CFrame.new(-0.2, 2.5, 0.1) * CFrame.Angles(math.rad(-90), math.rad(20), math.rad(-90))
 
 		model:Destroy()
 
