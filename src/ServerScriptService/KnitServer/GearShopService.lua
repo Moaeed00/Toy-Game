@@ -233,7 +233,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 
 	-- ✅ SORT BACKPACK AFTER ADD
 	task.defer(function()
-		BackpackSorter.Sort(player)
+		-- BackpackSorter.Sort(player)
 	end)
 
 	print("[GearShopService] ✅ Gave tool to", player.Name, ":", gearName)

@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PhysicsService = game:GetService("PhysicsService")
@@ -178,7 +179,8 @@ function BlocksSpawningService:ConnectBlockHitTouch(blockInfoFrame: Frame, block
             self:ToggleBlockInfoFrame(blockInfoFrame, true)
             local footballHitPower = otherPart:GetAttribute("HitPower")
             local blockIndex = block.Parent:GetAttribute("Index")
-            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex, block.Parent.Parent.Name)
+            local player = Players:GetPlayerFromCharacter(otherPart.Parent.Parent.Parent)
+            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex, block.Parent.Parent.Name, player)
         end
     end)
 
