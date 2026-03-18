@@ -6,8 +6,6 @@ local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Entities")
 local BrainrotsFolder: Folder = workspace:WaitForChild("Brainrots")
 local TextGradientsFolder: Folder = ReplicatedStorage.Assets.Gradients
 local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
-local Camera = workspace.CurrentCamera
-local SparkleParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles.Sparkles:WaitForChild("Attachment")
 local BlockSpawnRarities = require(ReplicatedStorage.Configuration.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
@@ -15,7 +13,9 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BrainrotSpawnService = Knit.CreateService {
     Name = "BrainrotSpawnService",
-    Client = {},
+    Client = {
+        OnBrainrotSpawnEvent = Knit.CreateSignal(),
+    },
 }
 local BASE_VARIANT_FOLDER = "Normal"
 
@@ -220,7 +220,7 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawn(block: Model)
     blackoutBrainrotsModel.Parent = blockPart
 end
 
-function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
+function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player: Player, block: Model)
     local spawnedBrainrot: Model = self:SpawnRarityBasedBrainrot(block)
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
 
@@ -228,6 +228,10 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
     if #BlackoutParts == 0 then
         return
     end
+
+    task.delay(1, function()
+        self.Client.OnBrainrotSpawnEvent:Fire(player)
+    end)
 
     local currentPreview
     for i = 1, #BlackoutParts do
@@ -244,7 +248,6 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(block: Model)
     end
 
     spawnedBrainrotPart.Transparency = 0
-    self:PlayScreenSparkles()
     spawnedBrainrotPart:WaitForChild("InfoGUI").Enabled = true
     self:StartBrainrotTimer(spawnedBrainrot)
 end
@@ -272,23 +275,12 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     RarityTextGradient.Parent = brainrotRarityText
 
     brainrotNameText.Text = brainrotName
-    brainrotCashText.Text = brainrotCash .. "/s"
+    brainrotCashText.Text = "$" .. brainrotCash .. "/s"
     brainrotRarityText.Text = brainrotRarity
     brainrotVariantText.Text = brainrotVariant
     brainrotTimerText.Text = brainrotTimer
 
     brainrotInfoGUI.Enabled = false
-end
-
-function BrainrotSpawnService:PlayScreenSparkles()
-    local Attachment = Instance.new("Attachment")
-    Attachment.Parent = Camera
-
-    for _, Particle: ParticleEmitter in ipairs(SparkleParticlesAttachment:GetChildren()) do
-        local Clone = Particle:Clone()
-        Clone.Parent = Attachment
-        Clone:Emit(math.random(2, 5))
-    end
 end
 
 function BrainrotSpawnService:StartBrainrotTimer(brainrot: Model)

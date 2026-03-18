@@ -31,7 +31,7 @@ function BlocksDamageService:KnitStart()
     BlocksDamageService.CurrentHitBlockIndex = nil
 end
 
-function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number, blockType: string)
+function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number, blockType: string, player: Player)
     if self.CurrentHitBlockIndex ~= blockIndex then
         self.CurrentHitBlockIndex = blockIndex
     end
@@ -63,8 +63,7 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
         hitBlockPart.Transparency = 1
         hitBlockPart.CanCollide = false
         hitBlockPart.CanTouch = false
-
-        self.BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(hitBlock)
+        self.BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player, hitBlock)
         self:DestroyBlock(hitBlock)
     end
 end
