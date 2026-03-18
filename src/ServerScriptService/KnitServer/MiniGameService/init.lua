@@ -190,7 +190,7 @@ function MiniGameService:EndMiniGame(player: Player)
 	local Score = ScoringHelperServer:GetScore(player)
 	DataHandlerService:UpdatePoints(player, Score)
 
-	self.Client.EndMiniGame:Fire(player)
+	self.Client.EndMiniGame:Fire(player, Score)
 
 	ActiveGames[player.UserId].Running = false
 	ActiveGames[player.UserId] = nil

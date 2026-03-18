@@ -296,8 +296,14 @@ function MiniGameController:HandleStates(State, Time, Mode)
 	end
 end
 
-function MiniGameController:EndMiniGame(ScoreCard)
-	if ScoreCard then
+function MiniGameController:EndMiniGame(ScoreData)
+	if typeof(ScoreData) == "number" then
+		local score = ScoreData
+
+		NotificationHandler:DisplayNotificationMessage("Score: " .. tostring(score), "Gameplay")
+	elseif typeof(ScoreData) == "table" then
+		local ScoreCard = ScoreData
+
 		if ScoreCard.Result == "Draw" then
 			NotificationHandler:DisplayNotificationMessage("It's a Tie!", "Gameplay")
 		elseif ScoreCard.WinnerUserID == player.UserId then
