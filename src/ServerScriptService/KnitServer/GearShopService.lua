@@ -92,7 +92,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		return
 	end
 
-	local character = player.Character
+	local _character = player.Character
 	local backpack = player:FindFirstChildOfClass("Backpack")
 
 	if not backpack then
@@ -476,7 +476,6 @@ function GearShopService:SetupPlayer(player: Player)
 		task.wait(0.3) -- small safety delay
 		self:_processAutoBuy(player)
 	end)
-
 end
 
 function GearShopService.Client:BuyGear(player: Player, gearName: string)

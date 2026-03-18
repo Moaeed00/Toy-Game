@@ -1,18 +1,33 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local playerScripts = player:WaitForChild("PlayerScripts")
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local WarningGui = PlayerGui:WaitForChild("WarningGui")
+
+local WarningFrame = WarningGui:WaitForChild("WarningFrame")
+local Prompt = WarningFrame:WaitForChild("Prompt")
+local Buttons = WarningFrame:WaitForChild("Buttons")
+local YesButton = Buttons:WaitForChild("Yes")
+local NoButton = Buttons:WaitForChild("No")
+
+local PlayerScripts = Player:WaitForChild("PlayerScripts")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local observePlayerTool = require(ReplicatedStorage.Shared.Observers.observePlayerTool)
-local PlacementGrid = require(playerScripts.Classes.Bases.PlacementGrid)
-local EntityInBase = require(playerScripts.Classes.Bases.EntityInBase)
+local ObservePlayerTool = require(ReplicatedStorage.Shared.Observers.observePlayerTool)
+local PlacementGrid = require(PlayerScripts.Classes.Bases.PlacementGrid)
+local EntityInBase = require(PlayerScripts.Classes.Bases.EntityInBase)
+local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
+local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 -- local Signal = require(ReplicatedStorage.Libraries.Signal)
+
+local SELL_FACTOR = EntitiesConfiguration.Original.SELL_FACTOR
+local Debounce = false
 
 local BaseService
 local StealController
+local EntityId
 
 local BaseController = Knit.CreateController({
 	Name = "BaseController",
@@ -31,8 +46,21 @@ function BaseController:KnitStart()
 	self._entitiesInBases = {}
 	self._basesFolder = workspace:WaitForChild("Bases")
 
+	YesButton.MouseButton1Click:Connect(function()
+		self:OnSellEntityRemote(EntityId)
+		WarningGui.Enabled = false
+		-- print("selling", EntityId)
+		Debounce = false
+	end)
+
+	NoButton.MouseButton1Click:Connect(function()
+		WarningGui.Enabled = false
+		-- print("not selling", EntityId)
+		Debounce = false
+	end)
+
 	BaseService.BaseCreated:Connect(function()
-		self._base = self._basesFolder:WaitForChild(tostring(player.UserId)) :: Model
+		self._base = self._basesFolder:WaitForChild(tostring(Player.UserId)) :: Model
 
 		self._YourBase =
 			self._base:WaitForChild("Sign"):WaitForChild("YourBase"):WaitForChild("YourBaseGui") :: BillboardGui
@@ -43,8 +71,8 @@ function BaseController:KnitStart()
 
 	-- BaseService.ReplicatedOthersBase:Fire()
 
-	observePlayerTool(player, function(tool, connection)
-		if tool.Name == "Bat" or tool:GetAttribute("GearType") then
+	ObservePlayerTool(Player, function(tool, connection)
+		if tool.Name == "Bat" or tool:GetAttribute("GearType") or (tool:GetAttribute("ToolCategory") == "Football") then
 			return
 		end
 
@@ -130,7 +158,7 @@ function BaseController:PlaceEntity(
 	local entityInBase = EntityInBase.new(self, baseId, entityId, biomeName, entityName, mutationName, slotPart)
 	self._entitiesInBases[baseId][entityId] = entityInBase
 
-	if tonumber(baseId) == player.UserId then
+	if tonumber(baseId) == Player.UserId then
 		entityInBase:DisplayForOwner()
 	else
 		entityInBase._stealProximityPrompt.Enabled = true
@@ -141,11 +169,30 @@ function BaseController:OnPlaceEntityRemote(slotName: string)
 	BaseService.PlaceEntity:Fire(slotName)
 end
 
+function BaseController:TriggerSellEntity(entityId: string, entityName: string)
+	if Debounce then
+		return
+	end
+	Debounce = true
+
+	EntityId = entityId
+	local _biome, entityData = getBiomeByEntity(entityName)
+	if entityData then
+		local sellPrice = math.floor(entityData.MoneyPerSec * (SELL_FACTOR * 100))
+		Prompt.Text = `Are you sure you want to sell {entityName} for ${sellPrice} coins?`
+	end
+
+	WarningGui.Enabled = true
+end
+
 function BaseController:OnSellEntityRemote(entityId: string)
 	BaseService.SellEntity:Fire(entityId)
 end
 
 function BaseController:OnTakeEntityRemote(entityId: string)
+	if Debounce then
+		return
+	end
 	BaseService.TakeEntity:Fire(entityId)
 end
 

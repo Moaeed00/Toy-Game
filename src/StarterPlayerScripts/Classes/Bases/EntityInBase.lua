@@ -181,7 +181,7 @@ local EntityInBase: constructor = Class(
 		self._connections = Trove.new()
 
 		self._connections:Add(self._sellProximityPrompt.Triggered:Connect(function()
-			self._controller:OnSellEntityRemote(entityId)
+			self._controller:TriggerSellEntity(entityId, entityName)
 		end))
 
 		self._connections:Add(self._takeProximityPrompt.Triggered:Connect(function()
