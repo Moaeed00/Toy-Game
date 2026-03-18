@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
--- local BackpackSorter = require(ReplicatedStorage.Utility.BackpackSorter)
+
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 local FootballUtils = require(ReplicatedStorage.Configuration.Footballs.FootballUtils)
 local DataStoreHandler = require(script.Parent.DataHandlerService)
@@ -43,7 +43,7 @@ function FootballService:KnitStart()
 end
 
 function FootballService:EquipBall(player: Player)
-    if self.IsKicking[player] then
+    if self.IsKicking[player] or player:GetAttribute("InMiniGame") then
         return
     end
 
@@ -161,6 +161,9 @@ end
 
 function FootballService:UnequipBall(player: Player)
     self.IsKicking[player] = false
+    local footballTool = self.Footballs[player]
+    footballTool.RequiresHandle = true
+    footballTool:WaitForChild("HandlePoint").Name = "Handle"
 end
 
 function FootballService:GiveFootball(player: Player)
@@ -193,14 +196,14 @@ function FootballService:GiveFootball(player: Player)
     footballTool.TextureId = footballData.Image
     footballTool:SetAttribute("ToolCategory", "Football")
 
-    local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName) or footballTool:WaitForChild("HandlePoint"):WaitForChild(footballName)
+    local ball: MeshPart = footballTool:FindFirstChild("Handle"):WaitForChild(footballName) or footballTool:FindFirstChild("HandlePoint"):WaitForChild(footballName)
     ball.Anchored = true
 
     player:SetAttribute("CurrentFootball", footballTool.Name)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
 
-    -- BackpackSorter.Sort(player)
+
 
     return footballTool
 end

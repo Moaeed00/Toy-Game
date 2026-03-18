@@ -16,6 +16,9 @@ end
 
 function GUIService:HandleProgressBar(progressBar: Frame, progressText: TextLabel, totalHitPower: number, updatedHitPower: number)
 	if progressBar and progressBar:IsA("Frame") then
+		if not updatedHitPower or not totalHitPower then
+			return
+		end
 		local percent = math.clamp(updatedHitPower / totalHitPower, 0, 1)
 		local newSize = UDim2.fromScale(percent, 1)
 

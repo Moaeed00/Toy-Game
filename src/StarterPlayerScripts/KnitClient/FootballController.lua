@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local BackpackSorter = require(ReplicatedStorage.Utility.BackpackSorter)
 local FootballsConfig = require(ReplicatedStorage.Configuration.Footballs.FootballsConfig)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local KickAnimation: Animation = Assets.Animations.Kick_with_Event
@@ -29,11 +30,13 @@ function FootballController:KnitStart()
     end)
 
     task.wait(2)
-    self.FootballService:GiveFootball()
+    self.FootballService:GiveFootball():andThen(function(football: Tool)
+        BackpackSorter.Sort(Player)
+    end)
 end
 
 function FootballController:ConnectFootballTool(football: Tool, humanoid: Humanoid)
-    local handle: Part = football:WaitForChild("Handle") or football:WaitForChild("HandlePoint")
+    local handle: Part = football:FindFirstChild("Handle") or football:FindFirstChild("HandlePoint")
     local ball: MeshPart = handle:WaitForChild(football.Name)
 
     football.Equipped:Connect(function()
