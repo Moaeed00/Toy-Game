@@ -212,7 +212,9 @@ end
 
 function StartCountDown()
 	MainGui.Enabled = false
-	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	task.delay(0.5, function()
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	end)
 	UnequipAllTools()
 	CountDownGui.Enabled = true
 	CountDownRunning = true
