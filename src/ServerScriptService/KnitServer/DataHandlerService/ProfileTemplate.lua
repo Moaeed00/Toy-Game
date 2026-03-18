@@ -22,7 +22,7 @@ return {
 	--// Gear ownership
 	Gear = {
 		["Slide"] = true, -- Free
-		["Punch"] = true, -- Free
+		["Punch"] = false, -- Free
 		["Speed Coil"] = false,
 		["Golden Slide"] = false,
 		["Golden Punch"] = false,
