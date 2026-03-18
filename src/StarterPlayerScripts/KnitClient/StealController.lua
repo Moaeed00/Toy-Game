@@ -37,14 +37,14 @@ local StealController = Knit.CreateController({
 	Name = "StealController",
 })
 
-function StealController:PlayerHasBrainrot()
+function StealController:PlayerHasBrainrot(player: Player)
 	local character = player.Character
 	if not character then
 		return false
 	end
 
-	for _, obj in ipairs(CollectionService:GetTagged("brainrot")) do
-		if obj:IsDescendantOf(character) then
+	for _, obj in ipairs(character:GetChildren()) do
+		if CollectionService:HasTag(obj, "Brainrot") then
 			return true
 		end
 	end
