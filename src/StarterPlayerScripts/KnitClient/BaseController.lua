@@ -7,8 +7,9 @@ local WarningGui = PlayerGui:WaitForChild("WarningGui")
 
 local WarningFrame = WarningGui:WaitForChild("WarningFrame")
 local Prompt = WarningFrame:WaitForChild("Prompt")
-local YesButton = WarningFrame:WaitForChild("YesButton")
-local NoButton = WarningFrame:WaitForChild("NoButton")
+local Buttons = WarningFrame:WaitForChild("Buttons")
+local YesButton = Buttons:WaitForChild("Yes")
+local NoButton = Buttons:WaitForChild("No")
 
 local PlayerScripts = Player:WaitForChild("PlayerScripts")
 
@@ -48,13 +49,13 @@ function BaseController:KnitStart()
 	YesButton.MouseButton1Click:Connect(function()
 		self:OnSellEntityRemote(EntityId)
 		WarningGui.Enabled = false
-		print("selling", EntityId)
+		-- print("selling", EntityId)
 		Debounce = false
 	end)
 
 	NoButton.MouseButton1Click:Connect(function()
 		WarningGui.Enabled = false
-		print("not selling", EntityId)
+		-- print("not selling", EntityId)
 		Debounce = false
 	end)
 
@@ -189,6 +190,9 @@ function BaseController:OnSellEntityRemote(entityId: string)
 end
 
 function BaseController:OnTakeEntityRemote(entityId: string)
+	if Debounce then
+		return
+	end
 	BaseService.TakeEntity:Fire(entityId)
 end
 
