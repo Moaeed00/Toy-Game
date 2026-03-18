@@ -60,9 +60,9 @@ function FootballService:EquipBall(player: Player)
     if not footballTool then
         return
     end
-    footballTool.RequiresHandle = false
-    footballTool:WaitForChild("Handle").Name = "HandlePoint"
-    local handle = footballTool:WaitForChild("HandlePoint")
+    -- footballTool.RequiresHandle = false
+    -- footballTool:WaitForChild("Handle").Name = "HandlePoint"
+    -- local handle = footballTool:WaitForChild("HandlePoint")
 
     local playerData = DataStoreHandler:GetPlayerData(player)
     if not playerData then
@@ -72,6 +72,7 @@ function FootballService:EquipBall(player: Player)
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
+    local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
     ball.Anchored = false
     ball.CanCollide = false
@@ -118,7 +119,8 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     local equippedId = playerData.Footballs.Equipped
     local footballName, _footballData = FootballUtils:GetFootballById(equippedId)
 
-    local handle = footballTool:WaitForChild("HandlePoint") or footballTool:WaitForChild("Handle")
+    -- local handle = footballTool:WaitForChild("HandlePoint") or footballTool:WaitForChild("Handle")
+    local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
     if ball:FindFirstChild("Weld") then
         ball.BallWeld:Destroy()
@@ -154,16 +156,16 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     attachment:Destroy()
     self.IsKicking[player] = false
 
-    footballTool.RequiresHandle = true
-    footballTool:WaitForChild("HandlePoint").Name = "Handle"
+    -- footballTool.RequiresHandle = true
+    -- footballTool:WaitForChild("HandlePoint").Name = "Handle"
     self:EquipBall(player)
 end
 
 function FootballService:UnequipBall(player: Player)
     self.IsKicking[player] = false
-    local footballTool = self.Footballs[player]
-    footballTool.RequiresHandle = true
-    footballTool:WaitForChild("HandlePoint").Name = "Handle"
+    -- local footballTool = self.Footballs[player]
+    -- footballTool.RequiresHandle = true
+    -- footballTool:WaitForChild("HandlePoint").Name = "Handle"
 end
 
 function FootballService:GiveFootball(player: Player)
@@ -196,14 +198,13 @@ function FootballService:GiveFootball(player: Player)
     footballTool.TextureId = footballData.Image
     footballTool:SetAttribute("ToolCategory", "Football")
 
-    local ball: MeshPart = footballTool:FindFirstChild("Handle"):WaitForChild(footballName) or footballTool:FindFirstChild("HandlePoint"):WaitForChild(footballName)
+    -- local ball: MeshPart = footballTool:FindFirstChild("Handle"):WaitForChild(footballName) or footballTool:FindFirstChild("HandlePoint"):WaitForChild(footballName)
+    local ball: MeshPart = footballTool:WaitForChild("Handle"):WaitForChild(footballName)
     ball.Anchored = true
 
     player:SetAttribute("CurrentFootball", footballTool.Name)
     CollectionService:AddTag(ball, "Football")
     ball:SetAttribute("HitPower", footballData.Power)
-
-
 
     return footballTool
 end
