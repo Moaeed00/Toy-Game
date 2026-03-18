@@ -24,7 +24,7 @@ local function teleportToBase()
 
 	if spawnPoint then
 		Player.Character:PivotTo(spawnPoint.CFrame)
-		SoundPlay:Play("BGMusic", "BackgroundSounds", -- or "BackgroundSounds" depending on your setup
+		SoundPlay:Play("BGMusic", "Background", -- or "BackgroundSounds" depending on your setup
 			1, -- pitch
 			1  -- volume
 		)
@@ -51,6 +51,11 @@ function GameManagerController:KnitStart()
 
 	shopButton.MouseButton1Click:Connect(function()
 		teleportToShop()
+	end)
+
+	task.spawn(function()
+		task.wait(2) -- wait for camera + sounds to exist
+		SoundPlay:Play("BGMusic", "Background", 1, 1)
 	end)
 end
 
