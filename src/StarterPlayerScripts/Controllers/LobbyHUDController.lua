@@ -31,6 +31,7 @@ local Controllers = {
 	GearShop = "GearShopController",
 	ProductShop = "ProductShopController",
 	RedeemCode = "CodesController",
+	Invite = "InviteFriendController",
 }
 
 local Hud = Knit.CreateController({
@@ -44,6 +45,7 @@ LobbyCircleTouch.LobbyHUD = Hud
 Hud.Buttons = {
 	-- DailySpin = MainGui.Left.Last.DailySpin,
 	ProductShop = MainGui.UILeft.Shop,
+	Invite = MainGui.UILeft.Invite,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
 }
@@ -56,7 +58,7 @@ local GUIS = {
 	Merchant = "MerchantGui",
 	GearShop = "GearGui",
 	ProductShop = "ProductShopGui",
-	RedeemCode = "RedeemCode"
+	RedeemCode = "RedeemCode",
 }
 
 Hud.GUI = { MainGui = MainGui }
@@ -140,6 +142,10 @@ function Hud:OpenContainer(name: string)
 			FocusEffect.Show()
 		else
 			FocusEffect.Hide()
+		end
+	else
+		if name == "Invite" then
+			self.Controller[name]:SetEnabled(true)
 		end
 	end
 end
