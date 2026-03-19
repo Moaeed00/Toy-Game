@@ -23,6 +23,7 @@ local hoverTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDire
 local unHoverTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local DataHandlerService
+local ProductPurchaseService
 
 local Controllers = {
 	-- DailySpin = "SpinClient",
@@ -46,6 +47,7 @@ Hud.Buttons = {
 	-- DailySpin = MainGui.Left.Last.DailySpin,
 	ProductShop = MainGui.UILeft.Shop,
 	Invite = MainGui.UILeft.Invite,
+	VIP = MainGui.UILeft.VIP,
 	RedeemCode = MainGui.UIRight.RedeemCode,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
@@ -147,6 +149,8 @@ function Hud:OpenContainer(name: string)
 	else
 		if name == "Invite" then
 			self.Controller[name]:SetEnabled(true)
+		elseif name == "VIP" then
+			ProductPurchaseService.PromptPurchase:Fire(3559290714)
 		end
 	end
 end
@@ -195,6 +199,7 @@ end
 
 function Hud:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
+	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 end
 
 function Hud:KnitStart()
