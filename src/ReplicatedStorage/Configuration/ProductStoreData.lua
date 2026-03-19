@@ -2,7 +2,7 @@ local ProductStoreData = {
 	["E1"] = {
 		Title = "Starter Pack",
 		Price = 9,
-		Id = 3465786864,
+		Id = 3559281772,
 		Type = "Bundle",
 		RewardData = {
 			{ Type = "Money", Data = { Amount = 2_500 } },

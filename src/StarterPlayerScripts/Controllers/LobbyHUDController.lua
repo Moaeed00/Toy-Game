@@ -49,6 +49,7 @@ Hud.Buttons = {
 	Invite = MainGui.UILeft.Invite,
 	VIP = MainGui.UILeft.VIP,
 	RedeemCode = MainGui.UIRight.RedeemCode,
+	StarterPack = MainGui.UIRight.StarterPack,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
 	Sell = MainGui.UITop.Frame.Sell,
@@ -152,6 +153,8 @@ function Hud:OpenContainer(name: string)
 			self.Controller[name]:SetEnabled(true)
 		elseif name == "VIP" then
 			ProductPurchaseService.PromptPurchase:Fire(3559290714)
+		elseif name == "StarterPack" then
+			ProductPurchaseService.PromptPurchase:Fire(3559281772)
 		end
 	end
 end
