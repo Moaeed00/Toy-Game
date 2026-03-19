@@ -27,7 +27,7 @@ function BlocksSpawningService:KnitStart()
     BlocksSpawningService.SpawnedPositions = {}
     BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 20 -- 20%
     BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
-    BlocksSpawningService.MIN_SPAWN_DISTANCE = 10 -- Minimum distance between blocks
+    BlocksSpawningService.MIN_SPAWN_DISTANCE = 15 -- Minimum distance between blocks
 
     if not PhysicsService:IsCollisionGroupRegistered("Blocks") then
         PhysicsService:RegisterCollisionGroup("Blocks")
@@ -155,6 +155,7 @@ function BlocksSpawningService:SetBlockData(index: number, block: Model, blockCo
     local progressText: TextLabel = blockInfoFrame:WaitForChild("HitProgressBar"):WaitForChild("ProgressText")
     progressText.Text = blockConfig.HitPower .. " / " .. blockConfig.HitPower
 
+    CollectionService:AddTag(block, "Block")
     block:SetAttribute("Index", index)
     block:SetAttribute("Rarity", blockConfig.Rarity)
     block:SetAttribute("HitPower", blockConfig.HitPower)
