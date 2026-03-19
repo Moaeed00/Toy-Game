@@ -17,8 +17,8 @@ local RedeemCodeGui = PlayerGui:WaitForChild("RedeemCode")
 
 local MainFrame = RedeemCodeGui:WaitForChild("MainFrame")
 local textBox = MainFrame:WaitForChild("Box")
-local ClaimButton = MainFrame:WaitForChild("ClaimButton")
-local CloseButton = RedeemCodeGui:WaitForChild("Close")
+local ClaimButton = MainFrame:WaitForChild("Buttons"):WaitForChild("Claim")
+local CloseButton = MainFrame:WaitForChild("Close")
 
 -- [Variables] ----
 local PlaceHolderText = "Enter code..."
