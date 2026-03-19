@@ -24,9 +24,11 @@ local function teleportToBase()
 
 	if spawnPoint then
 		Player.Character:PivotTo(spawnPoint.CFrame)
-		SoundPlay:Play("BGMusic", "Background", -- or "BackgroundSounds" depending on your setup
+		SoundPlay:Play(
+			"BGMusic",
+			"Background", -- or "BackgroundSounds" depending on your setup
 			1, -- pitch
-			1  -- volume
+			1 -- volume
 		)
 	end
 end
@@ -46,10 +48,18 @@ function GameManagerController:KnitInit() end
 
 function GameManagerController:KnitStart()
 	homeButton.MouseButton1Click:Connect(function()
+		if Player:GetAttribute("IsInArea") then
+			return
+		end
+
 		teleportToBase()
 	end)
 
 	shopButton.MouseButton1Click:Connect(function()
+		if Player:GetAttribute("IsInArea") then
+			return
+		end
+
 		teleportToShop()
 	end)
 

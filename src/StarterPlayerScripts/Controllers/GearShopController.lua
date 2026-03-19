@@ -122,7 +122,7 @@ function GearShopController:ConnectCloseButton()
 end
 
 function GearShopController:SetEnabled(enabled: boolean)
-	GearFrame.Visible = enabled
+	GearShopGui.Enabled = enabled
 end
 
 return GearShopController

@@ -6,7 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 print("[KnitClient] Adding controllers (deep) from:", script.Parent:GetFullName())
-Knit.AddControllersDeep(script.Parent)
+Knit.AddControllersDeep(script.Parent.Controllers)
 
 Knit.Start():andThen(function()
 	print("[KnitClient] Knit Client Started!")

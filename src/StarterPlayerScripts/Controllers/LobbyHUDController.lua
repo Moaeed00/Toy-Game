@@ -30,6 +30,7 @@ local Controllers = {
 	Merchant = "MerchantController",
 	GearShop = "GearShopController",
 	ProductShop = "ProductShopController",
+	RedeemCode = "CodesController",
 }
 
 local Hud = Knit.CreateController({
@@ -55,6 +56,7 @@ local GUIS = {
 	Merchant = "MerchantGui",
 	GearShop = "GearGui",
 	ProductShop = "ProductShopGui",
+	RedeemCode = "RedeemCode"
 }
 
 Hud.GUI = { MainGui = MainGui }

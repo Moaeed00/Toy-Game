@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GearModule = require(ReplicatedStorage:WaitForChild("GearModule"))
+local BackpackSorter = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("BackpackSorter"))
 local DataHandlerService
 
 local GearShopService = Knit.CreateService({
@@ -91,7 +92,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		return
 	end
 
-	local character = player.Character
+	local _character = player.Character
 	local backpack = player:FindFirstChildOfClass("Backpack")
 
 	if not backpack then
@@ -176,7 +177,7 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 		meshPart.Parent = tool
 
 		-- Correct punch orientation in the hand
-		tool.Grip = CFrame.new(-0.3, -1.5, -0.27) * CFrame.Angles(math.rad(-70), math.rad(-170), math.rad(-30))
+		tool.Grip = CFrame.new(-0.2, 2.5, 0.1) * CFrame.Angles(math.rad(-90), math.rad(20), math.rad(-90))
 
 		model:Destroy()
 
@@ -229,6 +230,12 @@ function GearShopService:GiveGearTool(player: Player, gearName: string)
 	end
 
 	tool.Parent = backpack
+
+	-- ✅ SORT BACKPACK AFTER ADD
+	task.defer(function()
+		-- BackpackSorter.Sort(player)
+	end)
+
 	print("[GearShopService] ✅ Gave tool to", player.Name, ":", gearName)
 end
 
@@ -243,7 +250,12 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 
 	local playerData = self:GetPlayerData(player)
 	if not playerData then
-		return false, "Data not loaded"
+		warn("[GearShopService] ❌ Data not ready, retrying...")
+		task.wait(0.5)
+		playerData = self:GetPlayerData(player)
+		if not playerData then
+			return false, "Data not loaded"
+		end
 	end
 
 	-- ✅ Block ONLY if AutoBuy ON AND already has tool
@@ -294,6 +306,10 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	-- Temporary give only (NOT ownership)
 	self:GiveGearTool(player, gearName)
 
+	task.defer(function()
+		BackpackSorter.Sort(player)
+	end)
+
 	dprint("✅ Granted ownership:", gearName)
 
 	local gearFolder = player:FindFirstChild("Gear")
@@ -329,8 +345,13 @@ end
 
 function GearShopService:_processAutoBuy(player: Player)
 	local data = self:GetPlayerData(player)
+
+	-- ✅ WAIT UNTIL DATA IS READY (CRITICAL FIX)
 	if not data then
-		return
+		repeat
+			task.wait(0.2)
+			data = self:GetPlayerData(player)
+		until data
 	end
 
 	data.Gear = data.Gear or {}
@@ -338,7 +359,7 @@ function GearShopService:_processAutoBuy(player: Player)
 
 	for gearName, isAutoBuy in pairs(data.AutoBuy) do
 		-- Always give default gear
-		if gearName == "Slide" or gearName == "Punch" then
+		if gearName == "Punch" then
 			self:GiveGearTool(player, gearName)
 			continue
 		end
@@ -407,10 +428,7 @@ function GearShopService:SetupPlayer(player: Player)
 			profileData.Gear = profileData.Gear or {}
 			profileData.AutoBuy = profileData.AutoBuy or {}
 
-			profileData.Gear["Slide"] = true
 			profileData.Gear["Punch"] = true
-
-			profileData.AutoBuy["Slide"] = true
 			profileData.AutoBuy["Punch"] = true
 
 			self.DataHandlerService:SetPlayerData(player, {
@@ -446,8 +464,13 @@ function GearShopService:SetupPlayer(player: Player)
 		end
 	end)
 
-	player.CharacterAdded:Connect(function()
-		task.wait(1)
+	print("[GearShopService] ========== SETUP COMPLETE ==========")
+
+	task.spawn(function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local backpack = player:WaitForChild("Backpack")
+
+		task.wait(0.3) -- small safety delay
 		self:_processAutoBuy(player)
 	end)
 end
