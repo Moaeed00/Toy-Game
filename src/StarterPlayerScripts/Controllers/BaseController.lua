@@ -72,7 +72,7 @@ function BaseController:KnitStart()
 	-- BaseService.ReplicatedOthersBase:Fire()
 
 	ObservePlayerTool(Player, function(tool, connection)
-		if tool.Name == "Bat" or tool:GetAttribute("GearType") then
+		if tool.Name == "Bat" or tool:GetAttribute("GearType") or (tool:GetAttribute("ToolCategory") == "Football") then
 			return
 		end
 

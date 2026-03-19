@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CollectionService = game:GetService("CollectionService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Utils = ServerScriptService:WaitForChild("Utils")
@@ -66,6 +67,21 @@ function GetAvailableSlots()
 end
 
 --MiniGame Helper Functions
+function MiniGameService:PlayerHasBrainrot(player: Player)
+	local character = player.Character
+	if not character then
+		return false
+	end
+
+	for _, obj in ipairs(character:GetChildren()) do
+		if CollectionService:HasTag(obj, "Brainrot") then
+			return true
+		end
+	end
+
+	return false
+end
+
 function MiniGameService:DestroyBall(player)
 	local ClonedFootball = ClonedFootBalls[player]
 	if ClonedFootball then
@@ -190,10 +206,9 @@ function MiniGameService:EndMiniGame(player: Player)
 	local Score = ScoringHelperServer:GetScore(player)
 	DataHandlerService:UpdatePoints(player, Score)
 
-	self.Client.EndMiniGame:Fire(player, Score)
-
 	ActiveGames[player.UserId].Running = false
 	ActiveGames[player.UserId] = nil
+	PlayerPositionReferences[player.UserId] = nil
 
 	ScoringHelperServer:CleanUp(player)
 
@@ -204,7 +219,7 @@ function MiniGameService:EndMiniGame(player: Player)
 	player:SetAttribute("InMiniGame", nil)
 	player:SetAttribute("Mode", nil)
 
-	PlayerPositionReferences[player.UserId] = nil
+	self.Client.EndMiniGame:Fire(player)
 
 	self:ReleaseSlot(player)
 end
@@ -221,6 +236,7 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 		return warn("FootBall Not Assigned")
 	end
 
+	CharacterSize:ScaleUp(player, ScaleValue)
 	local PlayerPositionReference = Toys:WaitForChild(SlotName):WaitForChild("PlayerPositionReference")
 	player.Character:PivotTo(PlayerPositionReference.CFrame)
 
@@ -228,7 +244,6 @@ function MiniGameService:InitializeMiniGame(player, SlotName)
 
 	player:SetAttribute("InMiniGame", true)
 	player:SetAttribute("Mode", "Solo")
-	CharacterSize:ScaleUp(player, ScaleValue)
 
 	ActiveGames[player.UserId] = {
 		TimeLeft = RoundTime,
@@ -320,16 +335,10 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		local score = ScoringHelperServer:GetScore(Player)
 		DataHandlerService:UpdatePoints(Player, score)
 
-		if QuittingPlayer and QuittingPlayer.UserId == Player.UserId then
-			Player = QuittingPlayer
-			self.Client.EndMiniGame:Fire(QuittingPlayer, ScoreCard)
-		else
-			self.Client.EndMiniGame:Fire(Player, ScoreCard)
-		end
-
 		SlotData[Player.UserId] = Player:GetAttribute("MiniGameSlot")
 		Challenge.Running = false
 		ActiveChallenges[Challenge.Id] = nil
+		PlayerPositionReferences[Player.UserId] = nil
 
 		ScoringHelperServer:CleanUp(Player)
 
@@ -339,6 +348,13 @@ function MiniGameService:EndChallengeGame(ChallengeGameId: number, QuittingPlaye
 		Player:SetAttribute("HasScored", nil)
 		Player:SetAttribute("InMiniGame", nil)
 		Player:SetAttribute("Mode", nil)
+
+		if QuittingPlayer and QuittingPlayer.UserId == Player.UserId then
+			Player = QuittingPlayer
+			self.Client.EndMiniGame:Fire(QuittingPlayer, ScoreCard)
+		else
+			self.Client.EndMiniGame:Fire(Player, ScoreCard)
+		end
 
 		self:ReleaseSlot(Player)
 	end
@@ -385,6 +401,7 @@ function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
 			return warn("FootBall Not Assigned")
 		end
 
+		CharacterSize:ScaleUp(Player, ScaleValue)
 		local PlayerPositionReference = Toys:WaitForChild(Slot):WaitForChild("PlayerPositionReference")
 		Player.Character:PivotTo(PlayerPositionReference.CFrame)
 
@@ -392,7 +409,6 @@ function MiniGameService:InitializeChallengeGame(ChallengeGameData: {})
 
 		Player:SetAttribute("InMiniGame", true)
 		Player:SetAttribute("Mode", "Challenge")
-		CharacterSize:ScaleUp(Player, ScaleValue)
 	end
 
 	ActiveChallenges[ChallengeGameId] = {
@@ -498,6 +514,11 @@ function MiniGameService:KnitStart()
 				if player:GetAttribute("InMiniGame") then
 					return
 				end
+				if self:PlayerHasBrainrot(player) then
+					self.Client.MiniGame:Fire(player, "BrainrotBlocked")
+					return
+				end
+
 				self:ToggleTeleporter(ProximityPrompt, false)
 				self:HandleStates(player, "InitializeMiniGame", ProximityPrompt.Parent.Parent.Parent.Name)
 			end)
@@ -513,6 +534,7 @@ function MiniGameService:KnitStart()
 	Players.PlayerAdded:Connect(function(player)
 		player.CharacterAdded:Connect(function(Character)
 			if player:GetAttribute("InMiniGame") then
+				print("RespawnedCharacter")
 				local HRP = Character:WaitForChild("HumanoidRootPart")
 				local PlayerPositionReference = PlayerPositionReferences[player.UserId]
 

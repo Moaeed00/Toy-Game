@@ -31,6 +31,9 @@ local TimerValue: TextLabel = TimerGui:WaitForChild("Main"):WaitForChild("Timer"
 
 local PlayerBase = workspace:WaitForChild("Bases")
 local Toys = workspace:WaitForChild("Toys")
+local Colliders: Folder = workspace:WaitForChild("Colliders")
+
+local MiniGameWall: BasePart = Colliders:WaitForChild("MiniGameWall")
 
 local MiniGameController = Knit.CreateController({
 	Name = "MiniGameController",
@@ -52,13 +55,35 @@ local FootBall: Model
 local BallSpawnReference: BasePart
 
 function TeleportPlayersToBase()
+	local character = player.Character
+	if not character then
+		return
+	end
+
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not hrp or not humanoid then
+		return
+	end
+
 	local SpawnPart = PlayerBase:WaitForChild(tostring(player.UserId)):WaitForChild("Spawn")
-	player.Character:PivotTo(SpawnPart.CFrame)
+
+	local hrpHeightOffset = humanoid.HipHeight + (hrp.Size.Y / 2)
+	local targetCFrame = SpawnPart.CFrame + Vector3.new(0, hrpHeightOffset, 0)
+
+	hrp.Anchored = true
+	character:PivotTo(targetCFrame)
+	task.wait()
+	hrp.Anchored = false
 end
 
 function HandleBallSpawn()
 	FootBall:PivotTo(BallSpawnReference.CFrame)
 	local root = FootBall.PrimaryPart
+	if not root then
+		return
+	end
+
 	root.AssemblyLinearVelocity = Vector3.zero
 	root.AssemblyAngularVelocity = Vector3.zero
 	root.Anchored = true
@@ -68,7 +93,7 @@ end
 function GetDirection(Pos: Vector2)
 	local rayParams = RaycastParams.new()
 	rayParams.FilterType = Enum.RaycastFilterType.Exclude
-	rayParams.FilterDescendantsInstances = { player.Character, FootBall }
+	rayParams.FilterDescendantsInstances = { player.Character, FootBall, MiniGameWall }
 
 	local unitRay = camera:ScreenPointToRay(Pos.X, Pos.Y)
 	local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 500, rayParams)
@@ -97,6 +122,10 @@ function Kick(Positions: Vector2)
 	track:GetMarkerReachedSignal("KickMoment"):Once(function()
 		local Direction = GetDirection(Positions)
 		local root = FootBall.PrimaryPart
+
+		if not root then
+			return
+		end
 
 		root.Anchored = false
 		root.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
@@ -183,7 +212,9 @@ end
 
 function StartCountDown()
 	MainGui.Enabled = false
-	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	task.delay(0.5, function()
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	end)
 	UnequipAllTools()
 	CountDownGui.Enabled = true
 	CountDownRunning = true
@@ -264,6 +295,8 @@ function MiniGameController:InitializeMiniGame()
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 	LockCameraRotation()
 
+	HandleBallSpawn()
+
 	WallPushers:AddWallPushers(SlotName)
 	IndicatorHelperClient:Initialize()
 	ScoringHelperClient:Initialize()
@@ -293,6 +326,8 @@ function MiniGameController:HandleStates(State, Time, Mode)
 		self:StartMiniGame(Time)
 	elseif State == "EnableKick" then
 		HandleBallSpawn()
+	elseif State == "BrainrotBlocked" then
+		NotificationHandler:DisplayNotificationMessage("Unequip your Brainrot to play!", "Error")
 	end
 end
 
@@ -314,8 +349,6 @@ function MiniGameController:EndMiniGame(ScoreData)
 		end
 	end
 
-	MiniGameService.MiniGame:Fire("ScaleDown")
-
 	CountDownRunning = false
 	GameRunning = false
 	CanKick = false
@@ -336,10 +369,15 @@ function MiniGameController:EndMiniGame(ScoreData)
 	ScoringHelperClient:CleanUp()
 	WallPushers:CleanUp()
 	Trove:Destroy()
+
+	MiniGameService.MiniGame:Fire("ScaleDown")
+
 	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 	UnlockCameraRotation()
 	PlayerControls:Enable()
-	TeleportPlayersToBase()
+	task.delay(1, function()
+		TeleportPlayersToBase()
+	end)
 end
 
 function MiniGameController:KnitInit()

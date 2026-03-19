@@ -11,6 +11,8 @@ return {
 	},
 	Money = 100,
 
+	MoneyMultiplier = 1,
+
 	LikesReceived = 0,
 	LikedPlayers = {},
 
@@ -22,7 +24,7 @@ return {
 	--// Gear ownership
 	Gear = {
 		["Slide"] = true, -- Free
-		["Punch"] = true, -- Free
+		["Punch"] = false, -- Free
 		["Speed Coil"] = false,
 		["Golden Slide"] = false,
 		["Golden Punch"] = false,

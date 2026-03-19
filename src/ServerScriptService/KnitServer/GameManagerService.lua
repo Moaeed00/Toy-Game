@@ -7,6 +7,9 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
 local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 
+local Colliders: Folder = workspace:WaitForChild("Colliders")
+local MiniGameWall: BasePart = Colliders:WaitForChild("MiniGameWall")
+
 local DataHandlerService
 
 local GameManagerService = Knit.CreateService({
@@ -15,6 +18,7 @@ local GameManagerService = Knit.CreateService({
 })
 
 local PlayerCollisionGroup = "Player"
+local MiniGameWallCollisionGroup = "MiniGameWall"
 
 local function leaderboardSetup(player: Player)
 	local leaderstats = Instance.new("Folder")
@@ -45,6 +49,7 @@ end
 local function OnPlayerAdded(player: Player)
 	player.CharacterAdded:Connect(function(character)
 		CollisionGroupHandler:AddCollisionGroup(PlayerCollisionGroup, character)
+		CollisionGroupHandler:AddCollisionGroup(MiniGameWallCollisionGroup, MiniGameWall)
 	end)
 end
 
@@ -57,7 +62,9 @@ function GameManagerService:KnitStart()
 	Players.PlayerAdded:Connect(OnPlayerAdded)
 	DataHandlerService.OnPlayerProfileLoaded:Connect(function(Player)
 		leaderboardSetup(Player)
-		-- DataHandlerService:UpdatePoints(Player, 1000)
+
+		local MoneyMultiplierValue = DataHandlerService:GetMoneyMultiplier(Player)
+		Player:SetAttribute("MoneyMultiplier", MoneyMultiplierValue)
 	end)
 end
 

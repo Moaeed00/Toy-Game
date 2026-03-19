@@ -1,6 +1,7 @@
 --[Services]
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 --[Modulles]
@@ -35,6 +36,21 @@ local processed
 local StealController = Knit.CreateController({
 	Name = "StealController",
 })
+
+function StealController:PlayerHasBrainrot(player: Player)
+	local character = player.Character
+	if not character then
+		return false
+	end
+
+	for _, obj in ipairs(character:GetChildren()) do
+		if CollectionService:HasTag(obj, "Brainrot") then
+			return true
+		end
+	end
+
+	return false
+end
 
 function StealController:getOwnerPlayer(userId)
 	local Player = Players:GetPlayerByUserId(userId)
@@ -73,6 +89,11 @@ function StealController:EnableUI(
 		--Prompt Notification
 		print("Player Already In A Challenge")
 		NotificationHandler:DisplayNotificationMessage("Player is already in a challenge.", "Error")
+		return
+	end
+
+	if self:PlayerHasBrainrot(player) then
+		NotificationHandler:DisplayNotificationMessage("Player already carrying a brainrot!", "Error")
 		return
 	end
 
@@ -152,7 +173,10 @@ function StealController:HandleRobuxButton()
 	local Success, IsChallenged = StealService:IsEntityChallenged(StealData.entityId):await()
 	if not Success or IsChallenged then
 		print("This Brainrot is Challenged")
-		NotificationHandler:DisplayNotificationMessage("This Brainrot is currently challenged by another player.", "Error")
+		NotificationHandler:DisplayNotificationMessage(
+			"This Brainrot is currently challenged by another player.",
+			"Error"
+		)
 		return
 	end
 

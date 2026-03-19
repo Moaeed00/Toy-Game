@@ -9,9 +9,7 @@ local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local Config = require(
-	ReplicatedStorage.Configuration.BlocksSpawnAreaConfig
-)
+local Config = require(ReplicatedStorage.Configuration.BlocksSpawnAreaConfig)
 
 local BlocksSpawnAreaController = Knit.CreateController({
 	Name = "BlocksSpawnAreaController",
@@ -56,11 +54,9 @@ local ExitAudio: Sound?
 --------------------------------------------------
 
 local function dprint(...)
-
 	if Config.DEBUG_PRINTS then
 		print("[BlocksSpawnAreaController]", ...)
 	end
-
 end
 
 --------------------------------------------------
@@ -68,20 +64,13 @@ end
 --------------------------------------------------
 
 local function setBackpackVisible(visible: boolean)
-
 	local ok, err = pcall(function()
-
-		StarterGui:SetCoreGuiEnabled(
-			Enum.CoreGuiType.Backpack,
-			visible
-		)
-
+		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible)
 	end)
 
 	if not ok then
 		warn("[BlocksSpawnAreaController]", err)
 	end
-
 end
 
 --------------------------------------------------
@@ -89,28 +78,20 @@ end
 --------------------------------------------------
 
 local function zoomOutFrame(frame: Frame)
-
 	local originalSize = frame.Size
 
-	local tweenInfo = TweenInfo.new(
-		Config.ZOOM_OUT_DURATION,
-		Enum.EasingStyle.Back,
-		Enum.EasingDirection.In
-	)
+	local tweenInfo = TweenInfo.new(Config.ZOOM_OUT_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.In)
 
-	local tween = TweenService:Create(frame,tweenInfo,{
-		Size = UDim2.new(0,0,0,0)
+	local tween = TweenService:Create(frame, tweenInfo, {
+		Size = UDim2.new(0, 0, 0, 0),
 	})
 
 	tween:Play()
 
 	tween.Completed:Connect(function()
-
 		frame.Visible = false
 		frame.Size = originalSize
-
 	end)
-
 end
 
 --------------------------------------------------
@@ -118,32 +99,26 @@ end
 --------------------------------------------------
 
 local function updateDropUI()
-
-	if not DropButtonFrame then return end
+	if not DropButtonFrame then
+		return
+	end
 
 	local shouldShow = (isInArea and isCarryingBrainrot)
 
 	if shouldShow then
-
 		if not DropButtonFrame.Visible then
 			dprint("Show Drop UI")
 			DropButtonFrame.Visible = true
 		end
-
 	else
-
 		if DropButtonFrame.Visible then
-
 			if not isInArea then
 				zoomOutFrame(DropButtonFrame)
 			else
 				DropButtonFrame.Visible = false
 			end
-
 		end
-
 	end
-
 end
 
 --------------------------------------------------
@@ -151,7 +126,6 @@ end
 --------------------------------------------------
 
 local function updateBackpack()
-
 	local shouldHide = (isInArea and isCarryingBrainrot)
 
 	if shouldHide then
@@ -159,7 +133,6 @@ local function updateBackpack()
 	else
 		setBackpackVisible(true)
 	end
-
 end
 
 --------------------------------------------------
@@ -167,10 +140,8 @@ end
 --------------------------------------------------
 
 local function updateAll()
-
 	updateDropUI()
 	updateBackpack()
-
 end
 
 --------------------------------------------------
@@ -178,16 +149,14 @@ end
 --------------------------------------------------
 
 local function onZoneChanged(newIsInside: boolean)
-
 	dprint("ZoneChanged:", newIsInside)
 
+	LocalPlayer:SetAttribute("IsInArea", newIsInside)
 	isInArea = newIsInside
 
-	isCarryingBrainrot =
-		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
+	isCarryingBrainrot = (LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
 	updateAll()
-
 end
 
 --------------------------------------------------
@@ -195,14 +164,11 @@ end
 --------------------------------------------------
 
 local function onCarryChanged()
-
-	isCarryingBrainrot =
-		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
+	isCarryingBrainrot = (LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
 	dprint("CarryStateChanged:", isCarryingBrainrot)
 
 	updateAll()
-
 end
 
 --------------------------------------------------
@@ -210,28 +176,21 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaController:_initUI()
-
 	PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-	local dropGui =
-		PlayerGui:WaitForChild("DropGui")
+	local dropGui = PlayerGui:WaitForChild("DropGui")
 
-	DropButtonFrame =
-		dropGui:WaitForChild("DropButtonFrame")
+	DropButtonFrame = dropGui:WaitForChild("DropButtonFrame")
 
-	DropButton =
-		DropButtonFrame:WaitForChild("DropButton")
+	DropButton = DropButtonFrame:WaitForChild("DropButton")
 
 	DropButton.MouseButton1Click:Connect(function()
-
 		if BrainrotCarryService then
 			BrainrotCarryService:RequestDrop("DropButtonClicked")
 		end
-
 	end)
 
 	DropButtonFrame.Visible = false
-
 end
 
 --------------------------------------------------
@@ -239,13 +198,11 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaController:_initAudio()
-
 	ExitAudio = Instance.new("Sound")
 	ExitAudio.Name = "ExitAreaAudio"
 	ExitAudio.SoundId = Config.EXIT_AUDIO_ID
 	ExitAudio.Volume = Config.EXIT_AUDIO_VOLUME
 	ExitAudio.Parent = LocalPlayer
-
 end
 
 --------------------------------------------------
@@ -253,34 +210,21 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaController:_connectSignals()
-
 	BlocksSpawnAreaService.ZoneChanged:Connect(function(isInside)
-
 		onZoneChanged(isInside)
-
 	end)
 
-	LocalPlayer:GetAttributeChangedSignal(
-		"IsCarryingBrainrot"
-	):Connect(function()
-
+	LocalPlayer:GetAttributeChangedSignal("IsCarryingBrainrot"):Connect(function()
 		onCarryChanged()
-
 	end)
 
-	LocalPlayer:GetAttributeChangedSignal(
-		"IsInBlocksSpawnArea"
-	):Connect(function()
-
-		local attr =
-			(LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
+	LocalPlayer:GetAttributeChangedSignal("IsInBlocksSpawnArea"):Connect(function()
+		local attr = (LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
 
 		if attr ~= isInArea then
 			onZoneChanged(attr)
 		end
-
 	end)
-
 end
 
 --------------------------------------------------
@@ -288,15 +232,11 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaController:KnitInit()
-
 	dprint("KnitInit")
 
-	BlocksSpawnAreaService =
-		Knit.GetService("BlocksSpawnAreaService")
+	BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
 
-	BrainrotCarryService =
-		Knit.GetService("BrainrotCarryService")
-
+	BrainrotCarryService = Knit.GetService("BrainrotCarryService")
 end
 
 --------------------------------------------------
@@ -304,21 +244,17 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaController:KnitStart()
-
 	dprint("KnitStart")
 
 	self:_initUI()
 	self:_initAudio()
 	self:_connectSignals()
 
-	isInArea =
-		(LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
+	isInArea = (LocalPlayer:GetAttribute("IsInBlocksSpawnArea") == true)
 
-	isCarryingBrainrot =
-		(LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
+	isCarryingBrainrot = (LocalPlayer:GetAttribute("IsCarryingBrainrot") == true)
 
 	updateAll()
-
 end
 
 return BlocksSpawnAreaController

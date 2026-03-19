@@ -42,9 +42,9 @@ local DataStoreKey: string = `{DataStoreName}_{DataStoreVersion}`
 local PlayerStore = ProfileStoreModule.New(DataStoreKey, PROFILE_TEMPLATE)
 local Profiles = {}
 
-local EnumDataValue = {
-	["Coins"] = "Coins",
-}
+-- local EnumDataValue = {
+-- 	["Coins"] = "Coins",
+-- }
 
 local DataHandlerService = Knit.CreateService({
 	Name = "DataHandlerService",
@@ -184,6 +184,15 @@ local function SetLeaderboardStats(player: Player, Name: string, value: number)
 		Attr.Value = Format.abbreviate(value)
 	else
 		Attr.Value = value
+	end
+end
+
+--MoneyMultiplierHelpers
+function DataHandlerService:GetMoneyMultiplier(player: Player)
+	local data = self:GetPlayerData(player)
+
+	if data then
+		return data.MoneyMultiplier
 	end
 end
 

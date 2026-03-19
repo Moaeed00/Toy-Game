@@ -11,7 +11,8 @@ function offlineEarningsUtils.ComputeRewards(
 	entity: {},
 	currentTime: number,
 	previousTime: number,
-	offlineMoney: number
+	offlineMoney: number,
+	moneyMultiplier: number
 )
 	local secondSinceLastJoin = currentTime - previousTime
 	local timeOffline = math.clamp(secondSinceLastJoin, 0, TWENTY_FOUR_HOUR)
@@ -24,7 +25,7 @@ function offlineEarningsUtils.ComputeRewards(
 	local entityName = entity:GetName()
 	local mutationName = entity:GetMutation()
 
-	local sum = functions.computeMultiplier(player, biomeName, entityName, mutationName)
+	local sum = functions.computeMultiplier(player, biomeName, entityName, mutationName, moneyMultiplier)
 
 	local total = math.round((timeOffline * sum) / 5)
 
