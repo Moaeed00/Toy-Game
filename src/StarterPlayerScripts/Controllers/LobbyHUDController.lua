@@ -51,6 +51,7 @@ Hud.Buttons = {
 	RedeemCode = MainGui.UIRight.RedeemCode,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
+	Sell = MainGui.UITop.Frame.Sell,
 }
 
 Hud.Controller = { MainGui = Hud }
