@@ -11,6 +11,7 @@ local LobbyCircleTouch: {} = require(LobbyHUDHelpers:WaitForChild("LobbyCircleTo
 local Format: {} = require(ReplicatedStorage.Libraries.Format)
 local CounterTween: {} = require(ReplicatedStorage.Utility.Countertween)
 local CashAnimation: {} = require(ReplicatedStorage.Utility.CashAnimation)
+local NotificationHandler: {} = require(ReplicatedStorage.Utility.NotificationHandler)
 
 ----	[References]		----
 local Player = Players.LocalPlayer
@@ -48,8 +49,11 @@ Hud.Buttons = {
 	ProductShop = MainGui.UILeft.Shop,
 	Invite = MainGui.UILeft.Invite,
 	VIP = MainGui.UILeft.VIP,
+	Index = MainGui.UILeft.Index,
+	Rebirth = MainGui.UILeft.Rebirth,
 	RedeemCode = MainGui.UIRight.RedeemCode,
 	StarterPack = MainGui.UIRight.StarterPack,
+	MagicCarpet = MainGui.UIRight.MagicCarpet,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
 	Sell = MainGui.UITop.Frame.Sell,
@@ -155,6 +159,8 @@ function Hud:OpenContainer(name: string)
 			ProductPurchaseService.PromptPurchase:Fire(3559290714)
 		elseif name == "StarterPack" then
 			ProductPurchaseService.PromptPurchase:Fire(3559281772)
+		else
+			NotificationHandler:DisplayNotificationMessage("Comming Soon", "Error")
 		end
 	end
 end
