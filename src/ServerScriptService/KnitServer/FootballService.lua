@@ -33,8 +33,8 @@ function FootballService:KnitStart()
         self:EquipBall(player)
     end)
 
-    self.Client.KickBallEvent:Connect(function(player: Player, ballPosition: Vector3)
-        self:KickBall(player, ballPosition)
+    self.Client.KickBallEvent:Connect(function(player: Player, ballPosition: Vector3, mouseHitPosition: Vector3)
+        self:KickBall(player, ballPosition, mouseHitPosition)
     end)
 
     self.Client.UnequipBallEvent:Connect(function(player: Player)
@@ -95,24 +95,33 @@ function FootballService:EquipBall(player: Player)
     CollisionGroupHandler:AddCollisionGroup("FootBall", footballTool)
 end
 
-function FootballService:KickBall(player: Player, ballPosition: Vector3)
+function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHitPosition: Vector3)
     if self.IsKicking[player] then
         return
     end
     self.IsKicking[player] = true
 
     if not player.Character then
+        self.IsKicking[player] = false
         return
     end
 
     local root = player.Character:FindFirstChild("HumanoidRootPart")
     if not root then
+        self.IsKicking[player] = false
         return
+    end
+
+    -- Rotate the player toward the mouse hit position (Y-axis only)
+    local targetDirection = Vector3.new(mouseHitPosition.X - root.Position.X, 0, mouseHitPosition.Z - root.Position.Z).Unit
+    if targetDirection.Magnitude > 0 then
+        root.CFrame = CFrame.new(root.Position, root.Position + targetDirection)
     end
 
     local footballTool = self.Footballs[player]
     local playerData = DataStoreHandler:GetPlayerData(player)
     if not playerData then
+        self.IsKicking[player] = false
         return
     end
 
@@ -122,7 +131,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3)
     -- local handle = footballTool:WaitForChild("HandlePoint") or footballTool:WaitForChild("Handle")
     local handle = footballTool:WaitForChild("Handle")
     local ball: Part = handle:WaitForChild(footballName)
-    if ball:FindFirstChild("Weld") then
+    if ball:FindFirstChild("BallWeld") then
         ball.BallWeld:Destroy()
     end
     ball.Anchored = false
