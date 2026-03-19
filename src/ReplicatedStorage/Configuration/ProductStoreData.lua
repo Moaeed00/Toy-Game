@@ -6,7 +6,7 @@ local ProductStoreData = {
 		Type = "Bundle",
 		RewardData = {
 			{ Type = "Money", Data = { Amount = 2_500 } },
-			{ Type = "Brainrot", Data = { Name = "Fluri Flura", Rarity = "Common", Mutation = "Lava" } },
+			{ Type = "Brainrot", Data = { Name = "Six Seven", Rarity = "Legendary", Mutation = "Normal" } },
 			{ Type = "Brainrot", Data = { Random = true } },
 		},
 	},
