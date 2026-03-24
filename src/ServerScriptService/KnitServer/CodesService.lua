@@ -40,11 +40,13 @@ function CodesService.Client:RedeemCode(player: Player, code: string)
 	end
 
 	-- rewards
-	for rewardType, value in pairs(codeInfo.rewards) do
-		if rewardType == "coins" then
-			DataHandler:UpdateMoney(player, value)
-		end
-	end
+	local BaseService = Knit.GetService("BaseService")
+
+	local brainrotName = "Strawberry Elephant"
+	local brainrotRarity = "Secret"
+	local mutation = "Normal"
+
+	BaseService:GiveTool(player, brainrotRarity, brainrotName, mutation)
 
 	table.insert(claimedCodes, code)
 	-- DataHandler:UpdateCodes(player, claimedCodes)

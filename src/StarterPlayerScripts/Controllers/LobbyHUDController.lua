@@ -11,6 +11,7 @@ local LobbyCircleTouch: {} = require(LobbyHUDHelpers:WaitForChild("LobbyCircleTo
 local Format: {} = require(ReplicatedStorage.Libraries.Format)
 local CounterTween: {} = require(ReplicatedStorage.Utility.Countertween)
 local CashAnimation: {} = require(ReplicatedStorage.Utility.CashAnimation)
+local NotificationHandler: {} = require(ReplicatedStorage.Utility.NotificationHandler)
 
 ----	[References]		----
 local Player = Players.LocalPlayer
@@ -23,6 +24,7 @@ local hoverTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDire
 local unHoverTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local DataHandlerService
+local ProductPurchaseService
 
 local Controllers = {
 	-- DailySpin = "SpinClient",
@@ -31,6 +33,7 @@ local Controllers = {
 	GearShop = "GearShopController",
 	ProductShop = "ProductShopController",
 	RedeemCode = "CodesController",
+	Invite = "InviteFriendController",
 }
 
 local Hud = Knit.CreateController({
@@ -44,8 +47,16 @@ LobbyCircleTouch.LobbyHUD = Hud
 Hud.Buttons = {
 	-- DailySpin = MainGui.Left.Last.DailySpin,
 	ProductShop = MainGui.UILeft.Shop,
+	Invite = MainGui.UILeft.Invite,
+	VIP = MainGui.UILeft.VIP,
+	Index = MainGui.UILeft.Index,
+	Rebirth = MainGui.UILeft.Rebirth,
+	RedeemCode = MainGui.UIRight.RedeemCode,
+	StarterPack = MainGui.UIRight.StarterPack,
+	MagicCarpet = MainGui.UIRight.MagicCarpet,
 	Home = MainGui.UITop.Frame.Home,
 	Shops = MainGui.UITop.Frame.Shops,
+	Sell = MainGui.UITop.Frame.Sell,
 }
 
 Hud.Controller = { MainGui = Hud }
@@ -56,7 +67,7 @@ local GUIS = {
 	Merchant = "MerchantGui",
 	GearShop = "GearGui",
 	ProductShop = "ProductShopGui",
-	RedeemCode = "RedeemCode"
+	RedeemCode = "RedeemCode",
 }
 
 Hud.GUI = { MainGui = MainGui }
@@ -141,6 +152,16 @@ function Hud:OpenContainer(name: string)
 		else
 			FocusEffect.Hide()
 		end
+	else
+		if name == "Invite" then
+			self.Controller[name]:SetEnabled(true)
+		elseif name == "VIP" then
+			ProductPurchaseService.PromptPurchase:Fire(3559290714)
+		elseif name == "StarterPack" then
+			ProductPurchaseService.PromptPurchase:Fire(3559281772)
+		else
+			NotificationHandler:DisplayNotificationMessage("Comming Soon", "Error")
+		end
 	end
 end
 
@@ -188,6 +209,7 @@ end
 
 function Hud:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
+	ProductPurchaseService = Knit.GetService("ProductPurchaseService")
 end
 
 function Hud:KnitStart()

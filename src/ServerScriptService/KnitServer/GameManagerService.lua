@@ -62,7 +62,9 @@ function GameManagerService:KnitStart()
 	Players.PlayerAdded:Connect(OnPlayerAdded)
 	DataHandlerService.OnPlayerProfileLoaded:Connect(function(Player)
 		leaderboardSetup(Player)
-		-- DataHandlerService:UpdatePoints(Player, 1000)
+
+		local MoneyMultiplierValue = DataHandlerService:GetMoneyMultiplier(Player)
+		Player:SetAttribute("MoneyMultiplier", MoneyMultiplierValue)
 	end)
 end
 
