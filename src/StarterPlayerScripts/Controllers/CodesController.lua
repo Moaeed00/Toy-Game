@@ -8,8 +8,8 @@ local player = Players.LocalPlayer
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- [Modules] ----
-local Configuration = ReplicatedStorage:WaitForChild("Configuration")
-local CodesConfig = require(Configuration:WaitForChild("CodesConfiguration"))
+-- local Configuration = ReplicatedStorage:WaitForChild("Configuration")
+-- local CodesConfig = require(Configuration:WaitForChild("CodesConfiguration"))
 
 -- [UI References] ----
 local PlayerGui = player:WaitForChild("PlayerGui")
@@ -17,8 +17,8 @@ local RedeemCodeGui = PlayerGui:WaitForChild("RedeemCode")
 
 local MainFrame = RedeemCodeGui:WaitForChild("MainFrame")
 local textBox = MainFrame:WaitForChild("Box")
-local ClaimButton = MainFrame:WaitForChild("ClaimButton")
-local CloseButton = RedeemCodeGui:WaitForChild("Close")
+local ClaimButton = MainFrame:WaitForChild("Buttons"):WaitForChild("Claim")
+local CloseButton = MainFrame:WaitForChild("Close")
 
 -- [Variables] ----
 local PlaceHolderText = "Enter code..."
@@ -56,11 +56,11 @@ function CodesController:OnClaim()
 		return
 	end
 
-	local success, message = CodesService:RedeemCode(code)
+	local success, _message = CodesService:RedeemCode(code)
 
 	if success then
 		-- print(message .. " (Success)")
-        print("Success")
+		print("Success")
 	else
 		-- print(message .. " (Error)")
 		print("Error")
@@ -128,7 +128,6 @@ function CodesController:KnitStart()
 			self.LobbyHUD:OpenContainer("MainGui")
 		end
 	end)
-
 end
 
 return CodesController

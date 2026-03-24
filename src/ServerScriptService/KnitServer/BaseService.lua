@@ -241,7 +241,9 @@ function BaseService:CreateBase(player: Player)
 		return
 	end
 
-	local playerBase = PlayerBase.new(self, TimerService, player, availableSlot)
+	local playerData = self:GetPlayerData(player)
+
+	local playerBase = PlayerBase.new(self, TimerService, player, availableSlot, playerData.MoneyMultiplier)
 	local key = tostring(player.UserId)
 
 	self._activeBases[key] = playerBase

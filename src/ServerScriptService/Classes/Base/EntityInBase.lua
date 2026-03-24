@@ -5,6 +5,7 @@ local getPlayerFromCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerF
 local EntitiesConfiguration = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local NumberUtils = require(ReplicatedStorage.Shared.Modules.NumberUtils)
+local functions = require(ReplicatedStorage.Shared.Utils.functions)
 local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local Format = require(ReplicatedStorage.Libraries.Format)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
@@ -103,12 +104,15 @@ function EntityBase.GenerateMoney(self: EntityInBase)
 			return
 		end
 
-		local _, entityData = getBiomeByEntity(self._entityName)
-		if not entityData then
-			return
-		end
+		local MoneyMultiplier = self._player:GetAttribute("MoneyMultiplier")
 
-		local moneyPerSec = entityData.MoneyPerSec
+		local moneyPerSec = functions.computeMultiplier(
+			self._player,
+			self._biomeName,
+			self._entityName,
+			self._mutationName,
+			MoneyMultiplier
+		)
 
 		self._pendingMoney += moneyPerSec
 

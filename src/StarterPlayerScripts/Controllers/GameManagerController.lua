@@ -9,6 +9,7 @@ local uiTopFrame: Frame = mainGui:WaitForChild("UITop")
 local innerFrame: Frame = uiTopFrame:WaitForChild("Frame")
 local homeButton: ImageButton = innerFrame:WaitForChild("Home")
 local shopButton: ImageButton = innerFrame:WaitForChild("Shops")
+local sellButton: ImageButton = innerFrame:WaitForChild("Sell")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -41,6 +42,14 @@ local function teleportToShop()
 	end
 end
 
+local function teleportToSellShop()
+	local SellToPart = Workspace:WaitForChild("SellToPart")
+
+	if SellToPart then
+		Player.Character:PivotTo(SellToPart.CFrame)
+	end
+end
+
 --// ==========================================
 --// Knit Lifecycle
 --// ==========================================
@@ -61,6 +70,14 @@ function GameManagerController:KnitStart()
 		end
 
 		teleportToShop()
+	end)
+
+	sellButton.MouseButton1Click:Connect(function()
+		if Player:GetAttribute("IsInArea") then
+			return
+		end
+
+		teleportToSellShop()
 	end)
 
 	task.spawn(function()

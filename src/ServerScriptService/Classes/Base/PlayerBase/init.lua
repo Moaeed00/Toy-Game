@@ -51,11 +51,12 @@ export type constructor = PlayerBase & {
 }
 
 local PlayerBase: constructor = Class(
-	function(self: PlayerBase, service: {}, timerservice: {}, player: Player, slot: BasePart)
+	function(self: PlayerBase, service: {}, timerservice: {}, player: Player, slot: BasePart, MoneyMultiplier: number)
 		self._service = service
 		self._timerservice = timerservice
 		self._player = player
 		self._slot = slot
+		self._moneyMultiplier = MoneyMultiplier
 
 		if slot then
 			slot:SetAttribute(AttributesConfiguration.SLOT_TAKEN, true)
@@ -79,7 +80,7 @@ function PlayerBase.RemoveFromBaseEarning(self: PlayerBase, entityName: string)
 		local moneyPerSec = math.floor(entityData.MoneyPerSec)
 		local existingValue = self._player:GetAttribute("MoneyPerSec")
 		if existingValue then
-			local updatedValue = existingValue - moneyPerSec
+			local updatedValue = existingValue - (moneyPerSec * self._moneyMultiplier)
 			self._player:SetAttribute("MoneyPerSec", updatedValue)
 		end
 	end
@@ -90,20 +91,34 @@ function PlayerBase.AddToBaseEarning(self: PlayerBase, entityName: string)
 	if entityData then
 		local moneyPerSec = math.floor(entityData.MoneyPerSec)
 		local existingValue = self._player:GetAttribute("MoneyPerSec")
-		local updatedValue = moneyPerSec
+		local updatedValue = moneyPerSec * self._moneyMultiplier
+
 		if existingValue then
-			updatedValue = existingValue + moneyPerSec
+			updatedValue = existingValue + (moneyPerSec * self._moneyMultiplier)
 		end
 
 		self._player:SetAttribute("MoneyPerSec", updatedValue)
 	end
 end
 
-function PlayerBase.ComputeOfflineRewards(self: PlayerBase, data: {}, entity: {}, offlineMoney: number)
+function PlayerBase.ComputeOfflineRewards(
+	self: PlayerBase,
+	data: {},
+	entity: {},
+	offlineMoney: number,
+	moneyMultiplier: number
+)
 	local currentTime = os.time()
 	local previousJoin = data.LastJoin or currentTime
 
-	local total = offlineEarningsUtils.ComputeRewards(self._player, entity, currentTime, previousJoin, offlineMoney)
+	local total = offlineEarningsUtils.ComputeRewards(
+		self._player,
+		entity,
+		currentTime,
+		previousJoin,
+		offlineMoney,
+		moneyMultiplier
+	)
 
 	return total
 end
@@ -149,7 +164,7 @@ function PlayerBase.LoadEntities(self: PlayerBase)
 		if entity then
 			entity:SetPending(pendingMoney)
 
-			local offlineUpdated = self:ComputeOfflineRewards(data, entity, offlineMoney)
+			local offlineUpdated = self:ComputeOfflineRewards(data, entity, offlineMoney, self._moneyMultiplier)
 			entity:SetOffline(offlineUpdated)
 		end
 	end

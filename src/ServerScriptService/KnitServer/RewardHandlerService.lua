@@ -100,6 +100,19 @@ function RewardHandlers.Brainrot(player: Player, RewardData: {}, _mode: string)
 	RewardHandlerService.Client.OnPurchaseNotification:Fire(player, `You Got {label} Brainrot!`)
 end
 
+function RewardHandlers.MoneyMultiplier(player: Player, RewardData: {}, _mode: string)
+	local PrevMultiplier = DataHandlerService:GetMoneyMultiplier(player)
+	local UpdatedMultiplier = PrevMultiplier * RewardData.Amount
+	DataHandlerService:SetPlayerData(player, { MoneyMultiplier = UpdatedMultiplier })
+
+	player:SetAttribute("MoneyMultiplier", UpdatedMultiplier)
+
+	RewardHandlerService.Client.OnPurchaseNotification:Fire(
+		player,
+		`Successfully Purchased {RewardData.Amount}X Money Multiplier`
+	)
+end
+
 function RewardHandlers.Money(player: Player, RewardData: {}, _mode: string)
 	local Amount = RewardData.Amount
 	DataHandlerService:UpdateMoney(player, Amount)
