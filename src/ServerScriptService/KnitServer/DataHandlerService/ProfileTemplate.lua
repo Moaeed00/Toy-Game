@@ -1,8 +1,3 @@
---!strict
---// File: ServerScriptService/KnitServer/Services/DataHandlerService/ProfileTemplate.lua
---// ProfileTemplate.lua
---// FINAL: Slide, Punch, Golden Slide, Golden Punch
-
 return {
 	Points = 10000,
 	Footballs = {
@@ -14,15 +9,12 @@ return {
 	Rebirth = 0,
 
 	MoneyMultiplier = 1,
-
 	LikesReceived = 0,
 	LikedPlayers = {},
-
 	LastJoin = 0,
-
 	Backpack = {},
 	Base = {},
-
+	BaseColor = {},
 	--// Gear ownership
 	Gear = {
 		["Slide"] = true, -- Free
@@ -32,7 +24,6 @@ return {
 		["Golden Punch"] = false,
 		["Gravity Coil"] = false,
 	},
-
 	--// Auto-buy settings
 	AutoBuy = {
 		["Slide"] = false,
@@ -42,4 +33,10 @@ return {
 		["Golden Punch"] = false,
 		["Gravity Coil"] = false,
 	},
+	--// Brainrot Index: Stores discovered brainrot keys
+	--   Normal variant → "Trippi_Troppi"        (true)
+	--   Golden variant → "Golden_Trippi_Troppi"  (true)
+	-- Missing keys are treated as undiscovered
+	DiscoveredBrainrots = {},
+	IndexMultiplierBonus = 0,
 }

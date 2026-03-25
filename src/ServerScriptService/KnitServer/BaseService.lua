@@ -18,6 +18,7 @@ local SELL_FACTOR = EntitiesConfiguration.Original.SELL_FACTOR
 local TotalLikes
 local LikesService
 local TimerService
+local IndexSevice
 local DataHandlerService
 
 local BaseService = Knit.CreateService({
@@ -36,6 +37,7 @@ function BaseService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
 	TimerService = Knit.GetService("TimerService")
 	LikesService = Knit.GetService("LikesService")
+	IndexSevice = Knit.GetService("IndexService")
 end
 
 function BaseService:KnitStart()
@@ -266,6 +268,7 @@ function BaseService:CreateBase(player: Player)
 	LikesService:BroadcastLikeUpdate(player.UserId, TotalLikes)
 	self:NotifyAlreadyLikedPlayers(player)
 	self:AttachLikePromptHandler(player, playerBase)
+	IndexSevice:ApplySavedBaseColor(player)
 end
 
 function BaseService:NotifyAlreadyLikedPlayers(owner: Player)

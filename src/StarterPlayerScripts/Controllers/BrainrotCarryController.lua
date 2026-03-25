@@ -104,7 +104,7 @@ local function handleDropAction(
 			dprint("RequestDrop")
 
 			if BrainrotCarryService then
-				BrainrotCarryService:RequestDrop("ClientHoldDrop")
+				BrainrotCarryService.RequestDropEvent:Fire(LocalPlayer)
 			end
 
 		end
