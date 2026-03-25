@@ -11,6 +11,8 @@ return {
 	},
 	Money = 100,
 
+	Rebirth = 0,
+
 	MoneyMultiplier = 1,
 
 	LikesReceived = 0,

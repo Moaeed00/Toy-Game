@@ -134,6 +134,9 @@ local function create_entity_model(_biomeName: string, entityName: string, mutat
 	model:PivotTo(slotPart.CFrame)
 	model.Parent = slotPart
 
+	local MeshPart = model:FindFirstChild("Mesh")
+	MeshPart.CastShadow = false
+
 	-- if mutationName then
 	-- 	local mutationInfo = MutationsConfiguration[mutationName]
 	-- 	if not mutationInfo then

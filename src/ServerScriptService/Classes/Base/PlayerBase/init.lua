@@ -1,5 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerCharacter)
@@ -10,7 +11,6 @@ local Class = require(ReplicatedStorage.Shared.Modules.Class)
 local whenBaseDestroyed = require(script.whenBaseDestroyed)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
 local offlineEarningsUtils = require(ServerScriptService.Utils.offlineEarningsUtils)
--- local Signal = require(ReplicatedStorage.Libraries.Signal)
 local Trove = require(ReplicatedStorage.Libraries.Trove)
 local createBaseModel = require(script.createBaseModel)
 
@@ -73,6 +73,83 @@ local PlayerBase: constructor = Class(
 		self:Init()
 	end
 )
+
+function PlayerBase.LoadStagesFromLevel(self: PlayerBase)
+	local data = self:GetPlayerData()
+
+	for i = 1, data.Rebirth do
+		self:CreateStage(i, i == data.Rebirth)
+	end
+end
+
+function PlayerBase.CreateStage(self: PlayerBase, id: number, lock: boolean)
+	if id > 5 then
+		return
+	end
+
+	local stageNumber = math.clamp(id, 1, 5)
+
+	local stageTemplate = ServerStorage.Assets.Stages:FindFirstChild(`Stage{stageNumber}`)
+	if not stageTemplate then
+		return
+	end
+
+	local stage = stageTemplate:Clone()
+	stage:PivotTo(self._baseModel.Primary.CFrame)
+
+	if lock then
+		local prevStage = workspace
+			:FindFirstChild("Bases")
+			:FindFirstChild(self._player.UserId)
+			:FindFirstChild("Stages")
+			:FindFirstChild(stageNumber - 1)
+		if prevStage then
+			prevStage.RoofHole.Transparency = 1
+			prevStage.RoofHole.CanCollide = false
+			prevStage.RoofHole.CanQuery = false
+		end
+
+		stage.RoofHole.Transparency = 0
+		stage.RoofHole.CanCollide = true
+	end
+
+	stage.Name = stageNumber
+
+	for _, slot in stage.Grid:GetChildren() do
+		slot.Parent = self._baseModel.Grid
+	end
+
+	stage.Parent = self._baseModel.Stages
+
+	if self._baseModel.RoofHole.CanCollide then
+		self._baseModel.RoofHole.Transparency = 1
+		self._baseModel.RoofHole.CanCollide = false
+		self._baseModel.RoofHole.CanQuery = false
+	end
+end
+
+function PlayerBase.DoRebirth(self: PlayerBase, playerData: {})
+	self:RemoveAllEntities()
+	local nextLevel = playerData.Rebirth + 1
+
+	self:CreateStage(nextLevel, true)
+end
+
+function PlayerBase.RemoveAllEntities(self: PlayerBase)
+	local ids = {}
+	for id in self._entitiesInBases do
+		ids[#ids + 1] = id
+	end
+
+	for _, id in ids do
+		self:RemoveEntity(id)
+	end
+
+	self._backpack = {}
+
+	local Player = self:GetPlayer()
+	entityUtils.clearBrainrotTools(Player)
+end
 
 function PlayerBase.RemoveFromBaseEarning(self: PlayerBase, entityName: string)
 	local _biome, entityData = getBiomeByEntity(entityName)
@@ -216,6 +293,7 @@ function PlayerBase.WhenPlayerDie(self: PlayerBase)
 end
 
 function PlayerBase.Init(self: PlayerBase)
+	self:LoadStagesFromLevel()
 	self:LoadTools()
 	self:LoadEntities()
 

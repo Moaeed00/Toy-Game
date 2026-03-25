@@ -234,6 +234,18 @@ function BaseService:ReleaseTool(player: Player, toolId: string)
 	playerBase:ReleaseTool(toolId)
 end
 
+function BaseService:DoRebirth(player: Player)
+	local playerBase, data = self:GetPlayerBase(player)
+	if not playerBase or not data then
+		return
+	end
+
+	playerBase:DoRebirth(data)
+
+	data.Rebirth += 1
+	player:SetAttribute("Rebirth", data.Rebirth)
+end
+
 function BaseService:CreateBase(player: Player)
 	local availableSlot = worldUtils.getAvailableSlot()
 

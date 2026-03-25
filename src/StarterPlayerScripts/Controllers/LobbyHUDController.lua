@@ -34,6 +34,7 @@ local Controllers = {
 	ProductShop = "ProductShopController",
 	RedeemCode = "CodesController",
 	Invite = "InviteFriendController",
+	Rebirth = "RebirthController",
 }
 
 local Hud = Knit.CreateController({
@@ -68,6 +69,7 @@ local GUIS = {
 	GearShop = "GearGui",
 	ProductShop = "ProductShopGui",
 	RedeemCode = "RedeemCode",
+	Rebirth = "RebirthGui",
 }
 
 Hud.GUI = { MainGui = MainGui }

@@ -60,8 +60,9 @@ end
 function GameManagerService:KnitStart()
 	-- print("GameManagerService Started")
 	Players.PlayerAdded:Connect(OnPlayerAdded)
-	DataHandlerService.OnPlayerProfileLoaded:Connect(function(Player)
+	DataHandlerService.OnPlayerProfileLoaded:Connect(function(Player, Data)
 		leaderboardSetup(Player)
+		Player:SetAttribute("Rebirth", Data.Rebirth)
 
 		local MoneyMultiplierValue = DataHandlerService:GetMoneyMultiplier(Player)
 		Player:SetAttribute("MoneyMultiplier", MoneyMultiplierValue)
