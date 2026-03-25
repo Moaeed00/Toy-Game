@@ -109,6 +109,7 @@ local function OnPlayerAdded(player: Player)
 			print(`Profile loaded for {player.DisplayName}!`)
 
 			-- Fire any events you need to after the profile has been freshly loaded
+			player:SetAttribute("Money", Profiles[player].Data.Money)
 			DataHandlerService.Client.UpdateMoney:Fire(player, Profiles[player].Data.Money, true)
 			-- For Leaderboard Initialization
 		else
@@ -180,6 +181,7 @@ local function SetLeaderboardStats(player: Player, Name: string, value: number)
 	local Attr = LeaderStats:FindFirstChild(Name)
 
 	if Attr.Name == "Cash" then
+		player:SetAttribute("Money", value)
 		DataHandlerService.Client.UpdateMoney:Fire(player, value)
 		Attr.Value = Format.abbreviate(value)
 	else
@@ -237,6 +239,15 @@ function DataHandlerService:UpdatePoints(player: Player, pointsEarned: number)
 end
 
 -- Coins Helpers
+function DataHandlerService:ResetMoney(player)
+	local data = self:GetPlayerData(player)
+	if data then
+		self:SetPlayerData(player, { Money = 0 })
+		SetLeaderboardStats(player, "Cash", 0)
+		return true
+	end
+end
+
 function DataHandlerService:DeductMoney(player: Player, amount: number)
 	local data = self:GetPlayerData(player)
 

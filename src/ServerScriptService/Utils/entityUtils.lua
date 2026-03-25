@@ -194,4 +194,23 @@ function entityUtils.getRandomEntityIndexInBiome(biomeName: string)
 	return randomKey
 end
 
+function entityUtils.clearBrainrotTools(player: Player)
+	local playerBackpack = player.Backpack
+	local playerCharacter = getPlayerCharacter(player)
+
+	local function clearFrom(container: Instance)
+		if not container then
+			return
+		end
+		for _, item in container:GetChildren() do
+			if item:IsA("Tool") and item:GetAttribute("ToolCategory") == "Brainrot" then
+				item:Destroy()
+			end
+		end
+	end
+
+	clearFrom(playerBackpack)
+	clearFrom(playerCharacter)
+end
+
 return entityUtils
