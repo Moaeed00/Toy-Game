@@ -31,6 +31,7 @@ local playersInArea: {[Player]:boolean} = {}
 local areaPart: Part?
 
 local BrainrotCarryService
+local IndexService
 
 --------------------------------------------------
 -- Area Check
@@ -124,6 +125,19 @@ end
 -- Player Exit Area
 --------------------------------------------------
 
+local function getCarriedBrainrot(player: Player): Model?
+	local char = player.Character
+	if not char then return nil end
+
+	for _,obj in ipairs(char:GetChildren()) do
+		if obj:IsA("Model") and obj:GetAttribute("IsCarried") then
+			return obj
+		end
+	end
+
+	return nil
+end
+
 function BlocksSpawnAreaService:_playerExited(player: Player)
 
 	if not playersInArea[player] then
@@ -137,15 +151,23 @@ function BlocksSpawnAreaService:_playerExited(player: Player)
 	--------------------------------------------------
 	-- Convert brainrot to tool if carrying
 	--------------------------------------------------
-
 	if player:GetAttribute("IsCarryingBrainrot") then
 
-		task.defer(function()
+		local carried = getCarriedBrainrot(player)
+		if carried then
+			local brainrotName = carried:GetAttribute("Name") or carried.Name
+			local variantPrefix = carried:GetAttribute("Variant") or "Normal"
 
+			if IndexService then
+				IndexService:UnlockBrainrot(player, brainrotName, variantPrefix)
+			end
+		end
+
+		-- THEN convert (this destroys it)
+		task.defer(function()
 			if BrainrotCarryService then
 				BrainrotCarryService:ConvertToTool(player)
 			end
-
 		end)
 
 	end
@@ -248,15 +270,11 @@ end
 --------------------------------------------------
 
 function BlocksSpawnAreaService:KnitStart()
-
-	areaPart =
-		workspace.Environment:WaitForChild(
-			Config.BLOCKS_SPAWN_AREA_NAME
-		)
+	areaPart = workspace.Environment:WaitForChild(Config.BLOCKS_SPAWN_AREA_NAME)
 
 	pcall(function()
-		BrainrotCarryService =
-			Knit.GetService("BrainrotCarryService")
+		BrainrotCarryService = Knit.GetService("BrainrotCarryService")
+		IndexService = Knit.GetService("IndexService")
 	end)
 
 	for _,player in ipairs(Players:GetPlayers()) do

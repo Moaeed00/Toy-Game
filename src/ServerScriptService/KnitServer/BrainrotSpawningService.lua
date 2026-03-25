@@ -192,7 +192,7 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     CollectionService:AddTag(spawnedBrainrot, "Brainrot")
     spawnedBrainrot:SetAttribute("Name", brainrotName)
     spawnedBrainrot:SetAttribute("RarityType", brainrotData.RarityType)
-    spawnedBrainrot:SetAttribute("CashPerSecond", brainrotData.CashPerSecond)
+    spawnedBrainrot:SetAttribute("CashPerSecond", self:FormatCommas(tostring(brainrotData.CashPerSecond)))
     spawnedBrainrot:SetAttribute("SellPrice", brainrotData.SellPrice)
     spawnedBrainrot:SetAttribute("FractionChance", brainrotData.FractionChance)
     spawnedBrainrot:SetAttribute("Timer", brainrotData.Timer)
@@ -324,6 +324,16 @@ end
 
 function BrainrotSpawnService:StopBrainrotTimer(brainrot: Model)
     brainrot:SetAttribute("Timer", 0)
+end
+
+function BrainrotSpawnService:FormatCommas(arg: string)
+	local prefix, numbers = arg:match("^(.-)(%d+)$")
+	if not numbers then
+		return
+	end
+
+	numbers = numbers:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+	return prefix .. numbers
 end
 
 return BrainrotSpawnService

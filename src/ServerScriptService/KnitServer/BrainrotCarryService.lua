@@ -4,7 +4,6 @@
 -- Handles ONLY brainrot MODEL pickup / carry / drop
 -- Tool logic handled by BaseService after conversion
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 local CollectionService = game:GetService("CollectionService")
@@ -16,7 +15,6 @@ local BrainrotConfig = require(
 )
 
 local holdAnimTracks: {[Player]: AnimationTrack} = {}
-local BRAINROT_SPAWN_PICKUP_DELAY = 0.35
 local BaseService
 
 local BrainrotCarryService = Knit.CreateService({
@@ -24,6 +22,7 @@ local BrainrotCarryService = Knit.CreateService({
 
 	Client = {
 		CarryStateChanged = Knit.CreateSignal(),
+		RequestDropEvent = Knit.CreateSignal(),
 		RequestDrop = function() end,
 	}
 })
@@ -403,9 +402,11 @@ end
 --------------------------------------------------
 
 function BrainrotCarryService.Client:RequestDrop(player: Player)
-
 	self.Server:DropBrainrot(player)
+end
 
+function BrainrotCarryService:RequestDrop(player: Player)
+	self.Client:RequestDrop(player)
 end
 
 --------------------------------------------------
@@ -482,7 +483,7 @@ function BrainrotCarryService:_setupPrompt(model: Model)
 			while mesh and mesh.Parent and mesh.Transparency > 0 do
 				task.wait(0.05)
 			end
-			
+
 			if not model or not model.Parent then
 				return
 			end
@@ -516,6 +517,9 @@ end
 --------------------------------------------------
 
 function BrainrotCarryService:KnitStart()
+	BrainrotCarryService.Client.RequestDropEvent:Connect(function(player: Player)
+		self:RequestDrop(player)
+	end)
 
 	pcall(function()
 		self.BlocksSpawnAreaService =

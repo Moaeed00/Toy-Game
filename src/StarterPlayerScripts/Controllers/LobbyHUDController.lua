@@ -34,6 +34,7 @@ local Controllers = {
 	ProductShop = "ProductShopController",
 	RedeemCode = "CodesController",
 	Invite = "InviteFriendController",
+	Index = "IndexController"
 }
 
 local Hud = Knit.CreateController({
@@ -64,6 +65,7 @@ Hud.Controller = { MainGui = Hud }
 local GUIS = {
 	-- DailySpin = "DailySpin",
 	FootballShop = "FootballShopGui",
+	Index = "IndexGui",
 	Merchant = "MerchantGui",
 	GearShop = "GearGui",
 	ProductShop = "ProductShopGui",

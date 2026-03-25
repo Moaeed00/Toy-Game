@@ -186,7 +186,7 @@ function BlocksSpawnAreaController:_initUI()
 
 	DropButton.MouseButton1Click:Connect(function()
 		if BrainrotCarryService then
-			BrainrotCarryService:RequestDrop("DropButtonClicked")
+			BrainrotCarryService.RequestDropEvent:Fire(LocalPlayer)
 		end
 	end)
 
