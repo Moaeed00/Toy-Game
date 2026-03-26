@@ -34,19 +34,19 @@ return {
 		Image = "rbxassetid://122341633789530",
 		Power = 4,
 	},
-	-- ["Crackstone"] = {
-	-- 	Price = 5000,
-	-- 	Robux = 39,
-	-- 	UnlockID = 3431449609,
-	-- 	Type = "Football",
-	-- 	RewardData = {
-	-- 		ItemName = "Crackstone",
-	-- 	},
-	-- 	Id = 5,
-	-- 	RarityType = "Uncommon",
-	-- 	Image = "rbxassetid://81920275123545",
-	-- 	Power = 8,
-	-- },
+	["Cracked Stone"] = {
+		Price = 5000,
+		Robux = 39,
+		UnlockID = 3559298230,
+		Type = "Football",
+		RewardData = {
+			ItemName = "Cracked Stone",
+		},
+		Id = 5,
+		RarityType = "Uncommon",
+		Image = "rbxassetid://81920275123545",
+		Power = 8,
+	},
 	["Iron Mesh"] = {
 		Price = 15000,
 		Robux = 69,

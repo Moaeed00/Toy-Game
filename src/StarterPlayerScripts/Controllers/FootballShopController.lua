@@ -75,7 +75,7 @@ function FootballShopController:GenerateShopData()
 		itemFrame.ItemName.Text = name
 		itemFrame.ItemRarity.Text = data.RarityType
 		itemFrame.ImageBG.ItemImage.Image = data.Image
-		itemFrame.HitPower.HitPowerText.Text = data.Power
+		itemFrame.HitPower.HitPowerText.Text = data.Power .. " Power"
 		itemFrame.Equip.PriceStatus.Text = "$" .. self:FormatCommas(tostring(data.Price))
 		itemFrame.RobuxBuy.Price.Text = self:FormatCommas(tostring(data.Robux))
 		local RarityGradient: UIGradient = GradientsFolder:WaitForChild(data.RarityType)
