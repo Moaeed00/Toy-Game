@@ -6,12 +6,15 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local RagdollService = require(script.Parent.RagdollService)
 
 local GlobalSounds = Workspace:WaitForChild("Sounds")
 
 local NPCService = Knit.CreateService {
 	Name = "NPCService",
-	Client = {}
+	Client = {
+		ActivatePlayerRagdollEvent = Knit.CreateSignal(),
+	}
 }
 
 local CONFIG = {
@@ -52,6 +55,7 @@ end
 
 function NPCService:KnitStart()
 	NPCService.BrainrotCarryService = Knit.GetService("BrainrotCarryService")
+	NPCService.DataHandlerService = Knit.GetService("DataHandlerService")
 
 	for _, npc in ipairs(CollectionService:GetTagged("NPC")) do
 		if npc:IsA("Model") then
@@ -68,6 +72,18 @@ function NPCService:KnitStart()
 			if data then
 				table.insert(npcs, data)
 			end
+		end
+	end)
+
+	self.DataHandlerService.OnPlayerProfileLoaded:Connect(function(player: Player, Profile:{})
+		local humanoid: Humanoid = player.Character:WaitForChild('Humanoid')
+        if not humanoid then
+            return
+        end
+
+		if not RagdollService.IsRagdolled(humanoid) then
+			local motors = RagdollService.CreateJoints(player.Character)
+			RagdollService.SetMotorsEnabled(motors, true)
 		end
 	end)
 
@@ -101,7 +117,7 @@ function NPCService:ShouldChasePlayer(player: Player): boolean
 	return player:GetAttribute("IsInBlocksSpawnArea") == true and player:GetAttribute("IsCarryingBrainrot") == true
 end
 
-function NPCService:ApplyFlingAndRagdoll(character: Model, npcRoot: BasePart)
+function NPCService:ApplyFlingAndRagdoll(player: Player, character: Model, npcRoot: BasePart)
 	if not npcRoot or not npcRoot.Parent then
 		return
 	end
@@ -112,6 +128,8 @@ function NPCService:ApplyFlingAndRagdoll(character: Model, npcRoot: BasePart)
 		return
 	end
 
+	self.Client.ActivatePlayerRagdollEvent:Fire(player)
+
 	local pushDir = rootPart.Position - npcRoot.CFrame.Position
 	pushDir = Vector3.new(pushDir.X, 0, pushDir.Z)
 	if pushDir.Magnitude < 0.01 then
@@ -119,15 +137,6 @@ function NPCService:ApplyFlingAndRagdoll(character: Model, npcRoot: BasePart)
 	end
 	local flingVector = (pushDir.Unit + Vector3.new(0, 0.4, 0)).Unit * CONFIG.FlingPower
 	rootPart.AssemblyLinearVelocity = flingVector
-	humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
-	humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-
-	task.delay(CONFIG.RagdollDuration, function()
-		if humanoid and humanoid.Parent then
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-		end
-	end)
 end
 
 function NPCService:PlayAnimation(npcData: NPCData, animName: string)
@@ -153,7 +162,6 @@ function NPCService:PerformAttack(npcData: NPCData, targetCharacter: Model, play
 	npcData.Humanoid.WalkSpeed = 0
 	npcData.Humanoid:MoveTo(npcData.Root.Position)
 
-	-- Force stop current anim and play attack fresh every time
 	if npcData.CurrentAnim and npcData.Tracks[npcData.CurrentAnim] then
 		npcData.Tracks[npcData.CurrentAnim]:Stop()
 	end
@@ -364,6 +372,29 @@ function NPCService:UpdateNPCs()
 			self:PlayAnimation(npcData, speed > 1 and "Walk" or "Idle")
 		end
 	end
+end
+
+function NPCService.Client:EnableRagdoll(player: Player)
+    local character: Model = player.Character
+    if not character or not character:FindFirstChildOfClass("Humanoid") then
+        return false
+    end
+
+    local canRagdoll: boolean = not RagdollService.IsRagdolled(character:WaitForChild("Humanoid"))
+
+	if canRagdoll then
+		local motors = RagdollService.CreateJoints(character)
+		RagdollService.Ragdoll(character)
+		RagdollService.SetMotorsEnabled(motors, false)
+
+		task.delay(CONFIG.RagdollDuration, function()
+			RagdollService.DestroyJoints(character)
+			RagdollService.SetMotorsEnabled(motors, true)
+			RagdollService.UnRagdoll(character)
+		end)
+	end
+
+	return canRagdoll
 end
 
 return NPCService
