@@ -83,7 +83,7 @@ function FootballService:EquipBall(player: Player)
     end
 
     local lookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
-    local frontPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
+    local frontPosition = Vector3.new(root.Position.X, root.Position.Y - 2.03, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
     ball.CFrame = CFrame.new(frontPosition)
 
     local weld = Instance.new("WeldConstraint")
@@ -156,7 +156,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
     task.wait(0.43) -- forward movement duration
 
     if root and root.Parent then
-        local returnPosition = Vector3.new(root.Position.X, root.Position.Y - 2, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
+        local returnPosition = Vector3.new(root.Position.X, root.Position.Y - 2.03, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
         align.Position = returnPosition
         task.wait(0.4)
     end
