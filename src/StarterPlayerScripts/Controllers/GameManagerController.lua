@@ -35,7 +35,7 @@ local function teleportToBase()
 end
 
 local function teleportToShop()
-	local shopTpPart = Workspace:WaitForChild("ShopTpPart")
+	local shopTpPart = Workspace:WaitForChild("ShopsTeleport")
 
 	if shopTpPart then
 		Player.Character:PivotTo(shopTpPart.CFrame)
@@ -43,7 +43,7 @@ local function teleportToShop()
 end
 
 local function teleportToSellShop()
-	local SellToPart = Workspace:WaitForChild("SellToPart")
+	local SellToPart = Workspace:WaitForChild("SellTeleport")
 
 	if SellToPart then
 		Player.Character:PivotTo(SellToPart.CFrame)

@@ -74,6 +74,11 @@ local GUIS = {
 	Rebirth = "RebirthGui",
 }
 
+local PRODUCT_UNLOCKID = {
+	STARTER_PACK = 3559281772,
+	VIP_PACK = 3559290714,
+}
+
 Hud.GUI = { MainGui = MainGui }
 for key, guiName in pairs(GUIS) do
 	Hud.GUI[key] = PlayerGui:WaitForChild(guiName)
@@ -160,11 +165,11 @@ function Hud:OpenContainer(name: string)
 		if name == "Invite" then
 			self.Controller[name]:SetEnabled(true)
 		elseif name == "VIP" then
-			ProductPurchaseService.PromptPurchase:Fire(3559290714)
+			ProductPurchaseService.PromptPurchase:Fire(PRODUCT_UNLOCKID.VIP_PACK)
 		elseif name == "StarterPack" then
-			ProductPurchaseService.PromptPurchase:Fire(3559281772)
+			ProductPurchaseService.PromptPurchase:Fire(PRODUCT_UNLOCKID.STARTER_PACK)
 		else
-			NotificationHandler:DisplayNotificationMessage("Comming Soon", "Error")
+			NotificationHandler:DisplayNotificationMessage("Coming Soon", "Error")
 		end
 	end
 end
@@ -233,9 +238,11 @@ function Hud:KnitStart()
 
 	for name, button in pairs(self.Buttons) do
 		if button:IsA("TextButton") or button:IsA("ImageButton") then
-			button.MouseButton1Down:Connect(function()
+			if not name == "Home" or not name == "Shop" or not name == "Sell" then
+				button.MouseButton1Down:Connect(function()
 				self:OnClickButton(name)
-			end)
+				end)
+			end
 
 			SetUpButtonAnims(button)
 		else
