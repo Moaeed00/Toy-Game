@@ -171,8 +171,8 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 
 		-- Prevent hitting already ragdolled players
         -- prevent hitting ragdolled players
-		if self.CombatMovementService 
-		and self.CombatMovementService.slideRagdollData 
+		if self.CombatMovementService
+		and self.CombatMovementService.slideRagdollData
 		and self.CombatMovementService.slideRagdollData[otherPlayer] then
 			continue
 		end
@@ -189,8 +189,8 @@ function PvPToolsService:_punchHit(player, attackerChar, attackerHRP)
 		local power, up, distance = self:_getPunchStats(player)
 
 		-- Drop brainrot if the target is carrying one
-		if self.BrainrotCarryService and otherPlayer:GetAttribute("IsBrainrotEquipped") then
-			self.BrainrotCarryService:DropBrainrot(otherPlayer, "PunchHitDrop")
+		if self.BrainrotCarryService and otherPlayer:GetAttribute("IsCarryingBrainrot") then
+			self.BrainrotCarryService:DropBrainrot(otherPlayer)
 		end
 
 		if self.CombatMovementService then
