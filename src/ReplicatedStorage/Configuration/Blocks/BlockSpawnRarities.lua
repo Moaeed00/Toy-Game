@@ -1,10 +1,10 @@
 return {
-    ["Common"]    = { "Common", "Uncommon", "Rare", "Epic" },
-    ["Uncommon"]  = { "Common", "Uncommon", "Rare" },
-    ["Rare"]      = { "Common", "Uncommon", "Gold" },
+    ["Common"]    = { "Common", "Uncommon", "Rare" },
+    ["Uncommon"]  = { "Gold" },
+    ["Rare"]      = { "Uncommon","Rare", "Gold" },
     ["Epic"]      = { "Uncommon", "Rare", "Epic" },
     ["Legendary"] = { "Uncommon", "Rare", "Epic", "Legendary" },
     ["Mythic"]    = { "Epic", "Legendary", "Mythic" },
-    ["Secret"]    = { "Uncommon", "Rare", "Legendary", "Mythic" },
-    ["God"]       = { "Rare", "Epic", "Mythic", "Secret", "God" },
+    ["Secret"]    = { "Rare", "Legendary", "Mythic", "Secret" },
+    ["God"]       = { "Epic", "Mythic", "Secret", "God" },
 }
