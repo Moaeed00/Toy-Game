@@ -17,7 +17,7 @@ local NPCService = Knit.CreateService {
 local CONFIG = {
 	WalkSpeed = 18,
 	ChaseSpeed = 28,
-	AttackRange = 11,
+	AttackRange = 13,
 	AttackCooldown = 1,
 	RagdollDuration = 1.5,
 	FlingPower = 150,
@@ -26,7 +26,7 @@ local CONFIG = {
 	Animations = {
 		Idle = "rbxassetid://80868660366700",
 		Walk = "rbxassetid://132891437445360",
-		Attack = "rbxassetid://114898096297224",
+		Attack = "rbxassetid://92385984874297",
 	}
 }
 
@@ -163,7 +163,11 @@ function NPCService:PerformAttack(npcData: NPCData, targetCharacter: Model, play
 		attackTrack:Play()
 	end
 
-	attackTrack:GetMarkerReachedSignal("Hit"):Once(function()
+	local hitFired = false
+	local function fireHit()
+		if hitFired then return end
+		hitFired = true
+
 		if hit then
 			local hitSound = hit:Clone()
 			hitSound.Parent = npcData.Root
@@ -172,9 +176,30 @@ function NPCService:PerformAttack(npcData: NPCData, targetCharacter: Model, play
 			DebrisService:AddItem(hitSound, hitSound.TimeLength + 0.5)
 		end
 
-		self.BrainrotCarryService:RequestDrop(player)
-		self:ApplyFlingAndRagdoll(targetCharacter, npcData.Root)
-	end)
+		self.BrainrotCarryService:DropBrainrot(player)
+		self:ApplyFlingAndRagdoll(player, targetCharacter, npcData.Root)
+	end
+
+	if attackTrack then
+		attackTrack:GetMarkerReachedSignal("Hit"):Once(fireHit)
+	end
+	task.delay(0.4, fireHit)
+
+	-- Unlock ONLY via delay — not via Stopped, which can fire prematurely
+	-- task.spawn(function()
+	-- 	task.wait()
+
+	-- 	local duration = 1.5
+	-- 	if attackTrack and attackTrack.Length > 0 then
+	-- 		duration = attackTrack.Length + 0.15
+	-- 	end
+
+	-- 	task.wait(duration)
+
+	-- 	npcData.IsAttacking = false
+	-- 	npcData.CurrentAnim = nil
+	-- 	npcData.Humanoid.WalkSpeed = CONFIG.WalkSpeed
+	-- end)
 
 	-- Unlock on animation end, with hard timeout so it can never get stuck
 	local unlocked = false
@@ -239,7 +264,7 @@ function NPCService:SetupNPC(model: Model): NPCData?
 
 		tracks["Walk"]:GetMarkerReachedSignal("Step"):Connect(function()
 			footstepSound:Play()
-			-- DebrisService:AddItem(footstepSound, footstepSound.TimeLength)
+			DebrisService:AddItem(footstepSound, footstepSound.TimeLength)
 		end)
 	end
 
