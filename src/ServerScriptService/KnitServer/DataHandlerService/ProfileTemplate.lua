@@ -5,9 +5,8 @@ return {
 		Owned = { 1 },
 	},
 	Money = 100,
-
 	Rebirth = 0,
-
+	IsFirstTimeLoad = true,
 	MoneyMultiplier = 1,
 	LikesReceived = 0,
 	LikedPlayers = {},
