@@ -96,7 +96,7 @@ function GameManagerController:PlayButtonCLickSound()
 		local clickSfx = ClickSFX:Clone()
 		clickSfx.Parent = Player
 		clickSfx.Looped = false
-		clickSfx.Volume = 0.75
+		clickSfx.Volume = 1
 		clickSfx:Play()
 
 		DebrisService:AddItem(clickSfx, clickSfx.TimeLength + 0.1)

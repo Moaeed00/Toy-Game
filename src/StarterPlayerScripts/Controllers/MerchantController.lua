@@ -145,7 +145,7 @@ function MerchantController:PlayCoinsCollectedSFX()
 		local coinsCollectedSFX = CoinsCollectedSFX:Clone()
 		coinsCollectedSFX.Parent = Player
 		coinsCollectedSFX.Looped = false
-		coinsCollectedSFX.Volume = 0.5
+		coinsCollectedSFX.Volume = 0.75
 		coinsCollectedSFX:Play()
 
 		DebrisService:AddItem(coinsCollectedSFX, coinsCollectedSFX.TimeLength + 0.1)

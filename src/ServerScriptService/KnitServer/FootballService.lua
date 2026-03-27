@@ -135,7 +135,9 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
         local kickSound = KickSound:Clone()
         kickSound.Parent = player
         kickSound.Looped = false
-        kickSound.Volume = 0.75
+		kickSound.RollOffMaxDistance = 90
+		kickSound.RollOffMinDistance = 8
+        kickSound.Volume = 1
         kickSound:Play()
 
         DebrisService:AddItem(kickSound, kickSound.TimeLength + 0.1)
