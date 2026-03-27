@@ -58,6 +58,12 @@ end
 function GameManagerController:KnitInit() end
 
 function GameManagerController:KnitStart()
+	GameManagerController.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
+
+	self.BlocksSpawnAreaService.ZoneChanged:Connect(function(isInside)
+		self:ToggleUITopFrame(not isInside)
+	end)
+
 	homeButton.MouseButton1Click:Connect(function()
 		if Player:GetAttribute("IsInArea") then
 			return
@@ -101,6 +107,10 @@ function GameManagerController:PlayButtonCLickSound()
 
 		DebrisService:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
 	end
+end
+
+function GameManagerController:ToggleUITopFrame(toggle: boolean)
+	innerFrame.Visible = toggle
 end
 
 return GameManagerController
