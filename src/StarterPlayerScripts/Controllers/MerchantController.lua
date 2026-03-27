@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DebrisService = game:GetService("Debris")
 
 local Player = Players.LocalPlayer
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
@@ -16,6 +17,7 @@ local TempItem = ScrollingFrame:WaitForChild("Temp")
 local CloseButton: ImageButton = MerchantFrame:WaitForChild("CloseButton")
 local NoBrainrotsLabel: TextLabel = MerchantFrame:WaitForChild("NoBrainrots")
 local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
+local CoinsCollectedSFX: Sound = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds"):FindFirstChild("Coins")
 
 local MerchantController = Knit.CreateController({ Name = "MerchantController" })
 
@@ -36,6 +38,7 @@ function MerchantController:KnitStart()
 	end)
 	SellAllButton.Activated:Connect(function()
 		self.MerchantService:SellAll():andThen(function(totalInventoryValue: number)
+			self:PlayCoinsCollectedSFX()
 			local message = `Inventory sold for ${self:FormatNumber(tostring(totalInventoryValue))}`
 			NotificationHandler:DisplayNotificationMessage(message, "Success")
 			self:UpdateTotalValue(0)
@@ -104,6 +107,7 @@ function MerchantController:RefreshUI()
 		end
 		clone.SellButton.Activated:Connect(function()
 			self.MerchantService:Sell(item.ID):andThen(function(reward: number)
+				self:PlayCoinsCollectedSFX()
 				local message = `Sold {item.Name} for ${self:FormatNumber(reward)}`
 				NotificationHandler:DisplayNotificationMessage(message, "Success")
 			end)
@@ -134,6 +138,18 @@ end
 
 function MerchantController:FormatNumber(number: number)
 	return tostring(math.floor(number)):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+end
+
+function MerchantController:PlayCoinsCollectedSFX()
+	if CoinsCollectedSFX then
+		local coinsCollectedSFX = CoinsCollectedSFX:Clone()
+		coinsCollectedSFX.Parent = Player
+		coinsCollectedSFX.Looped = false
+		coinsCollectedSFX.Volume = 0.5
+		coinsCollectedSFX:Play()
+
+		DebrisService:AddItem(coinsCollectedSFX, coinsCollectedSFX.TimeLength + 0.1)
+	end
 end
 
 return MerchantController

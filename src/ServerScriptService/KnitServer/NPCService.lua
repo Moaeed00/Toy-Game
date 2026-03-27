@@ -8,7 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local RagdollService = require(script.Parent.RagdollService)
 
-local GlobalSounds = Workspace:WaitForChild("Sounds")
+local GlobalSounds = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds")
 
 local NPCService = Knit.CreateService {
 	Name = "NPCService",

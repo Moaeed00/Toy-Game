@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local DebrisService = game:GetService("Debris")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
@@ -10,6 +11,7 @@ local DataStoreHandler = require(script.Parent.DataHandlerService)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Assets = ReplicatedStorage:WaitForChild("Assets")
 local FootballsFolder = Assets.Tools:WaitForChild("Footballs")
+local Sounds = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds")
 
 local FootballService = Knit.CreateService {
     Name = "FootballService",
@@ -24,6 +26,7 @@ function FootballService:KnitInit()
 end
 
 function FootballService:KnitStart()
+    FootballService.TutorialService = Knit.GetService("TutorialService")
     FootballService.KICK_RANGE = 7.5
     FootballService.FRONT_DISTANCE = 2
     FootballService.Footballs = {}
@@ -46,6 +49,8 @@ function FootballService:EquipBall(player: Player)
     if self.IsKicking[player] or player:GetAttribute("InMiniGame") then
         return
     end
+
+    self.TutorialService:NotifyFootballEquipped(player)
 
     local character = player.Character
     if not character then
@@ -123,6 +128,17 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
     if not playerData then
         self.IsKicking[player] = false
         return
+    end
+
+    local KickSound: Sound = Sounds:FindFirstChild("WooshSound")
+    if KickSound then
+        local kickSound = KickSound:Clone()
+        kickSound.Parent = player
+        kickSound.Looped = false
+        kickSound.Volume = 0.75
+        kickSound:Play()
+
+        DebrisService:AddItem(kickSound, kickSound.TimeLength + 0.1)
     end
 
     local equippedId = playerData.Footballs.Equipped

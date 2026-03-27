@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local DebrisService = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
@@ -11,6 +12,7 @@ local homeButton: ImageButton = innerFrame:WaitForChild("Home")
 local shopButton: ImageButton = innerFrame:WaitForChild("Shops")
 local sellButton: ImageButton = innerFrame:WaitForChild("Sell")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
+local ClickSFX: Sound = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds"):FindFirstChild("Click")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -61,6 +63,7 @@ function GameManagerController:KnitStart()
 			return
 		end
 
+		self:PlayButtonCLickSound()
 		teleportToBase()
 	end)
 
@@ -69,6 +72,7 @@ function GameManagerController:KnitStart()
 			return
 		end
 
+		self:PlayButtonCLickSound()
 		teleportToShop()
 	end)
 
@@ -77,6 +81,7 @@ function GameManagerController:KnitStart()
 			return
 		end
 
+		self:PlayButtonCLickSound()
 		teleportToSellShop()
 	end)
 
@@ -84,6 +89,18 @@ function GameManagerController:KnitStart()
 		task.wait(2) -- wait for camera + sounds to exist
 		SoundPlay:Play("BGMusic", "Background", 1, 1)
 	end)
+end
+
+function GameManagerController:PlayButtonCLickSound()
+	if ClickSFX then
+		local clickSfx = ClickSFX:Clone()
+		clickSfx.Parent = Player
+		clickSfx.Looped = false
+		clickSfx.Volume = 0.75
+		clickSfx:Play()
+
+		DebrisService:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
+	end
 end
 
 return GameManagerController

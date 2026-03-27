@@ -1,5 +1,6 @@
 ---- [Services]			----
 local Players = game:GetService("Players")
+local DebrisService = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local LobbyHUDHelpers: Folder = ReplicatedStorage:WaitForChild("LobbyHUDHelpers")
@@ -19,6 +20,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local MainGui = PlayerGui:WaitForChild("MainGui")
 local CurrencyTextHolder = MainGui:WaitForChild("Cash"):WaitForChild("Cash")
 local PointsTextHolder = MainGui:WaitForChild("Points"):WaitForChild("Value")
+local ClickSFX: Sound = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds"):FindFirstChild("Click")
 
 local hoverTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local unHoverTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
@@ -213,6 +215,16 @@ function Hud:CloseAllContainers()
 end
 
 function Hud:OnClickButton(name: string)
+	if ClickSFX then
+		local clickSfx = ClickSFX:Clone()
+		clickSfx.Parent = Player
+		clickSfx.Looped = false
+		clickSfx.Volume = 0.75
+		clickSfx:Play()
+
+		DebrisService:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
+	end
+
 	self:OpenContainer(name)
 end
 
@@ -240,7 +252,7 @@ function Hud:KnitStart()
 		if button:IsA("TextButton") or button:IsA("ImageButton") then
 			if not name == "Home" or not name == "Shop" or not name == "Sell" then
 				button.MouseButton1Down:Connect(function()
-				self:OnClickButton(name)
+					self:OnClickButton(name)
 				end)
 			end
 

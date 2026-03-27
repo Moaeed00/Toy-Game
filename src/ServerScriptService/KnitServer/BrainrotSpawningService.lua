@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
+local TweenService = game:GetService("TweenService")
 
 local BlackoutBrainrotsModel: Model = ReplicatedStorage.Assets.SpawnEffectBrainrots:WaitForChild("BlackoutBrainrots")
 local BrainrotModels = ReplicatedStorage.Assets:WaitForChild("Entities")
@@ -10,6 +11,11 @@ local BlockSpawnRarities = require(ReplicatedStorage.Configuration.Blocks.BlockS
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
 local Knit = require(ReplicatedStorage.Packages.Knit)
+
+local Sounds = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds")
+local SuspenseSFX: Sound = Sounds:FindFirstChild("Spin")
+local RevealSFX: Sound = Sounds:FindFirstChild("Reveal")
+local CheerSFX: Sound = RevealSFX and RevealSFX:FindFirstChild("Cheering")
 
 local BrainrotSpawnService = Knit.CreateService {
     Name = "BrainrotSpawnService",
@@ -233,6 +239,14 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player: Player, block
         self.Client.OnBrainrotSpawnEvent:Fire(player)
     end)
 
+    if not SuspenseSFX then
+        return
+    end
+    local suspenseSound = SuspenseSFX:Clone()
+    suspenseSound.Parent = block
+    suspenseSound.Looped = false
+    suspenseSound.Volume = 0.25
+
     local currentPreview
     for i = 1, #BlackoutParts do
         if currentPreview then
@@ -241,10 +255,46 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player: Player, block
 
         BlackoutParts[i].Transparency = 0
         currentPreview = BlackoutParts[i]
-        task.wait(0.05)
+
+        suspenseSound:Play()
+        task.wait(0.06)
     end
+
+    suspenseSound:Stop()
+    suspenseSound:Destroy()
+
     if currentPreview then
         currentPreview.Transparency = 1
+    end
+
+    if RevealSFX and CheerSFX then
+        local revealSound = RevealSFX:Clone()
+        local cheerSound = CheerSFX:Clone()
+        revealSound.Parent = player
+        cheerSound.Parent = player
+        revealSound.Looped = false
+        cheerSound.Looped = false
+        revealSound.Volume = 0.7
+        cheerSound.Volume = 0.2
+        revealSound:Play()
+        cheerSound:Play()
+
+        local revealDuration = revealSound.TimeLength
+        local fadeTime = 0.5
+
+        task.delay(revealDuration - fadeTime, function()
+            local fadeInfo = TweenInfo.new(fadeTime, Enum.EasingStyle.Linear)
+            local revealTween = TweenService:Create(revealSound, fadeInfo, {Volume = 0})
+            local cheerTween = TweenService:Create(cheerSound, fadeInfo, {Volume = 0})
+            revealTween:Play()
+            cheerTween:Play()
+            revealTween.Completed:Wait()
+            revealSound:Stop()
+            cheerSound:Stop()
+
+            revealSound:Destroy()
+            cheerSound:Destroy()
+        end)
     end
 
     spawnedBrainrotPart.Transparency = 0
