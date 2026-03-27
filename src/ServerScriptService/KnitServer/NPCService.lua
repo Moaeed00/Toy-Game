@@ -93,16 +93,20 @@ function NPCService:KnitStart()
 end
 
 function NPCService:GetRandomWanderPoint(): Vector3?
-	local BlocksSpawnArea = Workspace:WaitForChild("Environment"):WaitForChild("BlocksSpawnArea")
-	if not BlocksSpawnArea then return nil end
+	local SammyWanderingArea = Workspace:WaitForChild("Environment"):WaitForChild("SammyWanderingArea")
+	if not SammyWanderingArea then
+		return nil
+	end
 
 	local spawners = {}
-	for _, child in ipairs(BlocksSpawnArea:GetChildren()) do
-		if child:IsA("BasePart") and child.Name == "NormalBlocksSpawnArea" then
+	for _, child in ipairs(SammyWanderingArea:GetChildren()) do
+		if child:IsA("BasePart") and child.Name == "WanderingArea" then
 			table.insert(spawners, child)
 		end
 	end
-	if #spawners == 0 then return nil end
+	if #spawners == 0 then
+		return nil
+	end
 
 	local selected = spawners[math.random(1, #spawners)]
 	local size = selected.Size
