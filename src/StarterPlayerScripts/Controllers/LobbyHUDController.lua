@@ -215,6 +215,10 @@ function Hud:CloseAllContainers()
 end
 
 function Hud:OnClickButton(name: string)
+	if name == "Home" or name == "Shops" or name == "Sell" then
+		return
+	end
+
 	if ClickSFX then
 		local clickSfx = ClickSFX:Clone()
 		clickSfx.Parent = Player
@@ -250,11 +254,9 @@ function Hud:KnitStart()
 
 	for name, button in pairs(self.Buttons) do
 		if button:IsA("TextButton") or button:IsA("ImageButton") then
-			if not name == "Home" or not name == "Shop" or not name == "Sell" then
-				button.MouseButton1Down:Connect(function()
-					self:OnClickButton(name)
-				end)
-			end
+			button.MouseButton1Down:Connect(function()
+				self:OnClickButton(name)
+			end)
 
 			SetUpButtonAnims(button)
 		else
