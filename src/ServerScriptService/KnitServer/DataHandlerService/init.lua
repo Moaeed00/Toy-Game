@@ -24,6 +24,7 @@ local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage"
 local GlobalDataStores: Folder = script:WaitForChild("GlobalDataStores")
 local CoinsDataStoreModule = require(GlobalDataStores:WaitForChild("CoinsDataStore"))
 local PointsDataStoreModule = require(GlobalDataStores:WaitForChild("PointsDataStore"))
+local IndexDataStoreModule = require(GlobalDataStores:WaitForChild("IndexDataStore"))
 
 -- [References] --
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -73,6 +74,9 @@ local function OnPlayerRemoving(player: Player)
 			end)
 			task.spawn(function()
 				PointsDataStoreModule:SaveData(player, math.floor(data.Points))
+			end)
+			task.spawn(function()
+				IndexDataStoreModule:SaveData(player, math.floor(data.DiscoveredBrainrotsPercentage))
 			end)
 		end
 		profile:EndSession()
@@ -290,6 +294,7 @@ end
 function DataHandlerService:ReturnTopTenPlayers()
 	local coins = {}
 	local points = {}
+	local indexes = {}
 
 	pcall(function()
 		coins = CoinsDataStoreModule:GetTopPlayersData(false, 10)
@@ -299,9 +304,14 @@ function DataHandlerService:ReturnTopTenPlayers()
 		points = PointsDataStoreModule:GetTopPlayersData(false, 10)
 	end)
 
+	pcall(function()
+		indexes = IndexDataStoreModule:GetTopPlayersData(false, 10)
+	end)
+
 	return {
 		Coins = coins,
 		Points = points,
+		Indexes = indexes,
 	}
 end
 
@@ -362,6 +372,15 @@ function DataHandlerService:HasPlayerLiked(likerPlayer: Player, targetPlayer: Pl
 	local targetKey = tostring(targetPlayer.UserId)
 
 	return likerData.LikedPlayers[targetKey] == true
+end
+
+function DataHandlerService:SaveIndexDataNow(player: Player)
+    local data = self:GetPlayerData(player)
+    if data then
+        task.spawn(function()
+            IndexDataStoreModule:SaveData(player, math.floor(data.DiscoveredBrainrotsPercentage or 0))
+        end)
+    end
 end
 
 --Initialization

@@ -33,10 +33,11 @@ return {
 		["Golden Punch"] = false,
 		["Gravity Coil"] = false,
 	},
-	--// Brainrot Index: Stores discovered brainrot keys
+	-- Brainrot Index: Stores discovered brainrot keys
 	--   Normal variant → "Trippi_Troppi"        (true)
 	--   Golden variant → "Golden_Trippi_Troppi"  (true)
 	-- Missing keys are treated as undiscovered
 	DiscoveredBrainrots = {},
+	DiscoveredBrainrotsPercentage = 0,
 	IndexMultiplierBonus = 0,
 }

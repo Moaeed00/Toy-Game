@@ -129,23 +129,22 @@ function IndexService:UnlockBrainrot(player: Player, brainrotName: string, varia
         return false
     end
 
-    -- ── 1. Persist (mutation is reflected in the live profile table) ──────────
     discovered[key] = true
-
-    -- Notify DataHandlerService listeners (e.g. leaderboards, other services)
-    -- so they stay in sync without coupling to IndexService directly.
     self._dataHandler:SetPlayerData(player, { DiscoveredBrainrots = discovered })
 
-    -- ── 2. Replicate to AllBrainrots folder so LocalScripts see it immediately ─
+    -- 2. Keep percentage in sync  ← NEW
+    self:_updatePercentage(player, discovered)
+
+    -- 3. Replicate to AllBrainrots folder
     local folder = player:FindFirstChild("AllBrainrots")
     if folder then
         folder:SetAttribute(key, true)
     end
 
-    -- ── 3. Notify the owning client (Index UI refresh) ────────────────────────
+    -- 4. Notify client
     self.Client.BrainrotUnlocked:Fire(player, brainrotName, variantPrefix)
 
-    -- ── 4. Recalculate and apply cash multiplier ──────────────────────────────
+    -- 5. Recalculate cash multiplier
     local multiplier = calculateMultiplier(discovered)
     self:_applyMultiplier(player, multiplier)
 
@@ -175,6 +174,16 @@ end
 
 function IndexService.Client:GetMultiplier(player: Player)
     return self.Server:GetMultiplier(player)
+end
+
+-- ── Helper: recalculate and persist DiscoveredBrainrotsPercentage ─────────────
+function IndexService:_updatePercentage(player: Player, discovered: { [string]: boolean })
+    local percentage = math.floor(countUnlocked(discovered) / math.max(1, totalEntries()) * 100)
+    local data = self._dataHandler:GetPlayerData(player)
+    if data and data.DiscoveredBrainrotsPercentage ~= percentage then
+        self._dataHandler:SetPlayerData(player, { DiscoveredBrainrotsPercentage = percentage })
+        self._dataHandler:SaveIndexDataNow(player)
+    end
 end
 
 -- ── Multiplier application ────────────────────────────────────────────────────
@@ -407,6 +416,10 @@ function IndexService:KnitStart()
         local discovered = self:_getDiscovered(player)
         if discovered then
             syncFolder(player, discovered)
+
+            -- Sync percentage on load (catches data from previous sessions)  ← NEW
+            self:_updatePercentage(player, discovered)
+
             -- Apply whatever multiplier was already earned from a previous session.
             local multiplier = calculateMultiplier(discovered)
             if multiplier > 0 then

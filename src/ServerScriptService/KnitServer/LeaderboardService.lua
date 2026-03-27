@@ -2,7 +2,7 @@
 --// File: src/ServerScriptService/KnitServer/Services/LeaderboardService.lua
 --// LeaderboardService.lua
 --// Handles both in-world leaderboard displays and client UI updates.
---// 
+--//
 --// UPDATED VERSION: Works with TopEarnerLeaderboardModule and TopPointsLeaderboardModule
 --// that use the existing Label > SurfaceGui > Frame hierarchy
 
@@ -24,18 +24,20 @@ local LeaderboardService = Knit.CreateService {
 local CONFIG = {
 	DEBUG_PRINTS = true,
 	UPDATE_TICK = 15, -- seconds for global leaderboard update
-	
+
 	--// Workspace path to leaderboards
 	LEADERBOARD_FOLDER_PATH = {"Environment", "Stadium", "Leaderboard"},
-	
+
 	--// Leaderboard part names
 	GLOBAL_LEADERBOARD_NAME = "GlobalLeaderboard",
 	TOP_EARNER_NAME = "TopEarnerLeaderboard",
 	TOP_POINTS_NAME = "TopPointsLeaderboard",
-	
+	TOP_INDEX_NAME        = "TopIndexLeaderboard",
+
 	--// Module names inside each leaderboard
 	TOP_EARNER_MODULE_NAME = "TopEarnerLeaderboardModule",
 	TOP_POINTS_MODULE_NAME = "TopPointsLeaderboardModule",
+    TOP_INDEX_MODULE_NAME = "TopIndexLeaderboardModule",
 	GLOBAL_MODULE_NAME = "LeaderboardModule",
 }
 
@@ -61,6 +63,7 @@ local Category: string = "Coins"
 local GlobalLeaderboardModule = nil
 local TopEarnerLeaderboardModule = nil
 local TopPointsLeaderboardModule = nil
+local TopIndexLeaderboardModule = nil
 
 --// ------------------------------
 --// Sort players by category
@@ -68,13 +71,13 @@ local TopPointsLeaderboardModule = nil
 local function SortTable()
 	--// Function: SortTable
 	--// Sorts the player list by category value (descending)
-	
+
 	table.sort(SortedPlayerList, function(playerOne: Player, playerTwo: Player): boolean
 		local av = playerOne:GetAttribute("MoneyPerSec") or 0
 		local bv = playerTwo:GetAttribute("MoneyPerSec") or 0
 		return av >= bv
 	end)
-	
+
 	dprint("SortTable() complete, players sorted by:", Category)
 end
 
@@ -84,7 +87,7 @@ end
 local function ReturnServerLeaderboardTable()
 	--// Function: ReturnServerLeaderboardTable
 	--// Returns formatted data for server (current session) leaderboard
-	
+
 	local leaderboardTable: { { [string]: any } } = {}
 
 	for _, player in ipairs(SortedPlayerList) do
@@ -114,14 +117,15 @@ end
 local function ReturnGlobalLeaderboardTable()
 	--// Function: ReturnGlobalLeaderboardTable
 	--// Returns formatted data for global (all-time) leaderboard for client UI
-	
+
 	local leaderboardTableCoins: { { [string]: any } } = {}
 	local leaderboardTablePoints: { { [string]: any } } = {}
+	local leaderboardTableIndexes: { { [string]: any } } = {}
 
 	local topTenPlayerDictionary = DataHandlerService and DataHandlerService:ReturnTopTenPlayers()
 	if not topTenPlayerDictionary then
 		dprint("ReturnGlobalLeaderboardTable() - no data from DataHandlerService")
-		return { Points = leaderboardTablePoints, Coins = leaderboardTableCoins }
+		return { Points = leaderboardTablePoints, Coins = leaderboardTableCoins, Indexes = leaderboardTableIndexes }
 	end
 
 	local function build(list, out)
@@ -146,9 +150,10 @@ local function ReturnGlobalLeaderboardTable()
 
 	build(topTenPlayerDictionary.Coins, leaderboardTableCoins)
 	build(topTenPlayerDictionary.Points, leaderboardTablePoints)
+	build(topTenPlayerDictionary.Indexes, leaderboardTableIndexes)
 
-	dprint("ReturnGlobalLeaderboardTable() - Coins:", #leaderboardTableCoins, "Points:", #leaderboardTablePoints)
-	return { Points = leaderboardTablePoints, Coins = leaderboardTableCoins }
+	dprint("ReturnGlobalLeaderboardTable() - Coins:", #leaderboardTableCoins, "Points:", #leaderboardTablePoints, "Index:", #leaderboardTableIndexes)
+	return { Points = leaderboardTablePoints, Coins = leaderboardTableCoins, Indexes = leaderboardTableIndexes }
 end
 
 --// ------------------------------
@@ -157,18 +162,19 @@ end
 local function ReturnRawLeaderboardData()
 	--// Function: ReturnRawLeaderboardData
 	--// Returns raw data arrays for world leaderboard modules
-	
+
 	local topTenPlayerDictionary = DataHandlerService and DataHandlerService:ReturnTopTenPlayers()
 	if not topTenPlayerDictionary then
 		dprint("ReturnRawLeaderboardData() - no data from DataHandlerService")
-		return { Coins = {}, Points = {} }
+		return { Coins = {}, Points = {}, Indexes = {} }
 	end
-	
-	dprint("ReturnRawLeaderboardData() - Coins:", #(topTenPlayerDictionary.Coins or {}), "Points:", #(topTenPlayerDictionary.Points or {}))
-	
+
+	dprint("ReturnRawLeaderboardData() - Coins:", #(topTenPlayerDictionary.Coins or {}), "Points:", #(topTenPlayerDictionary.Points or {}), "Indexes:", #(topTenPlayerDictionary.Indexes))
+
 	return {
 		Coins = topTenPlayerDictionary.Coins or {},
 		Points = topTenPlayerDictionary.Points or {},
+		Indexes = topTenPlayerDictionary.Indexes or {},
 	}
 end
 
@@ -178,9 +184,9 @@ end
 local function FindLeaderboardFolder(): Folder?
 	--// Function: FindLeaderboardFolder
 	--// Navigates workspace to find the leaderboard folder
-	
+
 	local current: Instance = workspace
-	
+
 	for _, pathPart in ipairs(CONFIG.LEADERBOARD_FOLDER_PATH) do
 		local nextPart = current:FindFirstChild(pathPart)
 		if not nextPart then
@@ -189,7 +195,7 @@ local function FindLeaderboardFolder(): Folder?
 		end
 		current = nextPart
 	end
-	
+
 	dprint("FindLeaderboardFolder() found:", current:GetFullName())
 	return current :: Folder
 end
@@ -200,32 +206,32 @@ end
 local function InitializeWorldLeaderboards()
 	--// Function: InitializeWorldLeaderboards
 	--// Finds and initializes all world leaderboard modules
-	
+
 	dprint("InitializeWorldLeaderboards() starting...")
-	
+
 	local leaderboardFolder = FindLeaderboardFolder()
 	if not leaderboardFolder then
 		warn("[LeaderboardService] Leaderboard folder not found, cannot initialize world leaderboards")
 		return
 	end
-	
+
 	--// ========================================
 	--// Find and initialize TopEarnerLeaderboard
 	--// ========================================
 	local topEarnerLB = leaderboardFolder:FindFirstChild(CONFIG.TOP_EARNER_NAME)
 	if topEarnerLB then
 		dprint("Found TopEarnerLeaderboard part")
-		
+
 		local module = topEarnerLB:FindFirstChild(CONFIG.TOP_EARNER_MODULE_NAME)
 		if module and module:IsA("ModuleScript") then
 			local success, result = pcall(function()
 				return require(module)
 			end)
-			
+
 			if success and result then
 				TopEarnerLeaderboardModule = result
 				dprint("TopEarnerLeaderboardModule loaded ✅")
-				
+
 				--// Initialize if not auto-initialized
 				if not TopEarnerLeaderboardModule.Initialized then
 					TopEarnerLeaderboardModule:Init(topEarnerLB)
@@ -240,24 +246,24 @@ local function InitializeWorldLeaderboards()
 	else
 		warn("[LeaderboardService] TopEarnerLeaderboard not found in leaderboard folder")
 	end
-	
+
 	--// ========================================
 	--// Find and initialize TopPointsLeaderboard
 	--// ========================================
 	local topPointsLB = leaderboardFolder:FindFirstChild(CONFIG.TOP_POINTS_NAME)
 	if topPointsLB then
 		dprint("Found TopPointsLeaderboard part")
-		
+
 		local module = topPointsLB:FindFirstChild(CONFIG.TOP_POINTS_MODULE_NAME)
 		if module and module:IsA("ModuleScript") then
 			local success, result = pcall(function()
 				return require(module)
 			end)
-			
+
 			if success and result then
 				TopPointsLeaderboardModule = result
 				dprint("TopPointsLeaderboardModule loaded ✅")
-				
+
 				--// Initialize if not auto-initialized
 				if not TopPointsLeaderboardModule.Initialized then
 					TopPointsLeaderboardModule:Init(topPointsLB)
@@ -272,24 +278,54 @@ local function InitializeWorldLeaderboards()
 	else
 		warn("[LeaderboardService] TopPointsLeaderboard not found in leaderboard folder")
 	end
-	
+
+	--// ========================================
+	--// Find and initialize TopIndexLeaderboard
+	--// ========================================
+	local topIndexLB = leaderboardFolder:FindFirstChild(CONFIG.TOP_INDEX_NAME)
+	if topIndexLB then
+		dprint("Found TopIndexLeaderboard part")
+
+		local module = topIndexLB:FindFirstChild(CONFIG.TOP_INDEX_MODULE_NAME)
+		if module and module:IsA("ModuleScript") then
+			local success, result = pcall(function()
+				return require(module)
+			end)
+
+			if success and result then
+				TopIndexLeaderboardModule = result
+				dprint("TopIndexLeaderboardModule loaded ✅")
+
+				if not TopIndexLeaderboardModule.Initialized then
+					TopIndexLeaderboardModule:Init(topIndexLB)
+				end
+			else
+				warn("[LeaderboardService] Failed to require TopIndexLeaderboardModule:", result)
+			end
+		else
+			warn("[LeaderboardService] TopIndexLeaderboardModule not found in:", topIndexLB:GetFullName())
+		end
+	else
+		dprint("TopIndexLeaderboard not found in leaderboard folder (optional)")
+	end
+
 	--// ========================================
 	--// Find and initialize GlobalLeaderboard (existing)
 	--// ========================================
 	local globalLB = leaderboardFolder:FindFirstChild(CONFIG.GLOBAL_LEADERBOARD_NAME)
 	if globalLB then
 		dprint("Found GlobalLeaderboard part")
-		
+
 		local module = globalLB:FindFirstChild(CONFIG.GLOBAL_MODULE_NAME)
 		if module and module:IsA("ModuleScript") then
 			local success, result = pcall(function()
 				return require(module)
 			end)
-			
+
 			if success and result then
 				GlobalLeaderboardModule = result
 				dprint("GlobalLeaderboardModule loaded ✅")
-				
+
 				--// Call Main for compatibility with existing module
 				if GlobalLeaderboardModule.Main then
 					GlobalLeaderboardModule:Main("Global Leaderboard", "#", "Coins", "Player")
@@ -303,7 +339,7 @@ local function InitializeWorldLeaderboards()
 	else
 		dprint("GlobalLeaderboard not found (this is okay if not used)")
 	end
-	
+
 	dprint("InitializeWorldLeaderboards() complete")
 end
 
@@ -313,17 +349,17 @@ end
 local function UpdateWorldLeaderboards()
 	--// Function: UpdateWorldLeaderboards
 	--// Updates all world leaderboard displays with latest data
-	
+
 	dprint("UpdateWorldLeaderboards() starting...")
-	
+
 	local rawData = ReturnRawLeaderboardData()
-	
+
 	--// Update TopEarnerLeaderboard (Coins)
 	if TopEarnerLeaderboardModule and TopEarnerLeaderboardModule.Initialized then
 		local success, err = pcall(function()
 			TopEarnerLeaderboardModule:UpdateLeaderboard(rawData.Coins)
 		end)
-		
+
 		if success then
 			dprint("TopEarnerLeaderboard updated ✅")
 		else
@@ -332,13 +368,13 @@ local function UpdateWorldLeaderboards()
 	else
 		dprint("TopEarnerLeaderboard not ready, skipping update")
 	end
-	
+
 	--// Update TopPointsLeaderboard (Points)
 	if TopPointsLeaderboardModule and TopPointsLeaderboardModule.Initialized then
 		local success, err = pcall(function()
 			TopPointsLeaderboardModule:UpdateLeaderboard(rawData.Points)
 		end)
-		
+
 		if success then
 			dprint("TopPointsLeaderboard updated ✅")
 		else
@@ -347,20 +383,35 @@ local function UpdateWorldLeaderboards()
 	else
 		dprint("TopPointsLeaderboard not ready, skipping update")
 	end
-	
+
+	--// Update TopIndexLeaderboard (DiscoveredBrainrotsPercentage)
+	if TopIndexLeaderboardModule and TopIndexLeaderboardModule.Initialized then
+		local success, err = pcall(function()
+			TopIndexLeaderboardModule:UpdateLeaderboard(rawData.Indexes)
+		end)
+
+		if success then
+			dprint("TopIndexLeaderboard updated ✅")
+		else
+			warn("[LeaderboardService] Failed to update TopIndexLeaderboard:", err)
+		end
+	else
+		dprint("TopIndexLeaderboard not ready, skipping update")
+	end
+
 	--// Update GlobalLeaderboard (Coins by default)
 	if GlobalLeaderboardModule then
 		local success, err = pcall(function()
 			GlobalLeaderboardModule:UpdateLeaderboard(rawData.Coins)
 		end)
-		
+
 		if success then
 			dprint("GlobalLeaderboard updated ✅")
 		else
 			warn("[LeaderboardService] Failed to update GlobalLeaderboard:", err)
 		end
 	end
-	
+
 	dprint("UpdateWorldLeaderboards() complete")
 end
 
@@ -370,7 +421,7 @@ end
 function LeaderboardService:UpdateServerLeaderboard()
 	--// Function: UpdateServerLeaderboard
 	--// Fires update signal to all clients with server leaderboard data
-	
+
 	dprint("UpdateServerLeaderboard() called")
 	self.Client.UpdateLeaderboard:FireAll("Server", ReturnServerLeaderboardTable())
 end
@@ -381,12 +432,12 @@ end
 function LeaderboardService:UpdateGlobalLeaderboard()
 	--// Function: UpdateGlobalLeaderboard
 	--// Fires update signal to all clients AND updates world leaderboards
-	
+
 	dprint("UpdateGlobalLeaderboard() called")
-	
+
 	--// Fire to clients (for any client-side UI)
 	self.Client.UpdateLeaderboard:FireAll("Global", ReturnGlobalLeaderboardTable())
-	
+
 	--// Update world leaderboards directly
 	UpdateWorldLeaderboards()
 end
@@ -397,9 +448,9 @@ end
 function LeaderboardService.Client:RequestLeaderboard(player)
 	--// Function: Client:RequestLeaderboard
 	--// Returns both server and global leaderboard data to requesting client
-	
+
 	dprint("Client:RequestLeaderboard() from:", player.Name)
-	
+
 	return {
 		Server = ReturnServerLeaderboardTable(),
 		Global = ReturnGlobalLeaderboardTable(),
@@ -411,11 +462,11 @@ end
 --// ------------------------------
 function LeaderboardService:KnitInit()
 	dprint("KnitInit() start")
-	
+
 	--// Get reference to DataHandlerService
 	DataHandlerService = Knit.GetService("DataHandlerService")
 	dprint("Got DataHandlerService reference")
-	
+
 	dprint("KnitInit() complete")
 end
 
@@ -424,23 +475,23 @@ end
 --// ------------------------------
 function LeaderboardService:KnitStart()
 	dprint("KnitStart() start")
-	
+
 	--// Get category from DataHandlerService (default to "Coins")
 	Category = (DataHandlerService.LeaderboardCategory and DataHandlerService.LeaderboardCategory[1]) or "Coins"
 	dprint("Leaderboard category set to:", Category)
-	
+
 	--// Initialize world leaderboards (find modules and initialize them)
 	InitializeWorldLeaderboards()
-	
+
 	--// ========================================
 	--// Connect to DataHandlerService signals
 	--// ========================================
-	
+
 	--// When a player's profile loads
 	DataHandlerService.OnPlayerProfileLoaded:Connect(function(player: Player, profileData: {})
 		--// Signal: OnPlayerProfileLoaded
 		dprint("OnPlayerProfileLoaded:", player.Name)
-		
+
 		if player and profileData then
 			PlayerData[player] = profileData
 			table.insert(SortedPlayerList, player)
@@ -454,7 +505,7 @@ function LeaderboardService:KnitStart()
 	DataHandlerService.OnPlayerDataChanged:Connect(function(player: Player, profileData: {})
 		--// Signal: OnPlayerDataChanged
 		dprint("OnPlayerDataChanged:", player.Name)
-		
+
 		if player and profileData and PlayerData[player] then
 			--// Only update if category value actually changed
 			if (PlayerData[player][Category] or 0) == (profileData[Category] or 0) then
@@ -464,15 +515,30 @@ function LeaderboardService:KnitStart()
 			PlayerData[player] = profileData
 			SortTable()
 			self:UpdateServerLeaderboard()
-            self:UpdateGlobalLeaderboard()
+			self:UpdateGlobalLeaderboard()
 		end
 	end)
+
+	-- DataHandlerService.OnPlayerDataChanged:Connect(function(player: Player, profileData: {})
+	-- 	if player and profileData and PlayerData[player] then
+	-- 		local mpsChanged = (PlayerData[player][Category] or 0) ~= (profileData[Category] or 0)
+	-- 		PlayerData[player] = profileData
+
+	-- 		if mpsChanged then
+	-- 			SortTable()
+	-- 			self:UpdateServerLeaderboard()
+	-- 		end
+
+	-- 		-- Always update world boards so index (and any other) changes propagate
+	-- 		self:UpdateGlobalLeaderboard()
+	-- 	end
+	-- end)
 
 	--// When a player leaves
 	Players.PlayerRemoving:Connect(function(player: Player)
 		--// Event: PlayerRemoving
 		dprint("PlayerRemoving:", player.Name)
-		
+
 		local idx = table.find(SortedPlayerList, player)
 		if idx then
 			table.remove(SortedPlayerList, idx)
@@ -490,7 +556,7 @@ function LeaderboardService:KnitStart()
 		end)
 
 	end)
-	
+
 	dprint("KnitStart() complete ✅")
 end
 
