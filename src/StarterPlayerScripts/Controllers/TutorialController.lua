@@ -53,9 +53,11 @@ local heartbeatConn = nil  -- block-retarget loop, cleared with beam
 function TutorialController:KnitInit() end
 
 function TutorialController:KnitStart()
-    TutorialController.TutorialService = Knit.GetService("TutorialService")
+	TutorialController.TutorialService = Knit.GetService("TutorialService")
+	TutorialController.GameManagerController = Knit.GetController("GameManagerController")
 
-    TutorialController.TutorialService.BeginTutorial:Connect(function()
+	TutorialController.TutorialService.BeginTutorial:Connect(function()
+		self.GameManagerController:ToggleUITopFrame(false)
         self:StartTutorial()
     end)
 end
@@ -567,7 +569,7 @@ function TutorialController:FinishTutorial()
         isFirstTimePlayer = false
     end
 
-    TutorialController.TutorialService:CompleteTutorial()
+	self.TutorialService.FinishTutorial:Fire()
     print("[TutorialController] Tutorial complete!")
 end
 
