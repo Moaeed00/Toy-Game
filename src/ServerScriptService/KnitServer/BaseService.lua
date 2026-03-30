@@ -20,6 +20,7 @@ local LikesService
 local TimerService
 local IndexSevice
 local DataHandlerService
+local TutorialService
 
 local BaseService = Knit.CreateService({
 	Name = "BaseService",
@@ -38,6 +39,7 @@ function BaseService:KnitInit()
 	TimerService = Knit.GetService("TimerService")
 	LikesService = Knit.GetService("LikesService")
 	IndexSevice = Knit.GetService("IndexService")
+	TutorialService = Knit.GetService("TutorialService")
 end
 
 function BaseService:KnitStart()
@@ -215,6 +217,8 @@ function BaseService:PlaceEntity(player: Player, slotName: string)
 	playerBase:PlaceEntity(biomeName, entityName, mutationName, slotPart)
 	self:ReleaseTool(player, entityId)
 	entity:Destroy()
+
+	TutorialService:NotifyBrainrotPlaced(player)
 end
 
 function BaseService:GiveTool(player: Player, biomeName: string, entityName: string, mutationName: string)

@@ -1,8 +1,8 @@
 return {
 	Points = 10000,
 	Footballs = {
-		Equipped = 1,
-		Owned = { 1 },
+		Equipped = 0,
+		Owned = { },
 	},
 	Money = 100,
 	Rebirth = 0,

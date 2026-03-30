@@ -50,8 +50,6 @@ function FootballService:EquipBall(player: Player)
         return
     end
 
-    self.TutorialService:NotifyFootballEquipped(player)
-
     local character = player.Character
     if not character then
         return
@@ -202,6 +200,10 @@ function FootballService:GiveFootball(player: Player)
     end
 
     local equippedFootballId = playerData.Footballs.Equipped
+    if equippedFootballId == 0 then
+        return
+    end
+
     local footballName, footballData = FootballUtils:GetFootballById(equippedFootballId)
     if not footballName then
         warn("Football id not found:", equippedFootballId)
