@@ -150,6 +150,10 @@ function DataHandlerService:GetPlayerData(player: Player)
 	return playerProfile.Data
 end
 
+function DataHandlerService.Client:GetPlayerData(player: Player)
+	return self.Server:GetPlayerData(player)
+end
+
 function DataHandlerService:SetPlayerData(player: Player, dataTable: { [string]: any })
 	if not player then
 		warn("Player doesn't exists while getting data")

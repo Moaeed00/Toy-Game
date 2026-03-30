@@ -62,9 +62,10 @@ function GameManagerController:KnitStart()
 	GameManagerController.TutorialService = Knit.GetService("TutorialService")
 	GameManagerController.DataHandlerService = Knit.GetService("DataHandlerService")
 
-	self.BlocksSpawnAreaService.ZoneChanged:Connect(function(isInside)
-		local data = self.DataHandlerService:GetPlayerData(Player)
-		self:ToggleUITopFrame(data and not data.IsFirstTimeLoad and not isInside)
+	self.BlocksSpawnAreaService.ZoneChanged:Connect(function(isInside: boolean)
+		self.DataHandlerService:GetPlayerData():andThen(function(data: {})
+			self:ToggleUITopFrame(data and not data.IsFirstTimeLoad and not isInside)
+		end)
 	end)
 
 	self.TutorialService.TutorialComplete:Connect(function()
