@@ -104,7 +104,7 @@ function FootballShopController:GenerateShopData()
 						local message = `You need ${self:FormatCommas(tostring(result.CoinsRequired))} more cash.`
 						NotificationHandler:DisplayNotificationMessage(message, "Error")
 					else
-						local message = `Successfully purchased ${result.FootballName} football!`
+						local message = `Successfully purchased {result.FootballName} football!`
 						NotificationHandler:DisplayNotificationMessage(message, "Success")
 					end
 				end)

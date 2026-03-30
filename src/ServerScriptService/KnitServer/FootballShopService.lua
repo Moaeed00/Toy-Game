@@ -19,12 +19,13 @@ end
 
 function FootballShopService:KnitStart()
 	FootballShopService.FootballService = Knit.GetService("FootballService")
+	FootballShopService.TutorialService = Knit.GetService("TutorialService")
     FootballShopService.PlayerData = {}
 
     DataStoreHandler.OnPlayerProfileLoaded:Connect(function(player, profile)
         local footballData = profile.Footballs or {
-            Owned = { 1 },
-            Equipped = 1
+            Owned = {},
+            Equipped = 0
         }
         self.PlayerData[player] = footballData
         self.Client.UpdateClientDataEvent:Fire(player, footballData)
@@ -86,6 +87,8 @@ function FootballShopService.Client:BuyFootballViaCoins(player: Player, football
 	DataStoreHandler:DeductMoney(player, config.Price)
 	table.insert(data.Footballs.Owned, config.Id)
 	self.Server:EquipFootball(player, footballName)
+
+	self.Server.TutorialService:NotifyFootballBought(player)
 	return {
 		Success = true,
 		FootballName = footballName
