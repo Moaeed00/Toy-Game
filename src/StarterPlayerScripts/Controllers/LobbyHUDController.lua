@@ -147,6 +147,8 @@ function Hud:SetupHudValues()
 end
 
 function Hud:OpenContainer(name: string)
+	self:PlayButtonCLickSound()
+
 	local gui = self.GUI[name]
 	if gui then
 		self:CloseContainer(self.CurrentActiveScreen)
@@ -219,17 +221,20 @@ function Hud:OnClickButton(name: string)
 		return
 	end
 
+	self:PlayButtonCLickSound()
+	self:OpenContainer(name)
+end
+
+function Hud:PlayButtonCLickSound()
 	if ClickSFX then
 		local clickSfx = ClickSFX:Clone()
-		clickSfx.Parent = Player
+		clickSfx.Parent = workspace
 		clickSfx.Looped = false
-		clickSfx.Volume = 0.5
+		clickSfx.Volume = 0.75
 		clickSfx:Play()
 
 		Debris:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
 	end
-
-	self:OpenContainer(name)
 end
 
 function Hud:KnitInit()
