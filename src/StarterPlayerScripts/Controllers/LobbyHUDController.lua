@@ -131,7 +131,7 @@ local function OnCashChanged(newValue: number, FirsTime: boolean)
 end
 
 local function OnPointsChanged(newValue: number)
-	PointsTextHolder.Text = math.floor(newValue)
+	PointsTextHolder.Text = Format.commaNumber(math.floor(newValue))
 end
 
 function Hud:SetEnabled(enabled: boolean)
