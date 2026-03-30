@@ -13,8 +13,23 @@ local RebirthService = Knit.CreateService({
 	},
 })
 
+function RebirthService:KnitInit()
+	DataHandlerService = Knit.GetService("DataHandlerService")
+	BaseService = Knit.GetService("BaseService")
+end
+
+function RebirthService:KnitStart()
+	self.Client.Rebirth:Connect(function(player: Player)
+		self:Rebirth(player)
+	end)
+end
+
 local function next_money_requiremenet(rebirth: number)
-	return RebirthConfiguration.REBIRTH[rebirth + 1]
+	return RebirthConfiguration.REBIRTH[rebirth + 1].MoneyRequired
+end
+
+local function next_money_reward(rebirth: number)
+	return RebirthConfiguration.REBIRTH[rebirth + 1].MoneyReward
 end
 
 function RebirthService:Rebirth(player: Player)
@@ -37,19 +52,10 @@ function RebirthService:Rebirth(player: Player)
 		return
 	end
 
+	local moneyReward = next_money_reward(rebirth)
 	DataHandlerService:ResetMoney(player)
 	BaseService:DoRebirth(player)
-end
-
-function RebirthService:KnitInit()
-	DataHandlerService = Knit.GetService("DataHandlerService")
-	BaseService = Knit.GetService("BaseService")
-end
-
-function RebirthService:KnitStart()
-	self.Client.Rebirth:Connect(function(player: Player)
-		self:Rebirth(player)
-	end)
+	DataHandlerService:UpdateMoney(player, moneyReward)
 end
 
 return RebirthService
