@@ -47,10 +47,12 @@ function TutorialService:KnitStart()
         -- Reset any brainrots discovered during the tutorial session
         -- (they haven't earned index progress since tutorial wasn't completed)
         self.DataHandlerService:SetPlayerData(player, {
-            DiscoveredBrainrots             = {},
-            DiscoveredBrainrotsPercentage   = 0,
-            IndexMultiplierBonus            = 0,
-            MoneyMultiplier                 = 1,
+            DiscoveredBrainrots = {},
+            DiscoveredBrainrotsPercentage = 0,
+            IndexMultiplierBonus = 0,
+            MoneyMultiplier = 1,
+            Points = 0,
+            Money = 50,
         })
 
         print(`[TutorialService] {player.DisplayName} left mid-tutorial, full reset applied`)
