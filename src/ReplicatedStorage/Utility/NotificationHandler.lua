@@ -35,7 +35,7 @@ function NotificationHandler:CreateNotification(Text: string, Color: Color3?)
 		uiScale.Scale = 0
 		item.Parent = Container
 
-		local openingTween = TweenService:Create(uiScale, self.OpeningTweenInfo, { Scale = 2 })
+		local openingTween = TweenService:Create(uiScale, self.OpeningTweenInfo, { Scale = 1.5 })
 		openingTween:Play()
 	end
 
