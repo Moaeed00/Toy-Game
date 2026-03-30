@@ -20,7 +20,7 @@ local RebirthService
 local RebirthController = Knit.CreateController({ Name = "RebirthController" })
 
 local function nextMoneyRequirement(rebirth: number): number?
-	return RebirthConfiguration.REBIRTH[rebirth + 1]
+	return RebirthConfiguration.REBIRTH[rebirth + 1].MoneyRequired
 end
 
 function RebirthController:KnitInit()
