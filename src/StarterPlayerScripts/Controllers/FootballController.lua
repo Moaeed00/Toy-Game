@@ -28,13 +28,12 @@ function FootballController:KnitStart()
         if not tool:IsA("Tool") or not FootballsConfig[tool.Name] then
             return
         end
-
-        humanoid:EquipTool(tool)
         self:ConnectFootballTool(tool, humanoid)
     end)
 
     task.wait(2)
     self.FootballService:GiveFootball():andThen(function(_football: Tool)
+        humanoid:EquipTool(_football)
         -- BackpackSorter.Sort(Player)
     end)
 end

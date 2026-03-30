@@ -35,7 +35,11 @@ function FootballShopService:KnitStart()
 	end)
 end
 
-function FootballShopService:EquipFootball(player, footballName)
+function FootballShopService:EquipFootball(player: Player, footballName)
+	local humanoid = player.Character:WaitForChild("Humanoid")
+	if not humanoid then
+		return
+	end
 	if not self:IsOwned(player, footballName) then
         return
     end
@@ -43,7 +47,8 @@ function FootballShopService:EquipFootball(player, footballName)
 	local data = DataStoreHandler:GetPlayerData(player)
 	data.Footballs.Equipped = FootballsConfig[footballName].Id
 
-	self.FootballService:GiveFootball(player)
+	local footballTool: Tool = self.FootballService:GiveFootball(player)
+	humanoid:EquipTool(footballTool)
 	self.Client.UpdateClientDataEvent:Fire(player, data.Footballs)
 end
 
