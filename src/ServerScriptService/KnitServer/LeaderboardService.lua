@@ -23,7 +23,7 @@ local LeaderboardService = Knit.CreateService {
 --// ------------------------------
 local CONFIG = {
 	DEBUG_PRINTS = true,
-	UPDATE_TICK = 15, -- seconds for global leaderboard update
+	UPDATE_TICK = 60, -- seconds for global leaderboard update
 
 	--// Workspace path to leaderboards
 	LEADERBOARD_FOLDER_PATH = {"Environment", "Stadium", "Leaderboard"},
@@ -555,6 +555,14 @@ function LeaderboardService:KnitStart()
 			self:UpdateServerLeaderboard()
 		end)
 
+	end)
+
+	--// Periodic global leaderboard refresh
+	task.spawn(function()
+		while true do
+			task.wait(CONFIG.UPDATE_TICK)
+			self:UpdateGlobalLeaderboard()
+		end
 	end)
 
 	dprint("KnitStart() complete ✅")
