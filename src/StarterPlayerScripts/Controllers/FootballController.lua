@@ -28,6 +28,8 @@ function FootballController:KnitStart()
         if not tool:IsA("Tool") or not FootballsConfig[tool.Name] then
             return
         end
+
+        humanoid:EquipTool(tool)
         self:ConnectFootballTool(tool, humanoid)
     end)
 
