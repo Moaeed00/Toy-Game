@@ -12,6 +12,8 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local RebirthGui = PlayerGui:WaitForChild("RebirthGui")
 local Canvas = RebirthGui:WaitForChild("Canvas")
 local CashProgress = Canvas:WaitForChild("CashProgress")
+local CashRewardCard = Canvas:WaitForChild("Rewards"):WaitForChild("Cash")
+local CashRewardText: TextLabel = CashRewardCard:WaitForChild("RewardAmount")
 local RebirthButton = Canvas:WaitForChild("Rebirth")
 local CloseButton = Canvas:WaitForChild("CloseButton")
 
@@ -19,8 +21,14 @@ local RebirthService
 
 local RebirthController = Knit.CreateController({ Name = "RebirthController" })
 
-local function nextMoneyRequirement(rebirth: number): number?
-	return RebirthConfiguration.REBIRTH[rebirth + 1].MoneyRequired
+local function next_money_requirement(rebirth: number)
+	local nextRebirth = RebirthConfiguration.REBIRTH[rebirth + 1]
+	return nextRebirth and nextRebirth.MoneyRequired
+end
+
+local function next_money_reward(rebirth: number)
+	local nextRebirth = RebirthConfiguration.REBIRTH[rebirth + 1]
+	return nextRebirth and nextRebirth.MoneyReward
 end
 
 function RebirthController:KnitInit()
@@ -31,7 +39,7 @@ function RebirthController:KnitStart()
 	RebirthController.LobbyHud = Knit.GetController("Hud")
 
 	Player:GetAttributeChangedSignal("Money"):Connect(function()
-		local nextRebirth = nextMoneyRequirement(Player:GetAttribute("Rebirth"))
+		local nextRebirth = next_money_requirement(Player:GetAttribute("Rebirth"))
 		if not nextRebirth then
 			return
 		end
@@ -44,7 +52,7 @@ function RebirthController:KnitStart()
 	end)
 
 	RebirthButton.MouseButton1Click:Connect(function()
-		local nextRebirth = nextMoneyRequirement(Player:GetAttribute("Rebirth"))
+		local nextRebirth = next_money_requirement(Player:GetAttribute("Rebirth"))
 		if not nextRebirth then
 			NotificationHandler:DisplayNotificationMessage("You've already completed every rebirth!", "Error")
 			return
@@ -80,13 +88,24 @@ end
 function RebirthController:UpdateUI()
 	local rebirthCount = Player:GetAttribute("Rebirth")
 	local money = Player:GetAttribute("Money")
-	local nextRebirth = nextMoneyRequirement(rebirthCount)
+	local nextRebirth = next_money_requirement(rebirthCount)
 
 	if not nextRebirth then
-		self:_updateMoney(1, 1)
+		CashProgress.Value.Text = "Max Rebirth Reached!"
+		CashProgress.Bar.Size = UDim2.fromScale(0, 1)
+		CashRewardText.Text = "N/A"
+		RebirthButton.Active = false
+		RebirthButton.AutoButtonColor = false
+		RebirthButton.ImageTransparency = 0.5
 		return
 	end
 
+	local reward = next_money_reward(rebirthCount)
+	CashRewardText.Text = Format.abbreviate(reward)
+
+	RebirthButton.Active = true
+	RebirthButton.AutoButtonColor = true
+	RebirthButton.ImageTransparency = 0
 	self:_updateMoney(money, nextRebirth)
 end
 

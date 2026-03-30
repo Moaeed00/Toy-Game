@@ -24,7 +24,7 @@ function RebirthService:KnitStart()
 	end)
 end
 
-local function next_money_requiremenet(rebirth: number)
+local function next_money_requirement(rebirth: number)
 	return RebirthConfiguration.REBIRTH[rebirth + 1].MoneyRequired
 end
 
@@ -41,7 +41,7 @@ function RebirthService:Rebirth(player: Player)
 	local rebirth = data.Rebirth
 	local money = data.Money
 
-	local moneyRequirement = next_money_requiremenet(rebirth)
+	local moneyRequirement = next_money_requirement(rebirth)
 	if not moneyRequirement then
 		print(`You can't rebirth!`)
 		return
