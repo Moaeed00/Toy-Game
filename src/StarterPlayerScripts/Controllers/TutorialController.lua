@@ -21,7 +21,7 @@ local STEPS = {
     },
     {
         id        = "block",
-        text      = "Equip and Kick the football at a Block\nto break it open.",
+        text      = "Kick the football at a Block\nto break it open.",
         beamColor = Color3.fromRGB(50, 200, 255),
     },
     {
