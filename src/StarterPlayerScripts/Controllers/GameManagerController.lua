@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -58,6 +59,7 @@ end
 function GameManagerController:KnitInit() end
 
 function GameManagerController:KnitStart()
+	StarterGui:SetCore("ResetButtonCallback", false)
 	GameManagerController.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
 	GameManagerController.TutorialService = Knit.GetService("TutorialService")
 	GameManagerController.DataHandlerService = Knit.GetService("DataHandlerService")
