@@ -272,7 +272,9 @@ function BaseService:CreateBase(player: Player)
 	LikesService:BroadcastLikeUpdate(player.UserId, TotalLikes)
 	self:NotifyAlreadyLikedPlayers(player)
 	self:AttachLikePromptHandler(player, playerBase)
-	IndexSevice:ApplySavedBaseColor(player)
+	task.defer(function()
+		IndexSevice:ApplySavedBaseColor(player)
+	end)
 end
 
 function BaseService:NotifyAlreadyLikedPlayers(owner: Player)
