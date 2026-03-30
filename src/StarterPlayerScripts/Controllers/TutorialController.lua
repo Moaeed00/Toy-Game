@@ -21,7 +21,7 @@ local STEPS = {
     },
     {
         id        = "block",
-        text      = "Kick the football at a Block\nto break it open.",
+        text      = "Equip and Kick the football at a Block\nto break it open.",
         beamColor = Color3.fromRGB(50, 200, 255),
     },
     {
@@ -39,7 +39,7 @@ local currentStepIndex = 1
 local isFirstTimePlayer = false
 
 local tutorialGui  = nil   -- ScreenGui
-local beamInst     = nil   -- Beam instance
+local beamInst: Beam  = nil   -- Beam instance
 local att0         = nil   -- Attachment on HumanoidRootPart (moves with player)
 local att1         = nil   -- Attachment on world target
 
@@ -275,11 +275,15 @@ function TutorialController:SetBeamTarget(targetPart, color)
     beamInst = Instance.new("Beam")
     beamInst.Attachment0    = att0
     beamInst.Attachment1    = att1
-    beamInst.Width0         = 0.5
-    beamInst.Width1         = 0.5
+    beamInst.Width0         = 1
+    beamInst.Width1         = 1
     beamInst.Segments       = 25
     beamInst.FaceCamera     = true
     beamInst.LightEmission  = 0.9
+    beamInst.Texture = "rbxassetid://16686518302"
+    beamInst.TextureLength = 1
+    beamInst.TextureMode = Enum.TextureMode.Static
+    beamInst.TextureSpeed = 5
     beamInst.LightInfluence = 0.1
     beamInst.CurveSize0     = 0
     beamInst.CurveSize1     = 0
