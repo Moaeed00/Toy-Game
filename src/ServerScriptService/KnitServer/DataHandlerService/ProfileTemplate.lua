@@ -1,10 +1,10 @@
 return {
-	Points = 10000,
+	Points = 0,
 	Footballs = {
 		Equipped = 0,
 		Owned = { },
 	},
-	Money = 100,
+	Money = 50,
 	Rebirth = 0,
 	IsFirstTimeLoad = true,
 	MoneyMultiplier = 1,
@@ -13,7 +13,7 @@ return {
 	LastJoin = 0,
 	Backpack = {},
 	Base = {},
-	BaseColor = {},
+	BaseColor = "Normal",
 	--// Gear ownership
 	Gear = {
 		["Slide"] = true, -- Free

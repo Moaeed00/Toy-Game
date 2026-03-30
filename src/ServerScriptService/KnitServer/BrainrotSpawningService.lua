@@ -1,3 +1,4 @@
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
 local TweenService = game:GetService("TweenService")
@@ -10,6 +11,7 @@ local BrainrotGUITemplate: Folder = ReplicatedStorage.Assets.BrainrotInfoGUI
 local BlockSpawnRarities = require(ReplicatedStorage.Configuration.Blocks.BlockSpawnRarities)
 local BrainrotVariantsConfig = require(ReplicatedStorage.Configuration.Brainrots.BrainrotsVariantConfig)
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
+local BrainrotNamesSFXs = ReplicatedStorage.Assets.BrainrotNamesSFX
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Sounds = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds")
@@ -23,6 +25,7 @@ local BrainrotSpawnService = Knit.CreateService {
         OnBrainrotSpawnEvent = Knit.CreateSignal(),
     },
 }
+
 local BASE_VARIANT_FOLDER = "Normal"
 
 function BrainrotSpawnService:KnitInit()
@@ -277,10 +280,11 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player: Player, block
         revealSound.Volume = 0.7
         cheerSound.Volume = 0.2
         revealSound:Play()
-        cheerSound:Play()
+		cheerSound:Play()
+		self:PlayBrainrotNameSFX(spawnedBrainrot)
 
         local revealDuration = revealSound.TimeLength
-        local fadeTime = 0.5
+        local fadeTime = 0.25
 
         task.delay(revealDuration - fadeTime, function()
             local fadeInfo = TweenInfo.new(fadeTime, Enum.EasingStyle.Linear)
@@ -374,6 +378,22 @@ end
 
 function BrainrotSpawnService:StopBrainrotTimer(brainrot: Model)
     brainrot:SetAttribute("Timer", 0)
+end
+
+function BrainrotSpawnService:PlayBrainrotNameSFX(brainrot: Model)
+	local brainrotName = brainrot:GetAttribute("Name")
+	local brainrotNameSFX: Sound = BrainrotNamesSFXs:FindFirstChild(brainrotName)
+	if not brainrotNameSFX then
+		return
+	end
+
+	brainrotNameSFX = brainrotNameSFX:Clone()
+	brainrotNameSFX.Parent = brainrot
+	brainrotNameSFX.Looped = false
+	brainrotNameSFX.Volume = 0.8
+	brainrotNameSFX:Play()
+
+	Debris:AddItem(brainrotNameSFX, brainrotNameSFX.TimeLength + 0.1)
 end
 
 function BrainrotSpawnService:FormatCommas(arg: string)
