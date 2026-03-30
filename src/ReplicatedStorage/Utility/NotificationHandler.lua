@@ -1,5 +1,5 @@
 local PlayerService: Players = game:GetService("Players")
-local DebrisService = game:GetService("Debris")
+local Debris = game:GetService("Debris")
 local TweenService: TweenService = game:GetService("TweenService")
 local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -68,7 +68,7 @@ function NotificationHandler:PlaySuccessSFX()
 		successSfx.Volume = 1
 		successSfx:Play()
 
-		DebrisService:AddItem(successSfx, successSfx.TimeLength + 0.1)
+		Debris:AddItem(successSfx, successSfx.TimeLength + 0.1)
 	end
 end
 
@@ -80,7 +80,7 @@ function NotificationHandler:PlayErrorSFX()
 		errorSfx.Volume = 1
 		errorSfx:Play()
 
-		DebrisService:AddItem(errorSfx, errorSfx.TimeLength + 0.1)
+		Debris:AddItem(errorSfx, errorSfx.TimeLength + 0.1)
 	end
 end
 

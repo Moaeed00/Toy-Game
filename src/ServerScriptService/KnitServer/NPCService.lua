@@ -1,13 +1,16 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local DebrisService = game:GetService("Debris")
+local Debris = game:GetService("Debris")
 local Workspace = game:GetService("Workspace")
 local CollectionService = game:GetService("CollectionService")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local RagdollService = require(script.Parent.RagdollService)
 
+local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
 local GlobalSounds = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds")
 
 local NPCService = Knit.CreateService {
@@ -16,6 +19,8 @@ local NPCService = Knit.CreateService {
 		ActivatePlayerRagdollEvent = Knit.CreateSignal(),
 	}
 }
+
+local NPCCollisionGroup = "NPC"
 
 local CONFIG = {
 	WalkSpeed = 18,
@@ -185,7 +190,7 @@ function NPCService:PerformAttack(npcData: NPCData, targetCharacter: Model, play
 			hitSound.Parent = npcData.Root
 			hitSound.Volume = 1
 			hitSound:Play()
-			DebrisService:AddItem(hitSound, hitSound.TimeLength + 0.5)
+			Debris:AddItem(hitSound, hitSound.TimeLength + 0.5)
 		end
 
 		self.BrainrotCarryService:DropBrainrot(player)
@@ -241,9 +246,12 @@ end
 function NPCService:SetupNPC(model: Model): NPCData?
 	local hum = model:FindFirstChild("Humanoid") :: Humanoid
 	local root = model:FindFirstChild("HumanoidRootPart") :: BasePart
-	if not hum or not root then return nil end
+	if not hum or not root then
+		return nil
+	end
 
 	root:SetNetworkOwner(nil)
+	CollisionGroupHandler:AddCollisionGroup(NPCCollisionGroup, root)
 
 	local tracks = {}
 	local animator = hum:FindFirstChild("Animator") or Instance.new("Animator", hum)
@@ -276,7 +284,7 @@ function NPCService:SetupNPC(model: Model): NPCData?
 
 		tracks["Walk"]:GetMarkerReachedSignal("Step"):Connect(function()
 			footstepSound:Play()
-			DebrisService:AddItem(footstepSound, footstepSound.TimeLength)
+			Debris:AddItem(footstepSound, footstepSound.TimeLength)
 		end)
 	end
 

@@ -1,7 +1,11 @@
 local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PhysicsService = game:GetService("PhysicsService")
+local ServerScriptService = game:GetService("ServerScriptService")
+
+local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BlocksConfig = require(ReplicatedStorage.Configuration.Blocks.BlocksConfig)
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
@@ -10,12 +14,13 @@ local Base: Part = workspace:WaitForChild("Environment"):WaitForChild("Base")
 local BlocksSpawnArea: Part = workspace:WaitForChild("Environment"):WaitForChild("BlocksSpawnArea")
 local NormalBlocksSpawnArea: Part = BlocksSpawnArea:WaitForChild("NormalBlocksSpawnArea")
 local SpecialBlocksSpawnArea: Part = BlocksSpawnArea:WaitForChild("SpecialBlocksSpawnArea")
-local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BlocksSpawningService = Knit.CreateService {
     Name = "BlocksSpawningService",
     Client = {},
 }
+
+local BlocksCollisionGroup = "Blocks"
 
 function BlocksSpawningService:KnitInit()
 end
@@ -28,11 +33,6 @@ function BlocksSpawningService:KnitStart()
     BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 30
     BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 30
     BlocksSpawningService.MIN_SPAWN_DISTANCE = 15 -- Minimum distance between blocks
-
-    if not PhysicsService:IsCollisionGroupRegistered("Blocks") then
-        PhysicsService:RegisterCollisionGroup("Blocks")
-    end
-    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Blocks", false)
 
     self:SpawnBlocks(125)
 end
@@ -145,8 +145,6 @@ function BlocksSpawningService:GetRandomPointInSpawnArea(blockType: string): Vec
 end
 
 function BlocksSpawningService:SetBlockData(index: number, block: Model, blockConfig)
-    block:WaitForChild(blockConfig.Name).CollisionGroup = "Blocks"
-
     local blockInfoFrame: Frame = block:WaitForChild(blockConfig.Name):WaitForChild("BillboardGui"):WaitForChild("Frame")
 
     local blockName: TextLabel = blockInfoFrame:WaitForChild("BlockName")
@@ -155,7 +153,9 @@ function BlocksSpawningService:SetBlockData(index: number, block: Model, blockCo
     local progressText: TextLabel = blockInfoFrame:WaitForChild("HitProgressBar"):WaitForChild("ProgressText")
     progressText.Text = blockConfig.HitPower .. " / " .. blockConfig.HitPower
 
-    CollectionService:AddTag(block, "Block")
+	CollisionGroupHandler:AddCollisionGroup(BlocksCollisionGroup, block:WaitForChild(blockConfig.Name))
+
+	CollectionService:AddTag(block, "Block")
     block:SetAttribute("Index", index)
     block:SetAttribute("Rarity", blockConfig.Rarity)
     block:SetAttribute("HitPower", blockConfig.HitPower)

@@ -1,6 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DebrisService = game:GetService("Debris")
+local Debris = game:GetService("Debris")
 
 local Player = Players.LocalPlayer
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
@@ -148,7 +148,7 @@ function MerchantController:PlayCoinsCollectedSFX()
 		coinsCollectedSFX.Volume = 0.75
 		coinsCollectedSFX:Play()
 
-		DebrisService:AddItem(coinsCollectedSFX, coinsCollectedSFX.TimeLength + 0.1)
+		Debris:AddItem(coinsCollectedSFX, coinsCollectedSFX.TimeLength + 0.1)
 	end
 end
 

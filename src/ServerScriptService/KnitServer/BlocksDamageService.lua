@@ -1,15 +1,20 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PhysicsService = game:GetService("PhysicsService")
 local TweenService = game:GetService("TweenService")
+local ServerScriptService = game:GetService("ServerScriptService")
+
+local Utils: Folder = ServerScriptService:WaitForChild("Utils")
+local CollisionGroupHandler: {} = require(Utils:WaitForChild("CollisionGroupHandler"))
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BlocksFolder: Folder = workspace:WaitForChild("Blocks")
 local BlockHitParticlesAttachment: Attachment = ReplicatedStorage.Assets.CamParticles:WaitForChild("BlockHit"):WaitForChild("Attachment")
-local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local BlocksDamageService = Knit.CreateService {
     Name = "BlocksDamageService",
     Client = {},
 }
+
+local MiniBlocksCollisionGroup = "MiniBlocks"
 
 function BlocksDamageService:KnitInit()
 end
@@ -18,15 +23,6 @@ function BlocksDamageService:KnitStart()
     BlocksDamageService.GUIService = Knit.GetService("GUIService")
     BlocksDamageService.BlocksSpawningService = Knit.GetService("BlocksSpawningService")
     BlocksDamageService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
-
-    if not PhysicsService:IsCollisionGroupRegistered("MiniBlocks") then
-        PhysicsService:RegisterCollisionGroup("MiniBlocks")
-    end
-    if not PhysicsService:IsCollisionGroupRegistered("Football") then
-        PhysicsService:RegisterCollisionGroup("Football")
-    end
-    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "Football", false)
-    PhysicsService:CollisionGroupSetCollidable("MiniBlocks", "MiniBlocks", false)
 
     BlocksDamageService.CurrentHitBlockIndex = nil
 end
@@ -133,7 +129,8 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
             miniBlock.CastShadow = false
             miniBlock.CanCollide = true
             miniBlock.Anchored = false
-            miniBlock.CollisionGroup = "MiniBlocks"
+
+			CollisionGroupHandler:AddCollisionGroup(MiniBlocksCollisionGroup, miniBlock)
 
             -- Random size using multipliers
             local sizeMultiplier = math.random() * (maxSpawnSizeMultiplier - minSpawnSizeMultiplier) + minSpawnSizeMultiplier

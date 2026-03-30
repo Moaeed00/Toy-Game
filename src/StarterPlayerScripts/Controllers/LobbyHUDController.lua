@@ -1,6 +1,6 @@
 ---- [Services]			----
 local Players = game:GetService("Players")
-local DebrisService = game:GetService("Debris")
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local LobbyHUDHelpers: Folder = ReplicatedStorage:WaitForChild("LobbyHUDHelpers")
@@ -223,10 +223,10 @@ function Hud:OnClickButton(name: string)
 		local clickSfx = ClickSFX:Clone()
 		clickSfx.Parent = Player
 		clickSfx.Looped = false
-		clickSfx.Volume = 1
+		clickSfx.Volume = 0.5
 		clickSfx:Play()
 
-		DebrisService:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
+		Debris:AddItem(clickSfx, clickSfx.TimeLength + 0.1)
 	end
 
 	self:OpenContainer(name)

@@ -1,6 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DebrisService = game:GetService("Debris")
+local Debris = game:GetService("Debris")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Utils: Folder = ServerScriptService:WaitForChild("Utils")
@@ -138,7 +138,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
         kickSound.Volume = 1
         kickSound:Play()
 
-        DebrisService:AddItem(kickSound, kickSound.TimeLength + 0.1)
+        Debris:AddItem(kickSound, kickSound.TimeLength + 0.1)
     end
 
     local equippedId = playerData.Footballs.Equipped
