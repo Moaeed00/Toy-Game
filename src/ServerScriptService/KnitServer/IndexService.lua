@@ -1,3 +1,4 @@
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -222,7 +223,6 @@ local VARIANT_APPEARANCE = {
 }
 
 local _rainbowConnections: { [number]: RBXScriptConnection } = {}
-local _rainbowGridConnections: { [number]: RBXScriptConnection } = {}
 
 local function getEnvironmentParts(player: Player): { BasePart }
     local basesFolder = workspace:FindFirstChild("Bases")
@@ -270,24 +270,11 @@ local function stopRainbow(player: Player)
     end
 end
 
-local function stopRainbowGrid(player: Player)
-    if _rainbowGridConnections[player.UserId] then
-        _rainbowGridConnections[player.UserId]:Disconnect()
-        _rainbowGridConnections[player.UserId] = nil
-    end
-end
-
-local _originalStopRainbow = stopRainbow
-stopRainbow = function(player: Player)
-    _originalStopRainbow(player)
-    stopRainbowGrid(player)
-end
-
 function applyRainbow(player: Player)
     stopRainbow(player)
 
     local hue = 0
-    _rainbowConnections[player.UserId] = game:GetService("RunService").Heartbeat:Connect(function(dt)
+	_rainbowConnections[player.UserId] = RunService.Heartbeat:Connect(function(dt)
         hue = (hue + dt * 0.3) % 1
         local color = Color3.fromHSV(hue, 1, 1)
         local parts = getEnvironmentParts(player)
@@ -300,22 +287,6 @@ function applyRainbow(player: Player)
     end)
 end
 
-function applyRainbowGrid(player: Player)
-    stopRainbowGrid(player)
-    local hue = 0
-    _rainbowGridConnections[player.UserId] = game:GetService("RunService").Heartbeat:Connect(function(dt)
-        hue = (hue + dt * 0.3) % 1
-        local color = Color3.fromHSV(hue, 1, 1)
-        for _, part in ipairs(getGridPlatformParts(player)) do
-            if part and part.Parent then
-                part.Color    = color
-                part.Material = Enum.Material.Neon
-            end
-        end
-    end)
-end
-
-
 function captureOriginals(player: Player)
     if _originalPartState[player.UserId] then return end
     local saved = {}
@@ -324,9 +295,6 @@ function captureOriginals(player: Player)
         saved[part] = { Color = part.Color, Material = part.Material }
     end
 
-    for _, part in ipairs(getGridPlatformParts(player)) do
-        saved[part] = { Color = part.Color, Material = part.Material }
-    end
     _originalPartState[player.UserId] = saved
 end
 
@@ -335,12 +303,8 @@ function IndexService:SetBaseColor(player: Player, variantPrefix: string)
     local data = self._dataHandler:GetPlayerData(player)
     if not data then
         return
-    end
-    data.BaseColor = data.BaseColor or {}
-    data.BaseColor[player.UserId] = variantPrefix
-    self._dataHandler:SetPlayerData(player, {
-        BaseColor = data.BaseColor
-    })
+	end
+	self._dataHandler:SetPlayerData(player, { BaseColor = variantPrefix })
 
     -- Stop any running rainbow loop
     stopRainbow(player)
@@ -350,14 +314,6 @@ function IndexService:SetBaseColor(player: Player, variantPrefix: string)
     if not appearance then
         warn("[IndexService] Unknown variant prefix:", variantPrefix)
         return
-    end
-
-    local function allTargetParts()
-        local parts = getEnvironmentParts(player)
-        for _, p in ipairs(getGridPlatformParts(player)) do   -- ← NEW
-            table.insert(parts, p)
-        end
-        return parts
     end
 
     if variantPrefix == "Normal" then
@@ -375,12 +331,11 @@ function IndexService:SetBaseColor(player: Player, variantPrefix: string)
 
     if variantPrefix == "Rainbow" then
         applyRainbow(player)
-        applyRainbowGrid(player)
         return
     end
 
     -- Static color application
-    for _, part in ipairs(allTargetParts()) do
+	for _, part in ipairs(getEnvironmentParts(player)) do
         if part and part.Parent then
             part.Color    = appearance.Color
             part.Material = appearance.Material
@@ -393,16 +348,21 @@ function IndexService.Client:SetBaseColor(player: Player, variantPrefix: string)
 end
 
 function IndexService:ApplySavedBaseColor(player: Player)
-    local data = self._dataHandler:GetPlayerData(player)
-    if not data then return end
+	local data = self._dataHandler:GetPlayerData(player)
+	if not data then
+		return
+	end
 
-    local baseColorTable = data.BaseColor
-    if not baseColorTable then return end
+	local variantPrefix = data.BaseColor
+	if type(variantPrefix) ~= "string" or variantPrefix == "" then
+		variantPrefix = "Normal"
+	end
 
-    local variantPrefix = baseColorTable[player.UserId] or "Normal"
-    if not variantPrefix then return end
+	if variantPrefix == "Normal" then
+		return
+	end
 
-    self:SetBaseColor(player, variantPrefix)
+	self:SetBaseColor(player, variantPrefix)
 end
 
 function IndexService:KnitStart()
