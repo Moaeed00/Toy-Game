@@ -212,8 +212,8 @@ local BRAINROTS_DATA = {
 		},
 	},
 	Rare = {
-		["Tatatata Sahur"] = {
-			DisplayName = "Tatatata Sahur",
+		["Ta Ta Ta Ta Sahur"] = {
+			DisplayName = "Ta Ta Ta Ta Sahur",
 			Icon = {
 				Normal = "rbxassetid://102773643682352",
 				Gold = "rbxassetid://131341643457475",
@@ -287,8 +287,8 @@ local BRAINROTS_DATA = {
 			IdleAnimationID = "109196834334122",
 			RarityWeight = 1800000,
 		},
-		["Madung"] = {
-			DisplayName = "Madung",
+		["Madudung"] = {
+			DisplayName = "Madudung",
 			Icon = {
 				Normal = "rbxassetid://81571508095321",
 				Gold = "rbxassetid://105478607790505",
@@ -302,8 +302,8 @@ local BRAINROTS_DATA = {
 			IdleAnimationID = "123473669513490",
 			RarityWeight = 1600000,
 		},
-		["Bananito Delfinito"] = {
-			DisplayName = "Bananito Delfinito",
+		["Bananita Dolphinita"] = {
+			DisplayName = "Bananita Dolphinita",
 			Icon = {
 				Normal = "rbxassetid://104462589038482",
 				Gold = "rbxassetid://76591752768596",
@@ -379,8 +379,8 @@ local BRAINROTS_DATA = {
 			IdleAnimationID = "91508657190285",
 			RarityWeight = 600000,
 		},
-		["Brr Bicus Dicus"] = {
-			DisplayName = "Brr Bicus Dicus",
+		["Brri Brri Bicus Dicus"] = {
+			DisplayName = "Brri Brri Bicus Dicus",
 			Icon = {
 				Normal = "rbxassetid://106732941706535",
 				Gold = "rbxassetid://76158322582633",
@@ -608,8 +608,8 @@ local BRAINROTS_DATA = {
 			IdleAnimationID = "110808175306449",
 			RarityWeight = 40000,
 		},
-		["Elefanto Cocofanto"] = {
-			DisplayName = "Elefanto Cocofanto",
+		["Cocofanto Elefanto"] = {
+			DisplayName = "Cocofanto Elefanto",
 			Icon = {
 				Normal = "rbxassetid://92837452859684",
 				Gold = "rbxassetid://97566868262336",

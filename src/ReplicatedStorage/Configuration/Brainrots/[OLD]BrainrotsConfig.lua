@@ -145,7 +145,7 @@ local BRAINROTS_DATA = {
         Timer = 30,
         IdleAnimationID = "109196834334122",
 	},
-	Madung = {
+	Madudung = {
 		Rarity = 1600000,
 		RarityType = "Rare",
 		CashPerSecond = 76,
@@ -153,7 +153,7 @@ local BRAINROTS_DATA = {
         Timer = 30,
         IdleAnimationID = "123473669513490",
 	},
-	["Bananito Delfinito"] = {
+	["Bananita Dolphinita"] = {
 		Rarity = 1400000,
 		RarityType = "Rare",
 		CashPerSecond = 84,
@@ -193,7 +193,7 @@ local BRAINROTS_DATA = {
         Timer = 30,
         IdleAnimationID = "91508657190285",
 	},
-	["Brr Bicus Dicus"] = {
+	["Brri Brri Bicus Dicus"] = {
 		Rarity = 500000,
 		RarityType = "Epic",
 		CashPerSecond = 144,
@@ -313,7 +313,7 @@ local BRAINROTS_DATA = {
         Timer = 30,
         IdleAnimationID = "110808175306449",
 	},
-	["Elefanto Cocofanto"] = {
+	["Cocofanto Elefanto"] = {
 		Rarity = 32000,
 		RarityType = "Mythic",
 		CashPerSecond = 1520,
