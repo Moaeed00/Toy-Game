@@ -25,8 +25,8 @@ function BlocksSpawningService:KnitStart()
     BlocksSpawningService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
 
     BlocksSpawningService.SpawnedPositions = {}
-    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 20 -- 20%
-    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 25 -- 25%
+    BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 30
+    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 30
     BlocksSpawningService.MIN_SPAWN_DISTANCE = 15 -- Minimum distance between blocks
 
     if not PhysicsService:IsCollisionGroupRegistered("Blocks") then
