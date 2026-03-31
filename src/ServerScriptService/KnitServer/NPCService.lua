@@ -284,7 +284,6 @@ function NPCService:SetupNPC(model: Model): NPCData?
 
 		tracks["Walk"]:GetMarkerReachedSignal("Step"):Connect(function()
 			footstepSound:Play()
-			Debris:AddItem(footstepSound, footstepSound.TimeLength)
 		end)
 	end
 
