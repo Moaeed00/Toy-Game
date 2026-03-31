@@ -24,7 +24,7 @@ local GiftingService
 local prompts : {[Player] : ProximityPrompt} = {}
 
 local isHoldingBrainrot = false
-local hideWaitingTask = nil
+-- local hideWaitingTask = nil
 
 --------------------------------------------------
 -- destroy prompt
@@ -218,10 +218,10 @@ function GiftingController:_connectSignals()
 	-- end)
 
 	GiftingService.HideWaitingUI:Connect(function()
-		if hideWaitingTask then
-			task.cancel(hideWaitingTask)
-			hideWaitingTask = nil
-		end
+		-- if hideWaitingTask then
+		-- 	task.cancel(hideWaitingTask)
+		-- 	hideWaitingTask = nil
+		-- end
 
 		local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
 		gui.Visible = false
