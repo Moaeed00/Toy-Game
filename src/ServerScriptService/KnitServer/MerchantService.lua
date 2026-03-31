@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local BrainrotsData = require(ReplicatedStorage.Configuration.Brainrots.EntitiesConfiguration)
-local BaseServer = require(ServerScriptService.KnitServer.BaseService)
 local AttributesConfiguration = require(ReplicatedStorage.Configuration.AttributesConfiguration)
 local getPlayerCharacter = require(ReplicatedStorage.Shared.Utils.getPlayerCharacter)
 local getBiomeByEntity = require(ReplicatedStorage.Shared.Utils.getBiomeByEntity)
@@ -21,6 +20,8 @@ function MerchantService:KnitInit()
 end
 
 function MerchantService:KnitStart()
+    MerchantService.BaseService = Knit.GetService("BaseService")
+
     Players.PlayerAdded:Connect(function(player: Player)
         local playerBase = self:WaitForPlayerBase(player)
         if not playerBase then
@@ -43,7 +44,7 @@ function MerchantService:KnitStart()
 end
 
 function MerchantService:BuildBackpackSnapshot(player: Player)
-    local playerBase, _ = BaseServer:GetPlayerBase(player)
+    local playerBase, _ = self.BaseService:GetPlayerBase(player)
     if not playerBase then
         return {}
     end
@@ -82,7 +83,7 @@ function MerchantService:SyncPlayer(player: Player)
 end
 
 function MerchantService.Client:Sell(player: Player, id: string)
-    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = self.BaseService:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -106,7 +107,7 @@ function MerchantService.Client:Sell(player: Player, id: string)
 end
 
 function MerchantService.Client:SellAll(player: Player)
-    local playerBase, _playerProfile = BaseServer:GetPlayerBase(player)
+    local playerBase, _playerProfile = self.BaseService:GetPlayerBase(player)
 	if not playerBase then
         return
     end
@@ -154,7 +155,7 @@ function MerchantService:WaitForPlayerBase(player: Player, timeout: number?)
     timeout = timeout or 5
 
     while elapsed < timeout do
-        local playerBase = BaseServer:GetPlayerBase(player)
+        local playerBase = self.BaseService:GetPlayerBase(player)
         if playerBase then
             return playerBase
         end
