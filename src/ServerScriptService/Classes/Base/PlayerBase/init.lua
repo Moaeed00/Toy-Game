@@ -322,8 +322,10 @@ function PlayerBase.GetToolModelById(self: PlayerBase, toolId: string)
 	end
 
 	local tool = character:FindFirstChildOfClass("Tool")
+	if not tool then
+		return nil
+	end
 	local id = tool:GetAttribute(AttributesConfiguration.ID)
-
 	if id == toolId then
 		return tool
 	end

@@ -43,36 +43,21 @@ function MerchantService:KnitStart()
 end
 
 function MerchantService:BuildBackpackSnapshot(player: Player)
+    local playerBase, _ = BaseServer:GetPlayerBase(player)
+    if not playerBase then
+        return {}
+    end
+
     local snapshot = {}
+    local backpack = playerBase:GetBackpack()
 
-    local backpack = player:FindFirstChild("Backpack")
-    if not backpack then
-        return snapshot
-    end
-
-    local toolsToScan = backpack:GetChildren()
-
-    local character = player.Character
-    if character then
-        local equipped = character:FindFirstChildOfClass("Tool")
-        if equipped then
-            table.insert(toolsToScan, equipped)
-        end
-    end
-
-    for _, tool in ipairs(toolsToScan) do
-        if not tool:IsA("Tool") then
+    for id, tool in pairs(backpack) do
+        local toolModel = playerBase:GetToolModelById(id)
+        if not toolModel then
             continue
         end
 
-        local entityName = tool:GetAttribute(AttributesConfiguration.ENTITY_NAME)
-        local mutationName = tool:GetAttribute(AttributesConfiguration.MUTATION)
-        local id = tool:GetAttribute(AttributesConfiguration.ID)
-
-        if not entityName then
-            continue
-        end
-
+        local entityName = tool[2] -- tool[1] = biomeName, tool[2] = entityName
         local data = BrainrotsData.Processed[entityName]
         if not data then
             continue
@@ -82,7 +67,7 @@ function MerchantService:BuildBackpackSnapshot(player: Player)
             snapshot[entityName] = {
                 ID = id,
                 Amount = 0,
-                Variant = mutationName,
+                Variant = toolModel:GetAttribute("Mutation")
             }
         end
         snapshot[entityName].Amount += 1
