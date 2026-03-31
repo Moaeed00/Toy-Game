@@ -6,10 +6,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
-local GiftingConfig = require(
-	ReplicatedStorage.Configuration.GiftingConfig
-)
+local NotificationHandler = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("NotificationHandler"))
+local GiftingConfig = require(ReplicatedStorage.Configuration.GiftingConfig)
 
 local localPlayer = Players.LocalPlayer
 
@@ -26,6 +24,7 @@ local GiftingService
 local prompts : {[Player] : ProximityPrompt} = {}
 
 local isHoldingBrainrot = false
+local hideWaitingTask = nil
 
 --------------------------------------------------
 -- destroy prompt
@@ -189,8 +188,8 @@ function GiftingController:_connectSignals()
 	GiftingService.ShowGiftUI:Connect(function(gifter)
 
 		local gui = localPlayer.PlayerGui.Gifting.GiftingUIFrame
-		gui.Visible = true
-		gui.GifterNameText.Text = gifter.Name
+		gui.Message.Text = gifter.Name .. " wants to gift you their Brainrot!"
+    	gui.Visible = true
 
 	end)
 
@@ -201,57 +200,43 @@ function GiftingController:_connectSignals()
 
 	end)
 
-	GiftingService.ShowWaitingUI:Connect(function(receiver)
+	-- GiftingService.ShowWaitingUI:Connect(function(receiver)
 
-		local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
-		gui.Visible = true
-		gui.GifterNameText.Text = receiver.Name
+	-- 	local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
+	-- 	gui.WaitingForAnswer.Text = "Waiting for " .. receiver.DisplayName .. " to respond..."
+    -- 	gui.Visible = true
 
-	end)
+	-- 	if hideWaitingTask then
+	-- 		task.cancel(hideWaitingTask)
+	-- 	end
+
+	-- 	hideWaitingTask = task.delay(GiftingConfig.WAITING_GUI_DURATION, function()
+	-- 		hideWaitingTask = nil
+	-- 		gui.Visible = false
+	-- 	end)
+
+	-- end)
 
 	GiftingService.HideWaitingUI:Connect(function()
+		if hideWaitingTask then
+			task.cancel(hideWaitingTask)
+			hideWaitingTask = nil
+		end
 
 		local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
 		gui.Visible = false
-
 	end)
 
 	GiftingService.GiftRejected:Connect(function(receiverName)
-
-		local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
-
-		gui.WaitingForAnswer.Text = receiverName .. " rejected your gift"
-
-		task.delay(GiftingConfig.REJECTION_MESSAGE_DURATION, function()
-
-			if gui then
-				gui.Visible = false
-			end
-
-		end)
-
+		NotificationHandler:DisplayNotificationMessage(`{receiverName} rejected your gift.`, "Error")
 	end)
 
 	GiftingService.GiftAccepted:Connect(function(receiverName)
-
-		local gui = localPlayer.PlayerGui.Gifting.GiftingUIAnswerFrame
-
-		gui.WaitingForAnswer.Text = "Your gift was accepted by:"
-		gui.GifterNameText.Text = receiverName
-		gui.Visible = true
-
-		task.delay(2, function()
-
-			if gui then
-				gui.Visible = false
-			end
-
-		end)
+		NotificationHandler:DisplayNotificationMessage(`{receiverName} accepted your gift.`, "Success")
 
 		-- destroy prompts since brainrot was given away
 		destroyAllPrompts()
 		isHoldingBrainrot = false
-
 	end)
 
 end
@@ -264,15 +249,8 @@ function GiftingController:_connectButtons()
 
 	local giftingUIFrame = giftingScreenGui:WaitForChild("GiftingUIFrame")
 
-	local acceptButton =
-		giftingUIFrame
-		:WaitForChild("AcceptButtonFrame")
-		:WaitForChild("AcceptButton")
-
-	local rejectButton =
-		giftingUIFrame
-		:WaitForChild("RejectTextButtonFrame")
-		:WaitForChild("RejectTextButton")
+	local acceptButton = giftingUIFrame:WaitForChild("Buttons"):WaitForChild("Accept")
+	local rejectButton = giftingUIFrame:WaitForChild("Buttons"):WaitForChild("Reject")
 
 	------------------------------------------------
 	-- ACCEPT

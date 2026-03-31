@@ -10,7 +10,7 @@ local GiftingService = Knit.CreateService({
 	Name = "GiftingService",
 	Client = {
 		ShowGiftUI    = Knit.CreateSignal(),
-		ShowWaitingUI = Knit.CreateSignal(),
+		-- ShowWaitingUI = Knit.CreateSignal(),
 		HideGiftUI    = Knit.CreateSignal(),
 		HideWaitingUI = Knit.CreateSignal(),
 		GiftRejected  = Knit.CreateSignal(),
@@ -143,7 +143,7 @@ function GiftingService:_handleGiftRequest(gifter: Player, receiver: Player)
 	}
 
 	self.Client.ShowGiftUI:Fire(receiver, gifter)
-	self.Client.ShowWaitingUI:Fire(gifter, receiver)
+	-- self.Client.ShowWaitingUI:Fire(gifter, receiver)
 
 	-- BUG FIX 3: capture UserId, not the Player object, so the
 	-- closure doesn't hold a stale reference after the player leaves.
@@ -213,7 +213,7 @@ function GiftingService:_handleGiftResponse(receiver: Player, accepted: boolean)
 	end
 
 	if not accepted then
-		self.Client.GiftRejected:Fire(gifter, receiver.Name)
+		self.Client.GiftRejected:Fire(gifter, receiver.DisplayName)
 		self.Client.HideGiftUI:Fire(receiver)
 		activeGiftRequests[gifterUserId] = nil
 		return
@@ -246,7 +246,7 @@ function GiftingService:_handleGiftResponse(receiver: Player, accepted: boolean)
 	brainrotTool:Destroy()
 	BaseService:GiveTool(receiver, biomeName, entityName, mutation)
 
-	self.Client.GiftAccepted:Fire(gifter, receiver.Name)
+	self.Client.GiftAccepted:Fire(gifter, receiver.DisplayName)
 	self.Client.HideGiftUI:Fire(receiver)
 
 	activeGiftRequests[gifterUserId] = nil
