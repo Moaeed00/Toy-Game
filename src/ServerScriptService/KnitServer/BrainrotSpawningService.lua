@@ -27,6 +27,11 @@ local BrainrotSpawnService = Knit.CreateService {
 }
 
 local BASE_VARIANT_FOLDER = "Normal"
+local FORCED_VARIANTS = {
+    ["Gold"]    = "Gold",
+    ["Diamond"] = "Diamond",
+    ["Lava"]    = "Lava",
+}
 
 function BrainrotSpawnService:KnitInit()
 end
@@ -167,9 +172,14 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
 
     local brainrotData = self.BrainrotsData[brainrotName]
 
-    local brainrotVariant = self:PickBrainrotVariant()
+    local brainrotVariant = FORCED_VARIANTS[blockRarity] or self:PickBrainrotVariant()
     if not brainrotVariant then
         return
+    end
+
+    local variantFolder = BrainrotModels:FindFirstChild(brainrotVariant)
+    if not variantFolder or not variantFolder:FindFirstChild(brainrotName) then
+        brainrotVariant = BASE_VARIANT_FOLDER
     end
 
     local blockPart: MeshPart = block:FindFirstChild(block.Name)
@@ -231,6 +241,10 @@ end
 
 function BrainrotSpawnService:BlackoutBrainrotsSpawnEffect(player: Player, block: Model)
     local spawnedBrainrot: Model = self:SpawnRarityBasedBrainrot(block)
+    if not spawnedBrainrot then
+        warn("[BrainrotSpawnService] Failed to spawn brainrot for block:", block.Name)
+        return
+    end
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
 
     local BlackoutParts = block:WaitForChild(block.Name):WaitForChild("BlackoutBrainrots"):GetChildren()
