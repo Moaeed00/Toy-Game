@@ -173,7 +173,7 @@ function Hud:OpenContainer(name: string)
 		elseif name == "StarterPack" then
 			ProductPurchaseService.PromptPurchase:Fire(PRODUCT_UNLOCKID.STARTER_PACK)
 		else
-			NotificationHandler:DisplayNotificationMessage("Coming Soon", "Error")
+			NotificationHandler:DisplayNotificationMessage("Coming Soon...", "Error")
 		end
 	end
 end
