@@ -39,7 +39,7 @@ local MiniGameController = Knit.CreateController({
 	Name = "MiniGameController",
 })
 
-local POWER = 90
+local POWER = 100
 local LIFT = 30
 local CountDownTime = 3
 
@@ -127,7 +127,14 @@ function Kick(Positions: Vector2)
 			return
 		end
 
+		-- Lift ball off the ground so it doesn't scrape on unanchor
+		FootBall:PivotTo(root.CFrame + Vector3.new(0, 1, 0))
+
 		root.Anchored = false
+		-- Zero out any physics from the unanchor
+		root.AssemblyLinearVelocity = Vector3.zero
+		root.AssemblyAngularVelocity = Vector3.zero
+		-- Now apply the kick
 		root.AssemblyLinearVelocity = Direction.Unit * POWER + Vector3.new(0, LIFT, 0)
 	end)
 end
