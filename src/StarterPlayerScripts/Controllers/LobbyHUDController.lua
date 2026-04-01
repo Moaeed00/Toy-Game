@@ -1,5 +1,6 @@
 ---- [Services]			----
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -155,6 +156,11 @@ function Hud:OpenContainer(name: string)
 		self.CurrentActiveScreen = name
 
 		if self.Controller[name] then
+			if name ~= "MainGui" then
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+			else
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+			end
 			self.Controller[name]:SetEnabled(true)
 		else
 			warn("No controller for: ", name)
