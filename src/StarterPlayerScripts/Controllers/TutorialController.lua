@@ -178,8 +178,8 @@ function TutorialController:BuildGui()
     local card = Instance.new("Frame")
     card.Name                   = "Card"
     card.AnchorPoint            = Vector2.new(0.5, 0)
-    card.Position               = UDim2.new(0.5, 0, 0, 24)
-    card.Size                   = UDim2.new(0, 520, 0, 90)
+    card.Position               = UDim2.fromScale(0.5, 0.05)
+    card.Size                   = UDim2.fromScale(0.3, 0.1)
     card.BackgroundColor3       = Color3.fromRGB(10, 10, 10)
     card.BackgroundTransparency = 0.18
     card.BorderSizePixel        = 0
