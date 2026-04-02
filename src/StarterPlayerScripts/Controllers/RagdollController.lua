@@ -27,12 +27,27 @@ function RagdollController:DoRagdoll()
     end
 
 	self.NPCService:EnableRagdoll():andThen(function(canRagdoll: boolean)
-        if canRagdoll then
-            humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-            task.delay(RAGDOLL_DURATION, function()
-                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end)
-        end
+		if not canRagdoll then
+			return
+		end
+		
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+		humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+		
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		
+		task.delay(RAGDOLL_DURATION, function()
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end)
+		
+		--if canRagdoll then
+		--    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		--    task.delay(RAGDOLL_DURATION, function()
+		--        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		--    end)
+		--end
     end)
 end
 
