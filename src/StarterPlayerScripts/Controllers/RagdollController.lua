@@ -22,7 +22,8 @@ end
 function RagdollController:DoRagdoll()
     local character = Player.Character
     local humanoid = character:WaitForChild("Humanoid")
-    if not humanoid then
+    local rootPart = character:WaitForChild("HumanoidRootPart")
+    if not humanoid or not rootPart then
         return
     end
 
@@ -30,24 +31,28 @@ function RagdollController:DoRagdoll()
 		if not canRagdoll then
 			return
 		end
-		
-		humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-		humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-		
-		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-		
-		task.delay(RAGDOLL_DURATION, function()
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-			humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
-			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-		end)
-		
-		--if canRagdoll then
-		--    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-		--    task.delay(RAGDOLL_DURATION, function()
-		--        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-		--    end)
-		--end
+
+		local healthBefore = humanoid.Health
+
+        humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
+        local protecting = true
+        task.spawn(function()
+            while protecting and humanoid and humanoid.Parent do
+                if humanoid.Health < healthBefore then
+                    humanoid.Health = healthBefore
+                end
+                task.wait()
+            end
+        end)
+
+        task.delay(RAGDOLL_DURATION, function()
+            protecting = false
+
+            rootPart.AssemblyLinearVelocity = Vector3.zero
+            rootPart.AssemblyAngularVelocity = Vector3.zero
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end)
     end)
 end
 

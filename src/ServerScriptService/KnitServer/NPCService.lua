@@ -146,11 +146,7 @@ function NPCService:ApplyFlingAndRagdoll(player: Player, character: Model, npcRo
 	end
 	local flingVector = (pushDir.Unit + Vector3.new(0, 0.4, 0)).Unit * CONFIG.FlingPower
 	
-	task.delay(0.1, function()
-		if rootPart and rootPart.Parent then
-			rootPart.AssemblyLinearVelocity = flingVector
-		end
-	end)
+	rootPart.AssemblyLinearVelocity = flingVector
 end
 
 function NPCService:PlayAnimation(npcData: NPCData, animName: string)
