@@ -1,20 +1,22 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local CodesData = require(Configuration:WaitForChild("CodesConfiguration"))
 
-local DataHandler = require(ServerScriptService.KnitServer:WaitForChild("DataHandlerService"))
-
 local CodesService = Knit.CreateService({
 	Name = "CodesService",
 	Client = {},
 })
 
-local function GetClaimedCodesForPlayer(player)
-	local playerData = DataHandler:GetPlayerData(player)
+function CodesService:KnitStart()
+	CodesService.BaseService = Knit.GetService("BaseService")
+	CodesService.DataHandlerService = Knit.GetService("DataHandlerService")
+end
+
+function CodesService:GetClaimedCodesForPlayer(player)
+	local playerData = self.DataHandler:GetPlayerData(player)
 
 	if playerData and typeof(playerData.Codes) == "table" then
 		return playerData.Codes
@@ -30,28 +32,25 @@ function CodesService.Client:RedeemCode(player: Player, code: string)
 
 	local codeInfo = CodesData[code]
 	if not codeInfo then
-		return false, "Code not found"
+		return false, "Code not found!"
 	end
 
-	local claimedCodes = GetClaimedCodesForPlayer(player)
+	local claimedCodes = self.Server:GetClaimedCodesForPlayer(player)
 
 	if table.find(claimedCodes, code) then
 		return false, "Already Redeemed"
 	end
 
-	-- rewards
-	local BaseService = Knit.GetService("BaseService")
-
-	local brainrotName = "Strawberry Elephant"
+	local brainrotName = "Six Seven"
 	local brainrotRarity = "Secret"
 	local mutation = "Normal"
 
-	BaseService:GiveTool(player, brainrotRarity, brainrotName, mutation)
+	self.BaseService:GiveTool(player, brainrotRarity, brainrotName, mutation)
 
 	table.insert(claimedCodes, code)
 	-- DataHandler:UpdateCodes(player, claimedCodes)
 
-	return true, "Reward Claimed"
+	return true, "Reward Claimed!"
 end
 
 return CodesService
