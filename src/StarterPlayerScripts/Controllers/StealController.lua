@@ -111,7 +111,7 @@ function StealController:EnableUI(
 	Message.Text = `Choose any one below option to steal {entityName}`
 
 	BiomeData = StealConfiguration[biomeName]
-	local RobuxPrice = BiomeData.Price
+	local RobuxPrice = BiomeData.SaveFromStellRobux
 	RobuxButton.Frame.TextLabel.Text = `{RobuxPrice} Robux`
 
 	local ChallengePoints = BiomeData.StealPoints
