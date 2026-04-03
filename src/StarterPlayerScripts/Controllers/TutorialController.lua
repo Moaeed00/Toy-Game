@@ -165,7 +165,9 @@ end
 -- GUI
 -- ─────────────────────────────────────────────────────────────────
 function TutorialController:BuildGui()
-    if tutorialGui then tutorialGui:Destroy() end
+    if tutorialGui then
+        tutorialGui:Destroy()
+    end
 
     tutorialGui = Instance.new("ScreenGui")
     tutorialGui.Name           = "TutorialGui"
@@ -226,11 +228,17 @@ function TutorialController:BuildGui()
 end
 
 function TutorialController:UpdateGuiForStep(step)
-    if not tutorialGui then return end
+    if not tutorialGui then
+        return
+    end
     local card = tutorialGui:FindFirstChild("Card")
-    if not card then return end
+    if not card then
+        return
+    end
     local txt = card:FindFirstChild("Text")
-    if txt then txt.Text = step.text end
+    if txt then
+        txt.Text = step.text
+    end
 end
 -- ─────────────────────────────────────────────────────────────────
 -- Beam
@@ -343,6 +351,7 @@ function TutorialController:RunStep(index)
 
     self:ClearBeam()
     self:ClearStepListeners()
+    self:HideShopArrows()
     self:UpdateGuiForStep(step)
 
     if step.id == "shop" then
@@ -390,7 +399,9 @@ function TutorialController:RunShopStep(step)
 
     -- Hide close arrow initially
     local closeArrow = closeButton and closeButton:FindFirstChild("Arrow")
-    if closeArrow then closeArrow.Visible = false end
+    if closeArrow then
+        closeArrow.Visible = false
+    end
 
     -- Show equip arrow on the first football in scroll
     local function activateEquipArrow()
@@ -409,20 +420,6 @@ function TutorialController:RunShopStep(step)
         end
     end
 
-    local function deactivateEquipArrows()
-        if not scroll then return end
-        for _, item in ipairs(scroll:GetChildren()) do
-            if item.Name ~= "Basic" then
-                continue
-            end
-            local equip = item:WaitForChild("Frame"):FindFirstChild("Equip")
-            if equip then
-                local arrow = equip:FindFirstChild("Arrow")
-                if arrow then arrow.Visible = false end
-            end
-        end
-    end
-
     -- Wait for the shop to actually open before showing arrows
     if shopGui.Enabled then
         activateEquipArrow()
@@ -437,8 +434,10 @@ function TutorialController:RunShopStep(step)
 
     -- Step 1 done: football bought/equipped
     local c1 = TutorialController.TutorialService.FootballBought:Connect(function()
-        deactivateEquipArrows()
-        if closeArrow then closeArrow.Visible = true end
+        self:HideShopArrows()
+        if closeArrow then
+            closeArrow.Visible = true
+        end
     end)
     table.insert(stepConns, c1)
 
@@ -446,10 +445,44 @@ function TutorialController:RunShopStep(step)
     if closeButton then
         local c2 = closeButton.MouseButton1Click:Connect(function()
             if not tutorialActive or not isFirstTimePlayer then return end
-            if closeArrow then closeArrow.Visible = false end
+            if closeArrow then
+                closeArrow.Visible = false
+            end
             self:AdvanceStep()
         end)
         table.insert(stepConns, c2)
+    end
+end
+
+function TutorialController:HideShopArrows()
+    local shopGui = PlayerGui:FindFirstChild("FootballShopGui")
+    if not shopGui then
+        return
+    end
+
+    local frame  = shopGui:FindFirstChild("FootballsFrame")
+    local scroll = frame and frame:FindFirstChild("Scroll")
+    if scroll then
+        for _, item in ipairs(scroll:GetChildren()) do
+            if item.Name ~= "Basic" then
+                continue
+            end
+            local equip = item:FindFirstChild("Frame"):FindFirstChild("Equip")
+            if equip then
+                local arrow = equip:FindFirstChild("Arrow")
+                if arrow then
+                    arrow.Visible = false
+                end
+            end
+        end
+    end
+
+    local closeButton = frame and frame:FindFirstChild("CloseButton")
+    if closeButton then
+        local closeArrow = closeButton:FindFirstChild("Arrow")
+        if closeArrow then
+            closeArrow.Visible = false
+        end
     end
 end
 
@@ -547,6 +580,7 @@ function TutorialController:FinishTutorial()
         respawnConn = nil
     end
 
+    self:HideShopArrows()
     -- Fade out the GUI elements
     if tutorialGui then
         for _, child in ipairs(tutorialGui:GetChildren()) do
