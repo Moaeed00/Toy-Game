@@ -7,6 +7,7 @@ return {
 	Money = 50,
 	Rebirth = 0,
 	IsFirstTimeLoad = true,
+	IsGroupJoinRewardClaimed = false,
 	MoneyMultiplier = 1,
 	LikesReceived = 0,
 	LikedPlayers = {},
