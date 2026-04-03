@@ -24,7 +24,7 @@ local NPCCollisionGroup = "NPC"
 
 local CONFIG = {
 	WalkSpeed = 18,
-	ChaseSpeed = 28,
+	ChaseSpeed = 32,
 	AttackRange = 13,
 	AttackCooldown = 1,
 	RagdollDuration = 1.5,
