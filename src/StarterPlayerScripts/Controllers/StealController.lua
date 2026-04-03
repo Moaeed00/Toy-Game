@@ -115,7 +115,7 @@ function StealController:EnableUI(
 	RobuxButton.Frame.TextLabel.Text = `{RobuxPrice} Robux`
 
 	local ChallengePoints = BiomeData.StealPoints
-	ChallengeButton.Points.Text = `{ChallengePoints} Points`
+	RobuxButton:WaitForChild("Points").Text = `{ChallengePoints} Points`
 
 	StealGUi.Enabled = true
 end
