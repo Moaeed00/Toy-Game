@@ -12,7 +12,9 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local RebirthGui = PlayerGui:WaitForChild("RebirthGui")
 local Canvas = RebirthGui:WaitForChild("Canvas")
 local CashProgress = Canvas:WaitForChild("CashProgress")
-local CashRewardCard = Canvas:WaitForChild("Rewards"):WaitForChild("Cash")
+local RewardsFrame: Frame = Canvas:WaitForChild("Rewards")
+local CashRewardCard: Frame = RewardsFrame:WaitForChild("Cash")
+local FloorRewardCard: Frame = RewardsFrame:WaitForChild("Floor")
 local CashRewardText: TextLabel = CashRewardCard:WaitForChild("RewardAmount")
 local RebirthButton = Canvas:WaitForChild("Rebirth")
 local CloseButton = Canvas:WaitForChild("CloseButton")
@@ -95,6 +97,8 @@ function RebirthController:UpdateUI()
 		CashProgress.Bar.Size = UDim2.fromScale(0, 1)
 		CashRewardText.Text = "N/A"
 		RebirthButton.Active = false
+		self:DesaturateCardColor(CashRewardCard)
+		self:DesaturateCardColor(FloorRewardCard)
 		RebirthButton.AutoButtonColor = false
 		RebirthButton.ImageTransparency = 0.5
 		return
@@ -107,6 +111,19 @@ function RebirthController:UpdateUI()
 	RebirthButton.AutoButtonColor = true
 	RebirthButton.ImageTransparency = 0
 	self:_updateMoney(money, nextRebirth)
+end
+
+function RebirthController:DesaturateCardColor(rewardCard: Frame)
+	local cardOutlineGradient: UIGradient = rewardCard:FindFirstChild("UIGradient")
+	cardOutlineGradient.Color = Color3.fromRGB(165, 165, 165)
+	local cardBackgroundFrameGradient = rewardCard:WaitForChild("Frame"):FindFirstChild("UIGradient")
+	cardBackgroundFrameGradient.Color = Color3.fromRGB(90, 90, 90)
+	local cardRewardImage: ImageLabel = rewardCard:WaitForChild("RewardImage")
+	cardRewardImage.ImageColor3 = Color3.fromRGB(80, 80, 80)
+	local cardRewardAmount: TextLabel = rewardCard:WaitForChild("RewardAmount")
+	cardRewardAmount.TextColor3 = Color3.fromRGB(120, 120, 120)
+	local cardRewardType: TextLabel = rewardCard:WaitForChild("RewardType")
+	cardRewardType.TextColor3 = Color3.fromRGB(120, 120, 120)
 end
 
 function RebirthController:SetEnabled(enabled: boolean)
