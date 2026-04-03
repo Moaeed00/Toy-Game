@@ -36,4 +36,8 @@ function CollisionGroupHandler:AddCollisionGroup(CollisionGroupName: string, Par
 	end
 end
 
+function CollisionGroupHandler:ToggleCollisionPlayerBlockGroupCollidable(boolean: boolean)
+	PhysicsService:CollisionGroupSetCollidable(PlayerCollisionGroup, BlocksCollisionGroup, boolean)
+end
+
 return CollisionGroupHandler
