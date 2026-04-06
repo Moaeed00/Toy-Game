@@ -16,11 +16,9 @@ local sellButton: ImageButton = innerFrame:WaitForChild("Sell")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 local ClickSFX: Sound = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds"):FindFirstChild("Click")
 
-StarterGui:SetCore("ResetButtonCallback", false)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 Satchel:SetBackpackEnabled(true)
-
-local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local GameManagerController = Knit.CreateController({
 	Name = "GameManagerController",
@@ -62,6 +60,7 @@ end
 --// Knit Lifecycle
 --// ==========================================
 function GameManagerController:KnitInit()
+	StarterGui:SetCore("ResetButtonCallback", false)
 end
 
 function GameManagerController:KnitStart()
