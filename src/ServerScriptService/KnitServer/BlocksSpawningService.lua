@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -31,16 +32,26 @@ function BlocksSpawningService:KnitStart()
 
     BlocksSpawningService.SpawnedPositions = {}
     BlocksSpawningService.SPECIAL_BLOCKS_MIN_RATIO = 30
-    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 30
+    BlocksSpawningService.SPECIAL_BLOCKS_MAX_RATIO = 40
     BlocksSpawningService.MIN_SPAWN_DISTANCE = 15 -- Minimum distance between blocks
 
     self:SpawnBlocks(125)
 end
 
 function BlocksSpawningService:SpawnBlocks(amount: number)
+    if amount == 1 then
+        local isSpecial = math.random(1, 100) <= math.random(self.SPECIAL_BLOCKS_MIN_RATIO, self.SPECIAL_BLOCKS_MAX_RATIO)
+        local blockType = isSpecial and "Special" or "Normal"
+        local randomPosition = self:GetValidSpawnPosition(blockType)
+        if randomPosition then
+            self:SpawnBlock(1, randomPosition, blockType)
+            table.insert(self.SpawnedPositions, randomPosition)
+        end
+        return
+    end
+
     local specialBlocksCount = math.ceil(amount * math.random(self.SPECIAL_BLOCKS_MIN_RATIO, self.SPECIAL_BLOCKS_MAX_RATIO) / 100)
     local normalBlocksCount = amount - specialBlocksCount
-
     print("Normal Blocks Count:", normalBlocksCount)
     print("Special Blocks Count:", specialBlocksCount)
 
@@ -64,7 +75,6 @@ end
 function BlocksSpawningService:SpawnBlock(index: number, position: Vector3, blockType: string)
     local blockConfig = self:GetRandomBlockConfig(blockType)
     local blockModel: Model = BlockModels[blockType]:FindFirstChild(blockConfig.Name)
-
     if not blockModel then
         return
     end
@@ -78,6 +88,11 @@ function BlocksSpawningService:SpawnBlock(index: number, position: Vector3, bloc
     local finalY = self:GetGroundPositionToPlace(block)
     local finalPosition = Vector3.new(position.X, finalY, position.Z)
     block:PivotTo(CFrame.fromOrientation(0, 0, 0) + finalPosition)
+
+    local spawnId = HttpService:GenerateGUID(false)
+    block:SetAttribute("SpawnId", spawnId)
+    self.SpawnedPositions[spawnId] = position
+
     self:SetBlockData(index, block, blockConfig)
 end
 
@@ -116,7 +131,7 @@ function BlocksSpawningService:GetValidSpawnPosition(blockType: string): Vector3
         attempts += 1
         local randomPosition = self:GetRandomPointInSpawnArea(blockType)
         local isValidPosition = true
-        for _, existingPosition in ipairs(self.SpawnedPositions) do
+        for _, existingPosition in pairs(self.SpawnedPositions) do
             local distance = (randomPosition - existingPosition).Magnitude
             if distance < self.MIN_SPAWN_DISTANCE then
                 isValidPosition = false
@@ -179,9 +194,9 @@ function BlocksSpawningService:ConnectBlockHitTouch(blockInfoFrame: Frame, block
             block.Parent:SetAttribute("LastHitTime", workspace:GetServerTimeNow())
             self:ToggleBlockInfoFrame(blockInfoFrame, true)
             local footballHitPower = otherPart:GetAttribute("HitPower")
-            local blockIndex = block.Parent:GetAttribute("Index")
+            local blockSpawnId = block.Parent:GetAttribute("SpawnId")
             local player = Players:GetPlayerFromCharacter(otherPart.Parent.Parent.Parent)
-            self.BlocksDamageService:DealDamage(footballHitPower, blockIndex, block.Parent.Parent.Name, player)
+            self.BlocksDamageService:DealDamage(footballHitPower, blockSpawnId, block.Parent.Parent.Name, player)
         end
     end)
 
@@ -201,7 +216,15 @@ function BlocksSpawningService:StartInactivityChecker(block: Model, blockInfoFra
         if blockInfoFrame.Visible and timeSinceLastHit >= INACTIVITY_TIMEOUT and lastHitTime > 0 then
             self:ToggleBlockInfoFrame(blockInfoFrame, false)
             self.BlocksDamageService:ResetBlockHitPower(block)
+            block:SetAttribute("Hit", false)
         end
+    end
+end
+
+function BlocksSpawningService:RemoveSpawnPosition(block: Model)
+    local spawnId = block:GetAttribute("SpawnId")
+    if spawnId then
+        self.SpawnedPositions[spawnId] = nil
     end
 end
 

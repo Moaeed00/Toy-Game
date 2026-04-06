@@ -25,15 +25,15 @@ function BlocksDamageService:KnitStart()
 	BlocksDamageService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
 	BlocksDamageService.GameAnalyticsService = Knit.GetService("GameAnalyticsService")
 
-    BlocksDamageService.CurrentHitBlockIndex = nil
+    BlocksDamageService.CurrentHitBlockSpawnId = nil
 end
 
-function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: number, blockType: string, player: Player)
-    if self.CurrentHitBlockIndex ~= blockIndex then
-        self.CurrentHitBlockIndex = blockIndex
+function BlocksDamageService:DealDamage(footballHitPower: number, blockSpawnId: string, blockType: string, player: Player)
+    if self.CurrentHitBlockSpawnId ~= blockSpawnId then
+        self.CurrentHitBlockSpawnId = blockSpawnId
     end
 
-    local hitBlock: Model = self:FindHitBlockByIndex(blockIndex, blockType)
+    local hitBlock: Model = self:FindHitBlockBySpawnId(blockSpawnId, blockType)
     if not hitBlock then
         return
     end
@@ -186,15 +186,15 @@ function BlocksDamageService:SpawnMiniBlocksEffect(block: Model)
 end
 
 function BlocksDamageService:DestroyBlock(block: Model)
-    self.CurrentHitBlockIndex = nil
+    self.CurrentHitBlockSpawnId = nil
+    self.BlocksSpawningService:RemoveSpawnPosition(block)
     block:Destroy()
-
     self.BlocksSpawningService:SpawnBlocks(1)
 end
 
-function BlocksDamageService:FindHitBlockByIndex(blockIndex: number, blockType: string)
+function BlocksDamageService:FindHitBlockBySpawnId(spawnId: string, blockType: string)
     for _, block: Model in ipairs(BlocksFolder:WaitForChild(blockType):GetChildren()) do
-        if block:GetAttribute("Index") == blockIndex then
+        if block:GetAttribute("SpawnId") == spawnId then
             return block
         end
     end
