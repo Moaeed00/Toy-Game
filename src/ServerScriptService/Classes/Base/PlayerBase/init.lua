@@ -98,19 +98,23 @@ function PlayerBase.CreateStage(self: PlayerBase, id: number, lock: boolean)
 	stage:PivotTo(self._baseModel.Primary.CFrame)
 
 	if lock then
-		local prevStage = workspace
-			:FindFirstChild("Bases")
-			:FindFirstChild(self._player.UserId)
-			:FindFirstChild("Stages")
-			:FindFirstChild(stageNumber - 1)
-		if prevStage then
-			prevStage.RoofHole.Transparency = 1
-			prevStage.RoofHole.CanCollide = false
-			prevStage.RoofHole.CanQuery = false
+		local prevStageNumber = stageNumber - 1
+		if prevStageNumber >= 1 then
+			local basesFolder = workspace:FindFirstChild("Bases")
+			local playerFolder = basesFolder and basesFolder:FindFirstChild(tostring(self._player.UserId))
+			local stagesFolder = playerFolder and playerFolder:FindFirstChild("Stages")
+			local prevStage = stagesFolder and stagesFolder:FindFirstChild(tostring(prevStageNumber))
+			if prevStage and prevStage:FindFirstChild("RoofHole") then
+				prevStage.RoofHole.Transparency = 1
+				prevStage.RoofHole.CanCollide = false
+				prevStage.RoofHole.CanQuery = false
+			end
 		end
 
-		stage.RoofHole.Transparency = 0
-		stage.RoofHole.CanCollide = true
+		-- Always clear the base model's own roof hole when any stage is created
+		self._baseModel.RoofHole.Transparency = 1
+		self._baseModel.RoofHole.CanCollide = false
+		self._baseModel.RoofHole.CanQuery = false
 	end
 
 	stage.Name = stageNumber
