@@ -44,13 +44,13 @@ function BrainrotSpawnService:KnitStart()
     BrainrotSpawnService.CachedBlockPools = {}
     BrainrotSpawnService.RarityWeightScale = {
         Common    = 1.0,
-        Uncommon  = 0.8,
-        Rare      = 0.5,
-        Epic      = 0.3,
-        Legendary = 0.15,
-        Mythic    = 0.08,
-        Secret    = 0.03,
-        God       = 0.01,
+        Uncommon  = 3.0,
+        Rare      = 10.0,
+        Epic      = 40.0,
+        Legendary = 150.0,
+        Mythic    = 500.0,
+        Secret    = 2000.0,
+        God       = 8000.0,
     }
 
     self.BrainrotsData = BrainrotsData.Processed
@@ -69,10 +69,10 @@ function BrainrotSpawnService:GenerateBrainrotRarityPools()
                 }
             end
             table.insert(self.BrainrotRaritiesPool[rarity].brainrots, {
-                name = brainrotName,
-                weight = data.RarityWeight,
+                name   = brainrotName,
+                weight = data.CashPerSecond,
             })
-            self.BrainrotRaritiesPool[rarity].totalWeight += data.RarityWeight
+            self.BrainrotRaritiesPool[rarity].totalWeight += data.CashPerSecond
         end
     end
 
@@ -90,21 +90,24 @@ function BrainrotSpawnService:CacheAllBlockPools()
     end
 end
 
--- Merge the given rarity pools into a single weighted pool, applying RarityWeight
--- so rarities with lower weight are not completely overshadowed by Common's massive Rarity numbers
 function BrainrotSpawnService:GenerateCombinedRarityPool(allowedRarities: {})
     local combined = { brainrots = {}, totalWeight = 0 }
+    local BASE_WEIGHT = 1_000_000
+
     for _, rarity in ipairs(allowedRarities) do
         local pool = self.BrainrotRaritiesPool[rarity]
-        if not pool then
+        if not pool or pool.totalWeight == 0 then
             continue
         end
 
-        local rarityWeight = self.RarityWeightScale[rarity]
+        local rarityScale = self.RarityWeightScale[rarity] or 1.0
+
         for _, brainrot in ipairs(pool.brainrots) do
-            local scaledWeight = math.max(1, math.floor(brainrot.weight * rarityWeight))
+            local normalizedWeight = (brainrot.weight / pool.totalWeight) * BASE_WEIGHT
+            local scaledWeight = math.max(1, math.floor(normalizedWeight * rarityScale))
+
             table.insert(combined.brainrots, {
-                name = brainrot.name,
+                name   = brainrot.name,
                 weight = scaledWeight,
             })
             combined.totalWeight += scaledWeight
@@ -142,9 +145,17 @@ function BrainrotSpawnService:PickBrainrot(pool: {})
 end
 
 function BrainrotSpawnService:PickBrainrotVariant()
-    for i = #BrainrotVariantsConfig.VARIANTS, 1, -1 do
-        local variant = BrainrotVariantsConfig.VARIANTS[i]
-        if math.random() <= variant.Chance then
+    local variants = BrainrotVariantsConfig.VARIANTS
+    local totalWeight = 0
+    for _, variant in ipairs(variants) do
+        totalWeight += variant.Chance
+    end
+
+    local roll = math.random() * totalWeight
+    local cumulative = 0
+    for _, variant in ipairs(variants) do
+        cumulative += variant.Chance
+        if roll <= cumulative then
             return variant.Prefix
         end
     end
