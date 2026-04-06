@@ -3,7 +3,6 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local getPlayerPicture = require(ReplicatedStorage.Shared.Utils.getPlayerPicture)
 --local Assets = require(ReplicatedStorage.Shared.Modules.Assets)
-
 local BasesFolder = workspace:WaitForChild("Bases")
 
 local function init_like_prompt(player: Player, base: Model)
@@ -54,6 +53,7 @@ local function init_sign(player: Player, base: Model)
 	local sign = base.Sign
 	local surfaceGui = sign.Surface.SurfaceGui
 
+	surfaceGui.EmptyBase.Visible = false
 	surfaceGui.Frame.Info.Username.Text = `{player.DisplayName}'s`
 end
 
