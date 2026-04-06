@@ -2,9 +2,9 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterGui = game:GetService("StarterGui")
 local Workspace = game:GetService("Workspace")
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Satchel = require(ReplicatedStorage.Libraries.Satchel)
 local WallPushers = require(script:WaitForChild("WallPushers"))
 local IndicatorHelperClient = require(script:WaitForChild("IndicatorHelperClient"))
 local ScoringHelperClient = require(script:WaitForChild("ScoringHelperClient"))
@@ -220,7 +220,7 @@ end
 function StartCountDown()
 	MainGui.Enabled = false
 	task.delay(0.5, function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+		Satchel:SetBackpackEnabled(false)
 	end)
 	UnequipAllTools()
 	CountDownGui.Enabled = true
@@ -369,7 +369,7 @@ function MiniGameController:EndMiniGame(ScoreData)
 		CountDownGui.Enabled = false
 	end
 	MainGui.Enabled = true
-	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+	Satchel:SetBackpackEnabled(true)
 
 	CountDownTime = 3
 	IndicatorHelperClient:CleanUp()

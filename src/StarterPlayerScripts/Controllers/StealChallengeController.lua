@@ -1,8 +1,7 @@
 local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
+local Satchel = require(ReplicatedStorage.Libraries.Satchel)
 local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 local EntitiesConfiguration = require(Configuration:WaitForChild("Brainrots"):WaitForChild("EntitiesConfiguration"))
 local StealConfiguration = require(Configuration:WaitForChild("StealConfiguration"))
@@ -46,7 +45,7 @@ function FinishChallenge()
 	player:SetAttribute("Stealer", false)
 
 	ChallengeGui.Enabled = false
-	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+	Satchel:SetBackpackEnabled(true)
 	MessageValue.Visible = false
 	TimerValue.Visible = false
 
@@ -125,7 +124,7 @@ end
 
 function StartChallenge()
 	ChallengePending = false
-	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+	Satchel:SetBackpackEnabled(false)
 	ChallengeGui.Enabled = false
 end
 

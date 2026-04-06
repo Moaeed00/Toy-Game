@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
 local playerGui: PlayerGui = Player:WaitForChild("PlayerGui")
+local Satchel = require(ReplicatedStorage.Libraries.Satchel)
 local mainGui: ScreenGui = playerGui:WaitForChild("MainGui")
 local uiTopFrame: Frame = mainGui:WaitForChild("UITop")
 local innerFrame: Frame = uiTopFrame:WaitForChild("Frame")
@@ -14,6 +15,10 @@ local shopButton: ImageButton = innerFrame:WaitForChild("Shops")
 local sellButton: ImageButton = innerFrame:WaitForChild("Sell")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 local ClickSFX: Sound = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Sounds"):FindFirstChild("Click")
+
+StarterGui:SetCore("ResetButtonCallback", false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+Satchel:SetBackpackEnabled(true)
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -56,10 +61,10 @@ end
 --// ==========================================
 --// Knit Lifecycle
 --// ==========================================
-function GameManagerController:KnitInit() end
+function GameManagerController:KnitInit()
+end
 
 function GameManagerController:KnitStart()
-	StarterGui:SetCore("ResetButtonCallback", false)
 	GameManagerController.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
 	GameManagerController.TutorialService = Knit.GetService("TutorialService")
 	GameManagerController.DataHandlerService = Knit.GetService("DataHandlerService")

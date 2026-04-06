@@ -1,6 +1,5 @@
 ---- [Services]			----
 local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
@@ -8,6 +7,7 @@ local LobbyHUDHelpers: Folder = ReplicatedStorage:WaitForChild("LobbyHUDHelpers"
 
 ---- [Modules]			----
 local Knit: {} = require(ReplicatedStorage.Packages.Knit)
+local Satchel = require(ReplicatedStorage.Libraries.Satchel)
 local FocusEffect: {} = require(LobbyHUDHelpers:WaitForChild("FocusEffect"))
 local LobbyCircleTouch: {} = require(LobbyHUDHelpers:WaitForChild("LobbyCircleTouch"))
 local Format: {} = require(ReplicatedStorage.Libraries.Format)
@@ -157,9 +157,9 @@ function Hud:OpenContainer(name: string)
 
 		if self.Controller[name] then
 			if name ~= "MainGui" then
-				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+				Satchel:SetBackpackEnabled(false)
 			else
-				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+				Satchel:SetBackpackEnabled(true)
 			end
 			self.Controller[name]:SetEnabled(true)
 		else

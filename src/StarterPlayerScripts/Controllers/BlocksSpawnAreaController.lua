@@ -4,7 +4,7 @@
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterGui = game:GetService("StarterGui")
+local Satchel = require(ReplicatedStorage.Libraries.Satchel)
 local TweenService = game:GetService("TweenService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -65,7 +65,7 @@ end
 
 local function setBackpackVisible(visible: boolean)
 	local ok, err = pcall(function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, visible)
+		Satchel:SetBackpackEnabled(visible)
 	end)
 
 	if not ok then
