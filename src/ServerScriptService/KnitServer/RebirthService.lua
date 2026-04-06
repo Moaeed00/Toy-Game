@@ -5,6 +5,7 @@ local RebirthConfiguration = require(ReplicatedStorage.Configuration.RebirthConf
 
 local DataHandlerService
 local BaseService
+local GameAnalyticsService
 
 local RebirthService = Knit.CreateService({
 	Name = "RebirthService",
@@ -16,6 +17,7 @@ local RebirthService = Knit.CreateService({
 function RebirthService:KnitInit()
 	DataHandlerService = Knit.GetService("DataHandlerService")
 	BaseService = Knit.GetService("BaseService")
+	GameAnalyticsService = Knit.GetService("GameAnalyticsService")
 end
 
 function RebirthService:KnitStart()
@@ -55,6 +57,7 @@ function RebirthService:Rebirth(player: Player)
 	local moneyReward = next_money_reward(rebirth)
 	DataHandlerService:ResetMoney(player)
 	BaseService:DoRebirth(player)
+	GameAnalyticsService:TrackFunnelStep(player, "rebirth_used")
 	DataHandlerService:UpdateMoney(player, moneyReward)
 end
 

@@ -1,9 +1,3 @@
---!strict
--- BrainrotCarryService.lua
--- CLEAN REWRITE
--- Handles ONLY brainrot MODEL pickup / carry / drop
--- Tool logic handled by BaseService after conversion
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundPlay = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Utils"):WaitForChild("PlaySound"))
 local CollectionService = game:GetService("CollectionService")
@@ -15,7 +9,6 @@ local BrainrotConfig = require(
 )
 
 local holdAnimTracks: {[Player]: AnimationTrack} = {}
-local BaseService
 
 local BrainrotCarryService = Knit.CreateService({
 	Name = "BrainrotCarryService",
@@ -26,8 +19,6 @@ local BrainrotCarryService = Knit.CreateService({
 		RequestDrop = function() end,
 	}
 })
-
-BrainrotCarryService.BlocksSpawnAreaService = nil
 
 --------------------------------------------------
 -- Helpers
@@ -178,6 +169,8 @@ function BrainrotCarryService:TryPickup(player: Player, brainrot: Model)
 			part.Massless = true
 		end
 	end
+
+	self.GameAnalyticsService:TrackFunnelStep(player, "brainrot_picked")
 
 	--------------------------------------------------
 	-- SET PLAYER STATE
@@ -340,7 +333,7 @@ function BrainrotCarryService:ConvertToTool(player: Player)
 	local mutation = brainrot:GetAttribute("Variant")
 	local biome = brainrot:GetAttribute("RarityType")
 
-	BaseService:GiveTool(
+	self.BaseService:GiveTool(
 		player,
 		biome,
 		entity,
@@ -517,34 +510,20 @@ end
 --------------------------------------------------
 
 function BrainrotCarryService:KnitStart()
+	BrainrotCarryService.BaseService = Knit.GetService("BaseService")
+	BrainrotCarryService.BlocksSpawnAreaService = Knit.GetService("BlocksSpawnAreaService")
+	BrainrotCarryService.GameAnalyticsService = Knit.GetService("GameAnalyticsService")
+
 	BrainrotCarryService.Client.RequestDropEvent:Connect(function(player: Player)
 		self:RequestDrop(player)
 	end)
 
-	pcall(function()
-		self.BlocksSpawnAreaService =
-			Knit.GetService("BlocksSpawnAreaService")
-	end)
-
-	pcall(function()
-		BaseService =
-			Knit.GetService("BaseService")
-	end)
-
-	for _,model in ipairs(
-		CollectionService:GetTagged(
-			BrainrotConfig.BRAINROT_TAG_NAME
-		)
-	) do
+	for _,model in ipairs(CollectionService:GetTagged(BrainrotConfig.BRAINROT_TAG_NAME)) do
 		self:_setupPrompt(model)
 	end
 
-	CollectionService:GetInstanceAddedSignal(
-		BrainrotConfig.BRAINROT_TAG_NAME
-	):Connect(function(model)
-
+	CollectionService:GetInstanceAddedSignal(BrainrotConfig.BRAINROT_TAG_NAME):Connect(function(model)
 		self:_setupPrompt(model)
-
 	end)
 end
 

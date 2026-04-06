@@ -22,7 +22,8 @@ end
 function BlocksDamageService:KnitStart()
     BlocksDamageService.GUIService = Knit.GetService("GUIService")
     BlocksDamageService.BlocksSpawningService = Knit.GetService("BlocksSpawningService")
-    BlocksDamageService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
+	BlocksDamageService.BrainrotSpawnService = Knit.GetService("BrainrotSpawnService")
+	BlocksDamageService.GameAnalyticsService = Knit.GetService("GameAnalyticsService")
 
     BlocksDamageService.CurrentHitBlockIndex = nil
 end
@@ -50,7 +51,8 @@ function BlocksDamageService:DealDamage(footballHitPower: number, blockIndex: nu
 
     hitBlock:SetAttribute("Hit", false)
 
-    if updatedHitPower <= 0 then
+	if updatedHitPower <= 0 then
+		self.GameAnalyticsService:TrackFunnelStep(player, "block_broken")
         self.BrainrotSpawnService:BlackoutBrainrotsSpawn(hitBlock)
 
         local hitBlockPart: MeshPart = hitBlock:WaitForChild(hitBlock.Name)

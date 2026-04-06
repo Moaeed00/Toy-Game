@@ -22,6 +22,7 @@ local IndexSevice
 local DataHandlerService
 local TutorialService
 local MerchantService
+local GameAnalyticsService
 
 local BaseService = Knit.CreateService({
 	Name = "BaseService",
@@ -42,6 +43,7 @@ function BaseService:KnitInit()
 	IndexSevice = Knit.GetService("IndexService")
 	TutorialService = Knit.GetService("TutorialService")
 	MerchantService = Knit.GetService("MerchantService")
+	GameAnalyticsService = Knit.GetService("GameAnalyticsService")
 end
 
 function BaseService:KnitStart()
@@ -217,6 +219,7 @@ function BaseService:PlaceEntity(player: Player, slotName: string)
 	end
 
 	playerBase:PlaceEntity(biomeName, entityName, mutationName, slotPart)
+	GameAnalyticsService:TrackFunnelStep(player, "brainrot_placed")
 	self:ReleaseTool(player, entityId)
 	entity:Destroy()
 
@@ -225,12 +228,18 @@ function BaseService:PlaceEntity(player: Player, slotName: string)
 end
 
 function BaseService:GiveTool(player: Player, biomeName: string, entityName: string, mutationName: string)
+	local humanoid: Humanoid = player.Character:WaitForChild("Humanoid")
+	if not humanoid then
+		return
+	end
+
 	local playerBase = self:GetPlayerBase(player)
 	if not playerBase then
 		return
 	end
 
-	local _, toolId = entityUtils.createEntityTool(player, biomeName, entityName, mutationName)
+	local tool, toolId = entityUtils.createEntityTool(player, biomeName, entityName, mutationName)
+	humanoid:EquipTool(tool)
 	playerBase:StoreTool(toolId, biomeName, entityName, mutationName)
 end
 
