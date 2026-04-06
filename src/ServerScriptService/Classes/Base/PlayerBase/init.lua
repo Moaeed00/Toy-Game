@@ -83,53 +83,47 @@ function PlayerBase.LoadStagesFromLevel(self: PlayerBase)
 end
 
 function PlayerBase.CreateStage(self: PlayerBase, id: number, lock: boolean)
-	if id > 5 then
-		return
-	end
+    if id > 5 then
+        return
+    end
 
-	local stageNumber = math.clamp(id, 1, 5)
+    local stageNumber = math.clamp(id, 1, 5)
 
-	local stageTemplate = ServerStorage.Assets.Stages:FindFirstChild(`Stage{stageNumber}`)
-	if not stageTemplate then
-		return
-	end
+    local stageTemplate = ServerStorage.Assets.Stages:FindFirstChild(`Stage{stageNumber}`)
+    if not stageTemplate then
+        return
+    end
 
-	local stage = stageTemplate:Clone()
-	stage:PivotTo(self._baseModel.Primary.CFrame)
+    local stage = stageTemplate:Clone()
+    stage:PivotTo(self._baseModel.Primary.CFrame)
 
-	if lock then
-		local prevStageNumber = stageNumber - 1
-		if prevStageNumber >= 1 then
-			local basesFolder = workspace:FindFirstChild("Bases")
-			local playerFolder = basesFolder and basesFolder:FindFirstChild(tostring(self._player.UserId))
-			local stagesFolder = playerFolder and playerFolder:FindFirstChild("Stages")
-			local prevStage = stagesFolder and stagesFolder:FindFirstChild(tostring(prevStageNumber))
-			if prevStage and prevStage:FindFirstChild("RoofHole") then
-				prevStage.RoofHole.Transparency = 1
-				prevStage.RoofHole.CanCollide = false
-				prevStage.RoofHole.CanQuery = false
-			end
-		end
+    if lock then
+        stage.RoofHole.Transparency = 0
+        stage.RoofHole.CanCollide = true
+        stage.RoofHole.CanQuery = true
+    end
 
-		-- Always clear the base model's own roof hole when any stage is created
-		self._baseModel.RoofHole.Transparency = 1
-		self._baseModel.RoofHole.CanCollide = false
-		self._baseModel.RoofHole.CanQuery = false
-	end
+    stage.Name = tostring(stageNumber)
 
-	stage.Name = stageNumber
+    for _, slot in stage.Grid:GetChildren() do
+        slot.Parent = self._baseModel.Grid
+    end
 
-	for _, slot in stage.Grid:GetChildren() do
-		slot.Parent = self._baseModel.Grid
-	end
+    stage.Parent = self._baseModel.Stages
 
-	stage.Parent = self._baseModel.Stages
-
-	if self._baseModel.RoofHole.CanCollide then
-		self._baseModel.RoofHole.Transparency = 1
-		self._baseModel.RoofHole.CanCollide = false
-		self._baseModel.RoofHole.CanQuery = false
-	end
+    local prevStageNumber = stageNumber - 1
+    if prevStageNumber >= 1 then
+        local prevStage = self._baseModel.Stages:FindFirstChild(tostring(prevStageNumber))
+        if prevStage and prevStage:FindFirstChild("RoofHole") then
+            prevStage.RoofHole.Transparency = 1
+            prevStage.RoofHole.CanCollide = false
+            prevStage.RoofHole.CanQuery = false
+        end
+    else
+        self._baseModel.RoofHole.Transparency = 1
+        self._baseModel.RoofHole.CanCollide = false
+        self._baseModel.RoofHole.CanQuery = false
+    end
 end
 
 function PlayerBase.DoRebirth(self: PlayerBase, playerData: {})
