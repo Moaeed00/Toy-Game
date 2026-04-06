@@ -27,7 +27,7 @@ end
 
 function CodesService.Client:RedeemCode(player: Player, code: string)
 	if typeof(code) ~= "string" or code == "" then
-		return false, "Invalid Code"
+		return false, "Invalid Code!"
 	end
 
 	local codeInfo = CodesData[code]
@@ -38,7 +38,7 @@ function CodesService.Client:RedeemCode(player: Player, code: string)
 	local claimedCodes = self.Server:GetClaimedCodesForPlayer(player)
 
 	if table.find(claimedCodes, code) then
-		return false, "Already Redeemed"
+		return false, "Already Redeemed."
 	end
 
 	local brainrotName = "Six Seven"

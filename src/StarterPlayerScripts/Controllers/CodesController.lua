@@ -8,6 +8,7 @@ local player = Players.LocalPlayer
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- [Modules] ----
+local NotificationHandler = require(ReplicatedStorage.Utility:WaitForChild("NotificationHandler"))
 -- local Configuration = ReplicatedStorage:WaitForChild("Configuration")
 -- local CodesConfig = require(Configuration:WaitForChild("CodesConfiguration"))
 
@@ -49,21 +50,17 @@ function CodesController:OnClaim()
 	end
 
 	local code = Trim(textBox.Text)
-
 	if string.len(code) == 0 then
-		print("Enter Code! (Insert Error Notification Here)")
+		NotificationHandler:DisplayNotificationMessage("Please enter a valid code!", "Error")
 		textBox.Text = ""
 		return
 	end
 
-	local success, _message = CodesService:RedeemCode(code)
-
+	local success, message = CodesService:RedeemCode(code)
 	if success then
-		-- print(message .. " (Success)")
-		print("Success")
+		NotificationHandler:DisplayNotificationMessage(message, "Success")
 	else
-		-- print(message .. " (Error)")
-		print("Error")
+		NotificationHandler:DisplayNotificationMessage(message, "Error")
 	end
 
 	textBox.Text = ""
