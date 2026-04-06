@@ -115,9 +115,9 @@ end
 
 function RebirthController:DesaturateCardColor(rewardCard: Frame)
 	local cardOutlineGradient: UIGradient = rewardCard:FindFirstChild("UIGradient")
-	cardOutlineGradient.Color = Color3.fromRGB(165, 165, 165)
+	cardOutlineGradient.Color = ColorSequence.new(Color3.fromRGB(165, 165, 165))
 	local cardBackgroundFrameGradient = rewardCard:WaitForChild("Frame"):FindFirstChild("UIGradient")
-	cardBackgroundFrameGradient.Color = Color3.fromRGB(90, 90, 90)
+	cardBackgroundFrameGradient.Color = ColorSequence.new(Color3.fromRGB(90, 90, 90))
 	local cardRewardImage: ImageLabel = rewardCard:WaitForChild("RewardImage")
 	cardRewardImage.ImageColor3 = Color3.fromRGB(80, 80, 80)
 	local cardRewardAmount: TextLabel = rewardCard:WaitForChild("RewardAmount")
