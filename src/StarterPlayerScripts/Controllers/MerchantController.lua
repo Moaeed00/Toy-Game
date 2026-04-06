@@ -74,6 +74,7 @@ function MerchantController:RefreshUI()
 			Name = name,
 			Image = brainrotData.Icon,
 			Amount = data.Amount,
+			CashPerSecond = brainrotData.CashPerSecond,
 			SellPrice = brainrotData.SellPrice,
 			Variant = data.Variant,
 			RarityType = brainrotData.RarityType,
@@ -88,12 +89,14 @@ function MerchantController:RefreshUI()
 
 	for index, item in ipairs(sortable) do
 		local clone = TempItem:Clone()
+		clone.Name = item.Name
 		clone.Parent = ScrollingFrame
 		clone.LayoutOrder = index
 
 		clone.BrainrotName.Text = item.Name
 		clone.BrainrotImage:WaitForChild("ImageLabel").Image = item.Image[item.Variant]
 		clone.OwnedAmount.Text = "Owned: x" .. item.Amount
+		clone.CashPerSecond.Text = "$" .. self:FormatNumber(item.CashPerSecond) .. "/s"
 		clone.SellPrice.Text = "$" .. self:FormatNumber(item.SellPrice)
 		clone.BrainrotRarity.Text = item.RarityType
 
