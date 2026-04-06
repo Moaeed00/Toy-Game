@@ -26,7 +26,7 @@ local STEPS = {
     },
     {
         id        = "base",
-        text      = "Equip and Place the Brainrot\ninto your Base.",
+        text      = "Place the Brainrot\ninto your Base.",
         beamColor = Color3.fromRGB(100, 255, 120),
     },
 }
