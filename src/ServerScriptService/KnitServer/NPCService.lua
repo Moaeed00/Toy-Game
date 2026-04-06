@@ -28,7 +28,7 @@ local CONFIG = {
 	AttackRange = 13,
 	AttackCooldown = 1,
 	RagdollDuration = 1.5,
-	FlingPower = 150,
+	FlingPower = 120,
 	WanderInterval = 5,
 	WanderWaitTime = 2,
 	Animations = {
@@ -145,7 +145,7 @@ function NPCService:ApplyFlingAndRagdoll(player: Player, character: Model, npcRo
 		pushDir = npcRoot.CFrame.LookVector
 	end
 	local flingVector = (pushDir.Unit + Vector3.new(0, 0.4, 0)).Unit * CONFIG.FlingPower
-	
+
 	rootPart.AssemblyLinearVelocity = flingVector
 end
 
