@@ -314,6 +314,7 @@ end
 function MiniGameController:StartMiniGame(Time)
 	GameRunning = true
 	ScoringHelperClient:OnStartScoring(GameMode)
+	MiniGameWall.CanCollide = false
 
 	HandleBallSpawn()
 	StartTimer(Time)
@@ -352,6 +353,7 @@ function MiniGameController:EndMiniGame(ScoreData)
 			NotificationHandler:DisplayNotificationMessage("You Lose!", "Error")
 		end
 	end
+	MiniGameWall.CanCollide = true
 
 	CountDownRunning = false
 	GameRunning = false
