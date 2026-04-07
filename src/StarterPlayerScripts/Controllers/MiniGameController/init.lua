@@ -29,7 +29,6 @@ local CountDownTextUIStroke: UIStroke = CountDownValue:WaitForChild("UIStroke")
 local TimerGui: ScreenGui = PlayerGui:WaitForChild("TimerGui")
 local TimerValue: TextLabel = TimerGui:WaitForChild("Main"):WaitForChild("Timer")
 
-local PlayerBase = workspace:WaitForChild("Bases")
 local Toys = workspace:WaitForChild("Toys")
 local Colliders: Folder = workspace:WaitForChild("Colliders")
 
@@ -54,7 +53,7 @@ local SlotName: string
 local FootBall: Model
 local BallSpawnReference: BasePart
 
-function TeleportPlayersToBase()
+function TeleportOnTeleporter()
 	local character = player.Character
 	if not character then
 		return
@@ -66,10 +65,10 @@ function TeleportPlayersToBase()
 		return
 	end
 
-	local SpawnPart = PlayerBase:WaitForChild(tostring(player.UserId)):WaitForChild("Spawn")
-
+	local SpawnedPoint = workspace:WaitForChild("Toys"):WaitForChild(SlotName):WaitForChild("Teleporter")
+	local SpawnOffset = 10
 	local hrpHeightOffset = humanoid.HipHeight + (hrp.Size.Y / 2)
-	local targetCFrame = SpawnPart.CFrame + Vector3.new(0, hrpHeightOffset, 0)
+	local targetCFrame = SpawnedPoint.CFrame * CFrame.new(0, 0, SpawnOffset) + Vector3.new(0, hrpHeightOffset, 0)
 
 	hrp.Anchored = true
 	character:PivotTo(targetCFrame)
@@ -341,11 +340,9 @@ end
 function MiniGameController:EndMiniGame(ScoreData)
 	if typeof(ScoreData) == "number" then
 		local score = ScoreData
-
 		NotificationHandler:DisplayNotificationMessage("Score: " .. tostring(score), "Gameplay")
 	elseif typeof(ScoreData) == "table" then
 		local ScoreCard = ScoreData
-
 		if ScoreCard.Result == "Draw" then
 			NotificationHandler:DisplayNotificationMessage("It's a Tie!", "Gameplay")
 		elseif ScoreCard.WinnerUserID == player.UserId then
@@ -383,7 +380,7 @@ function MiniGameController:EndMiniGame(ScoreData)
 	UnlockCameraRotation()
 	PlayerControls:Enable()
 	task.delay(1, function()
-		TeleportPlayersToBase()
+		TeleportOnTeleporter()
 	end)
 end
 
