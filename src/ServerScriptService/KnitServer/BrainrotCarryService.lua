@@ -243,17 +243,17 @@ function BrainrotCarryService:DropBrainrot(player: Player)
 
 	local rayParams = RaycastParams.new()
 	rayParams.FilterType = Enum.RaycastFilterType.Include
-	rayParams.FilterDescendantsInstances = CollectionService:GetTagged("floor")
+	rayParams.FilterDescendantsInstances = CollectionService:GetTagged("Floor")
 
 	local rayOrigin = Vector3.new(forwardPosition.X, hrp.Position.Y + 5, forwardPosition.Z)
 	local rayResult = workspace:Raycast(rayOrigin, Vector3.new(0, -100, 0), rayParams)
 
 	local groundY = if rayResult then rayResult.Position.Y else hrp.Position.Y
-	local fixedPos = Vector3.new(forwardPosition.X, groundY - 2.25, forwardPosition.Z)
+	local fixedPos = Vector3.new(forwardPosition.X, groundY + 0.5, forwardPosition.Z)
 
-	brainrot:PivotTo(
-		CFrame.new(fixedPos) * CFrame.Angles(0, math.rad(180), 0)
-	)
+	task.delay(0.05, function()
+		brainrot:PivotTo(CFrame.new(fixedPos) * CFrame.Angles(0, math.rad(180), 0))
+	end)
 
 	--------------------------------------------------
 	-- RESET MODEL STATE & PHYSICS
