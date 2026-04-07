@@ -236,13 +236,20 @@ function BrainrotCarryService:DropBrainrot(player: Player)
 
 	local hrp = player.Character.HumanoidRootPart
 
-	local forwardPos = (hrp.CFrame * CFrame.new(0,0,-4)).Position
+	-- local forwardPos = (hrp.CFrame * CFrame.new(0, 0, -4)).Position
+	-- local fixedPos = Vector3.new(forwardPos.X, -6.5, forwardPos.Z)
 
-	local fixedPos = Vector3.new(
-		forwardPos.X,
-		-6.5,
-		forwardPos.Z
-	)
+	local forwardPosition = (hrp.CFrame * CFrame.new(0, 0, -4)).Position
+
+	local rayParams = RaycastParams.new()
+	rayParams.FilterType = Enum.RaycastFilterType.Include
+	rayParams.FilterDescendantsInstances = CollectionService:GetTagged("floor")
+
+	local rayOrigin = Vector3.new(forwardPosition.X, hrp.Position.Y + 5, forwardPosition.Z)
+	local rayResult = workspace:Raycast(rayOrigin, Vector3.new(0, -100, 0), rayParams)
+
+	local groundY = if rayResult then rayResult.Position.Y else hrp.Position.Y
+	local fixedPos = Vector3.new(forwardPosition.X, groundY - 2.25, forwardPosition.Z)
 
 	brainrot:PivotTo(
 		CFrame.new(fixedPos) * CFrame.Angles(0, math.rad(180), 0)

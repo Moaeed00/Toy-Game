@@ -250,7 +250,7 @@ function BrainrotSpawnService:BlackoutBrainrotsSpawn(block: Model)
     local blockPart: MeshPart = block:WaitForChild(block.Name)
     local spawnPoint: Part = blockPart:WaitForChild("MiniBlocksSpawnPoint")
     local blackoutBrainrotsModel = BlackoutBrainrotsModel:Clone()
-    blackoutBrainrotsModel:PivotTo(CFrame.new(Vector3.new(spawnPoint.CFrame.Position.X, spawnPoint.CFrame.Position.Y + 2, spawnPoint.CFrame.Position.Z)))
+    blackoutBrainrotsModel:PivotTo(CFrame.new(Vector3.new(spawnPoint.CFrame.Position.X, spawnPoint.CFrame.Position.Y + 1.5, spawnPoint.CFrame.Position.Z)))
     blackoutBrainrotsModel.Parent = blockPart
 end
 
