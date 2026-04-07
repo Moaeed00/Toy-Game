@@ -209,15 +209,19 @@ function BrainrotSpawnService:SpawnRarityBasedBrainrot(block: Model)
     local spawnedBrainrotPart: MeshPart = spawnedBrainrot:FindFirstChildOfClass("MeshPart")
     spawnedBrainrotPart.Transparency = 1
 
-    -- start brainrot idle animation
-    local spawnedBrainrotAnimator: Animator = spawnedBrainrot:FindFirstChildOfClass("AnimationController"):FindFirstChildOfClass("Animator")
-    local spawnedBrainrotIdleAnimation: Animation = Instance.new("Animation")
-    spawnedBrainrotIdleAnimation.Parent = spawnedBrainrotAnimator
-    spawnedBrainrotIdleAnimation.AnimationId = "rbxassetid://" .. brainrotData.IdleAnimationID
-    local animationTrack: AnimationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
-    animationTrack.Looped = true
-    animationTrack:AdjustSpeed(1)
-    animationTrack:Play()
+    local animController = spawnedBrainrot:FindFirstChildOfClass("AnimationController")
+    local spawnedBrainrotAnimator = animController and animController:FindFirstChildOfClass("Animator")
+    if spawnedBrainrotAnimator and brainrotData.IdleAnimationID then
+        local spawnedBrainrotIdleAnimation = Instance.new("Animation")
+        spawnedBrainrotIdleAnimation.Parent = spawnedBrainrotAnimator
+        spawnedBrainrotIdleAnimation.AnimationId = "rbxassetid://" .. brainrotData.IdleAnimationID
+        local animationTrack = spawnedBrainrotAnimator:LoadAnimation(spawnedBrainrotIdleAnimation)
+        animationTrack.Looped = true
+        animationTrack:AdjustSpeed(1)
+        animationTrack:Play()
+    else
+        warn("[BrainrotSpawnService] No Animator found for '" .. brainrotName .. "', spawning without animation")
+    end
 
     CollectionService:AddTag(spawnedBrainrot, "Brainrot")
     spawnedBrainrot:SetAttribute("Name", brainrotName)
