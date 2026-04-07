@@ -175,7 +175,6 @@ function MiniGameService:OnBallKicked(player)
 			ScoringHelperServer:OnMiss(player)
 		end
 
-		self:ResetBall(player)
 		player:SetAttribute("BallKicked", false)
 		self.Client.MiniGame:Fire(player, "EnableKick")
 	end)
