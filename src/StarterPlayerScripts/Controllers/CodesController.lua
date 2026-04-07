@@ -56,12 +56,13 @@ function CodesController:OnClaim()
 		return
 	end
 
-	local success, message = CodesService:RedeemCode(code)
-	if success then
-		NotificationHandler:DisplayNotificationMessage(message, "Success")
-	else
-		NotificationHandler:DisplayNotificationMessage(message, "Error")
-	end
+	CodesService:RedeemCode(code):andThen(function(success, message)
+		if success then
+			NotificationHandler:DisplayNotificationMessage(message, "Success")
+		else
+			NotificationHandler:DisplayNotificationMessage(message, "Error")
+		end
+	end)
 
 	textBox.Text = ""
 	textBox:ReleaseFocus()

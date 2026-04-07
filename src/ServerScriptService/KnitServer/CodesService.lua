@@ -32,7 +32,7 @@ function CodesService.Client:RedeemCode(player: Player, code: string)
 
 	local codeInfo = CodesData[code]
 	if not codeInfo then
-		return false, "Code not found!"
+		return false, "Invalid Code. Please try again!"
 	end
 
 	local claimedCodes = self.Server:GetClaimedCodesForPlayer(player)
