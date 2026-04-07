@@ -153,6 +153,7 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
     ball.Anchored = false
     ball.CanCollide = true
     ball.CanTouch = true
+    ball.CanQuery = true
     ball:PivotTo(CFrame.new(ballPosition))
 
     local lookDirection = Vector3.new(root.CFrame.LookVector.X, 0, root.CFrame.LookVector.Z).Unit
@@ -173,6 +174,8 @@ function FootballService:KickBall(player: Player, ballPosition: Vector3, mouseHi
 
     if root and root.Parent then
         local returnPosition = Vector3.new(root.Position.X, root.Position.Y - 2.03, root.Position.Z) + (lookDirection * self.FRONT_DISTANCE)
+        ball.CanTouch = false
+        ball.CanQuery = false
         align.Position = returnPosition
         task.wait(0.4)
     end
