@@ -9,6 +9,7 @@ local BrainrotConfig = require(
 )
 
 local holdAnimTracks: {[Player]: AnimationTrack} = {}
+local promptConnections: {[Model]: RBXScriptConnection} = {}
 
 local BrainrotCarryService = Knit.CreateService({
 	Name = "BrainrotCarryService",
@@ -293,7 +294,8 @@ function BrainrotCarryService:DropBrainrot(player: Player)
 
 	brainrot:SetAttribute("IsCarried", false)
 
-	local prompt = root:FindFirstChild("PickupPrompt")
+	local promptAttach = root:FindFirstChild("PromptAttachment")
+	local prompt = promptAttach and promptAttach:FindFirstChild("PickupPrompt")
 	if prompt then
 		prompt.Enabled = true
 	end
@@ -433,8 +435,7 @@ function BrainrotCarryService:_setupPrompt(model: Model)
 	-- Create / find prompt
 	--------------------------------------------------
 
-	local prompt = attachment:FindFirstChild("PickupPrompt")
-
+	local prompt = root:FindFirstChild("PromptAttachment") and root.PromptAttachment:FindFirstChild("PickupPrompt")
 	if not prompt then
 		prompt = Instance.new("ProximityPrompt")
 		prompt.Name = "PickupPrompt"
@@ -461,8 +462,12 @@ function BrainrotCarryService:_setupPrompt(model: Model)
 	--------------------------------------------------
 	-- Trigger
 	--------------------------------------------------
+	if promptConnections[model] then
+		promptConnections[model]:Disconnect()
+		promptConnections[model] = nil
+	end
 
-	prompt.Triggered:Connect(function(player)
+	promptConnections[model] = prompt.Triggered:Connect(function(player)
 		self:TryPickup(player, model)
 	end)
 
@@ -503,6 +508,13 @@ function BrainrotCarryService:_setupPrompt(model: Model)
 
 		end)
 	end
+
+	model.Destroying:Connect(function()
+		if promptConnections[model] then
+			promptConnections[model]:Disconnect()
+			promptConnections[model] = nil
+		end
+	end)
 end
 
 --------------------------------------------------
