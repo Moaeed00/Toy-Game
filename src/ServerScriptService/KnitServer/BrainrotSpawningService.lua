@@ -339,7 +339,7 @@ function BrainrotSpawnService:SetupInfoGUI(brainrot: Model)
     local brainrotInfoGUITemplate: BillboardGui = BrainrotGUITemplate:WaitForChild("InfoGUI")
     local brainrotInfoGUI: BillboardGui = brainrotInfoGUITemplate:Clone()
     brainrotInfoGUI.Parent = brainrot:FindFirstChildOfClass("MeshPart")
-    brainrotInfoGUI.StudsOffset = Vector3.new(0, 1, 0)
+    brainrotInfoGUI.StudsOffset = Vector3.new(0, 2, 0)
     local brainrotInfoGUIFrame: Frame = brainrotInfoGUI:WaitForChild("Frame")
 
     local brainrotName = brainrot:GetAttribute("Name")
