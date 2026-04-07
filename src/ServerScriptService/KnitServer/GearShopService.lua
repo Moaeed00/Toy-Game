@@ -8,7 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GearModule = require(ReplicatedStorage:WaitForChild("GearModule"))
-local BackpackSorter = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("BackpackSorter"))
+-- local BackpackSorter = require(ReplicatedStorage:WaitForChild("Utility"):WaitForChild("BackpackSorter"))
 local DataHandlerService
 
 local GearShopService = Knit.CreateService({
@@ -307,7 +307,7 @@ function GearShopService:BuyGear(player: Player, gearName: string): (boolean, st
 	self:GiveGearTool(player, gearName)
 
 	task.defer(function()
-		BackpackSorter.Sort(player)
+		-- BackpackSorter.Sort(player)
 	end)
 
 	dprint("✅ Granted ownership:", gearName)
