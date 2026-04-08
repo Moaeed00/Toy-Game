@@ -21,7 +21,9 @@ local ORDERED_VARIANTS: { { Prefix: string, Color: Color3 } } = {
     { Prefix = BASE_VARIANT, Color = Color3.fromRGB(180, 180, 180) },
 }
 for _, v in ipairs(BrainrotVariantsConfig.VARIANTS) do
-    table.insert(ORDERED_VARIANTS, { Prefix = v.Prefix, Color = v.Color })
+	if v.Prefix ~= BASE_VARIANT then
+		table.insert(ORDERED_VARIANTS, { Prefix = v.Prefix, Color = v.Color })
+	end
 end
 
 local MULTIPLIER_TIERS = {

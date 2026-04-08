@@ -21,7 +21,9 @@ local BASE_VARIANT   = "Normal"
 
 local ALL_VARIANTS: { string } = { BASE_VARIANT }
 for _, v in ipairs(BrainrotVariantsConfig.VARIANTS) do
-    table.insert(ALL_VARIANTS, v.Prefix)
+	if v.Prefix ~= BASE_VARIANT then
+		table.insert(ALL_VARIANTS, v.Prefix)
+	end
 end
 
 local _originalPartState: { [number]: { [BasePart]: { Color: Color3, Material: Enum.Material } } } = {}
