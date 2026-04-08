@@ -65,7 +65,7 @@ function AnnounceWinnerToOwner(Result: string)
 		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
 		--Prompt Notification
 		print(`You Saved Your {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
-		NotificationHandler:DisplayNotificationMessage(`You Saved Your ${ChallengeData.EntityName} Brainrot From ${OpponentPlayerName}`, "Success")
+		NotificationHandler:DisplayNotificationMessage(`You Saved Your {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`, "Success")
 	elseif Result == "Loser" then
 		-- local OpponentName = getPlayerName(ChallengeData.StealerUserId)
 		--Prompt Notification
@@ -83,12 +83,12 @@ function AnnounceWinnerToStealer(Result: string)
 		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
 		--Prompt Notification
 		print(`You Stealed {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`)
-		NotificationHandler:DisplayNotificationMessage(`You Stealed ${ChallengeData.EntityName} Brainrot From ${OpponentPlayerName}`, "Success")
+		NotificationHandler:DisplayNotificationMessage(`You Stealed {ChallengeData.EntityName} Brainrot From {OpponentPlayerName}`, "Success")
 	elseif Result == "Loser" then
 		-- local OpponentName = getPlayerName(ChallengeData.OwnerUserId)
 		--Prompt Notification
 		print(`{OpponentPlayerName} Saved his {ChallengeData.EntityName} Brainrot from stealing`)
-		NotificationHandler:DisplayNotificationMessage(`${OpponentPlayerName} Saved his ${ChallengeData.EntityName} Brainrot from stealing`, "Error")
+		NotificationHandler:DisplayNotificationMessage(`{OpponentPlayerName} Saved his {ChallengeData.EntityName} Brainrot from stealing`, "Error")
 	end
 end
 
@@ -132,7 +132,7 @@ function HandleRobuxRejection()
 	if player:GetAttribute("Owner") then
 		--Prompt Notification Brainrot Saved Sucessfully
 		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
-		NotificationHandler:DisplayNotificationMessage(`${ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
+		NotificationHandler:DisplayNotificationMessage(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
 	elseif player:GetAttribute("Stealer") then
 		--Prompt Notification
 		print(`Challenge Declined`)
@@ -165,7 +165,7 @@ function HandlePointDeclineButton()
 		StealChallengeService.StealChallenge:Fire("PointsRejection")
 		--Prompt Notification Brainrot Saved Sucessfully
 		print(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`)
-		NotificationHandler:DisplayNotificationMessage(`${ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
+		NotificationHandler:DisplayNotificationMessage(`{ChallengeData.EntityName} Brainrot Saved Sucessfully`, "Success")
 	end
 end
 
