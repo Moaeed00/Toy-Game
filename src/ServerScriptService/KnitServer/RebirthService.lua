@@ -55,7 +55,6 @@ function RebirthService:Rebirth(player: Player)
 	end
 
 	local moneyReward = next_money_reward(rebirth)
-	DataHandlerService:ResetMoney(player)
 	BaseService:DoRebirth(player)
 	GameAnalyticsService:TrackFunnelStep(player, "rebirth_used")
 	DataHandlerService:UpdateMoney(player, moneyReward)
